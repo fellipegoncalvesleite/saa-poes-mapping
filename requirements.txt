@@ -1,0 +1,9 @@
+# Runtime dependencies for the SAA POES loader (Checkpoint 2).
+# Python 3.12 recommended. See docs/research_notes.md -> "Checkpoint 2" for venv setup.
+# Exact versions that were installed & verified on 2026-06-07 are noted there.
+numpy>=1.26
+pandas>=2.1
+xarray>=2024.1.0
+netCDF4>=1.6.5
+pyarrow>=14.0
+matplotlib>=3.8

@@ -1,0 +1,21 @@
+# Data payloads — re-downloadable / regenerable; see data/**/PROVENANCE.md
+data/samples/*.nc
+data/samples/*.txt
+data/samples/*.cdf
+data/samples/*.bin
+data/raw/*.nc
+data/processed/*.parquet
+data/processed/*.csv
+data/processed/*.png
+outputs/figures/*.png
+outputs/tables/*.parquet
+outputs/tables/*.csv
+# (PROVENANCE.md files are intentionally NOT ignored)
+
+# Python / venv / notebooks
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+env/

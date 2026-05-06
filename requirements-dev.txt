@@ -1,0 +1,3 @@
+# Tooling used to execute notebooks/02_minimal_loader.ipynb (not required at runtime).
+nbconvert>=7.10
+ipykernel>=6.29
