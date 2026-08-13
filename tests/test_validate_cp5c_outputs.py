@@ -14,6 +14,7 @@ from scripts.validate_cp5c_outputs import (
     independent_classification,
     main,
     notebook_has_outputs,
+    source_name_matches_satellite,
 )
 
 
@@ -60,6 +61,18 @@ class CP5CValidatorPredicateTests(unittest.TestCase):
 
         self.assertEqual(independent_classification(consistent), "CONSISTENT")
         self.assertEqual(independent_classification(reversed_sign), "INCONSISTENT")
+
+    def test_source_name_must_match_claimed_satellite(self) -> None:
+        self.assertTrue(
+            source_name_matches_satellite("poes_n15_20240131_proc.nc", "noaa15")
+        )
+        self.assertTrue(
+            source_name_matches_satellite("poes_m03_20240101_proc.nc", "metop03")
+        )
+        self.assertFalse(
+            source_name_matches_satellite("poes_n19_20240101_proc.nc", "noaa15")
+        )
+        self.assertFalse(source_name_matches_satellite("synthetic_noaa15.nc", "noaa15"))
 
     def test_validator_fails_loudly_when_outputs_are_missing(self) -> None:
         with TemporaryDirectory() as tmp, redirect_stdout(StringIO()) as captured:

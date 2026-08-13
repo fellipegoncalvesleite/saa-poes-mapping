@@ -23,6 +23,13 @@ from saa.magnetic_framing import (  # noqa: E402
 )
 
 SATELLITES = ("noaa15", "noaa18", "noaa19", "metop01", "metop03")
+SOURCE_TOKENS = {
+    "noaa15": "n15",
+    "noaa18": "n18",
+    "noaa19": "n19",
+    "metop01": "m01",
+    "metop03": "m03",
+}
 REFERENCE_RTOL = 1e-9
 REFERENCE_ATOL = 1e-12
 
@@ -37,6 +44,14 @@ def forbidden_cross_satellite_flux_columns(columns) -> list[str]:
     """Return forbidden flux-bearing columns, allowing only the explicit comparison guard flag."""
     allowed_flag = "absolute_flux_comparison_allowed"
     return [str(column) for column in columns if "flux" in str(column).lower() and column != allowed_flag]
+
+
+def source_name_matches_satellite(source_name: str, satellite: str) -> bool:
+    """Require a real Jan-2024 NOAA source filename for the claimed platform."""
+    token = SOURCE_TOKENS.get(satellite)
+    if token is None:
+        return False
+    return re.fullmatch(rf"poes_{token}_202401\d{{2}}_proc\.nc", source_name) is not None
 
 
 def independent_classification(summary: pd.DataFrame) -> str:
@@ -177,8 +192,6 @@ def main(root: Path = ROOT) -> int:
     add("footprint summary covers accepted variables", set(summary["magnetic_variable"]) == required_variables)
     add("no naive mag_lon_sat summary", "mag_lon_sat" not in set(summary["magnetic_variable"]))
 
-    source_pattern = re.compile(r"^poes_(n15|n18|n19|m01|m03)_202401\d{2}_proc\.nc$")
-    noaa19_flagged: pd.DataFrame | None = None
     noaa19_cell_sets: dict[str, set[tuple[float, float]]] | None = None
     for satellite in SATELLITES:
         region_path = processed_dir / f"cp5c_{satellite}_2024-01_region_flux_plus_magnetic.parquet"
@@ -193,7 +206,12 @@ def main(root: Path = ROOT) -> int:
         add(f"{satellite} processed rows January-only", (times.dt.strftime("%Y-%m") == "2024-01").all())
         add(f"{satellite} label is stable", set(region["satellite"]) == {satellite})
         sources = set(region["source_file"].astype(str))
-        add(f"{satellite} uses 31 real NOAA source files", len(sources) == 31 and all(source_pattern.match(source) for source in sources), f"{len(sources)} files")
+        add(
+            f"{satellite} uses 31 matching real NOAA source files",
+            len(sources) == 31
+            and all(source_name_matches_satellite(source, satellite) for source in sources),
+            f"{len(sources)} files",
+        )
         add(f"{satellite} drops mep_IFC_on == 1", not (region["mep_IFC_on"] == 1).any())
 
         bmask = valid_mask(region, "Btot_sat")
@@ -215,7 +233,6 @@ def main(root: Path = ROOT) -> int:
             add(f"{satellite} {case} selected cells non-empty", bool(cells), f"{len(cells)} cells")
         flagged = add_footprint_flags(region, grid5, grid2)
         if satellite == "noaa19":
-            noaa19_flagged = flagged
             noaa19_cell_sets = cell_sets
 
         case_columns = {
