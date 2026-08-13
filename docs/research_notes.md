@@ -1048,3 +1048,57 @@ models; physical causality from IGRF variables alone; cross-satellite absolute-f
 Send `docs/MENTOR_PACKET.md` to a physics mentor; incorporate feedback (esp. channel choice,
 coordinate convention, calibration caveats, citations) before any CP5C multi-month/multi-satellite
 magnetic generality work or drafting.
+
+---
+
+# Checkpoint 5C — Multi-Satellite Magnetic Generality (January 2024)
+
+**Fixed scope:** `noaa15`, `noaa18`, `noaa19`, `metop01`, and `metop03`; January 2024;
+`mep_omni_flux_p1`; the accepted CP4F footprint definitions; and the principal top10, 5° mean case.
+Every magnetic comparison is within satellite. Cross-satellite absolute flux comparison remains
+forbidden.
+
+## Predeclared operational rubric and result
+
+A satellite supports the low-`Btot_sat` relationship only when (1) Btot separation is > 0, (2) >50%
+of footprint samples lie below its regional Btot q25, and (3) the lowest 50% or less of its regional
+Btot distribution contains 90% of its footprint. It supports Btot dominance only when Btot separation
+exceeds both L separation and absolute MLT separation. The checkpoint is `CONSISTENT` when at least
+4/5 satellites pass each group; `INCONSISTENT` when 0–1 pass the low-Btot group or the Btot sign is
+broadly reversed; otherwise it is `MIXED`.
+
+**Rubric result: `CONSISTENT` — 5/5 low-Btot support, 5/5 Btot-dominance support, 0/5 reversed Btot
+signs.** These are predeclared operational criteria for CP5C, not physical thresholds defining the
+SAA. NOAA-19 separately passed the hard reproduction gate: deterministic memberships/counts matched
+exactly, and floating metrics matched with `rtol=1e-9`, `atol=1e-12`, `equal_nan=True`.
+
+## Principal raw satellite-level metrics
+
+| satellite | Btot sep | L sep | MLT sep | footprint below regional Btot q25 | regional Btot fraction capturing 90% | low-Btot | Btot dominance |
+|---|---:|---:|---:|---:|---:|:---:|:---:|
+| noaa15 | 1.596147 | 0.387097 | 0.919967 | 1.000000 | 0.118963 | yes | yes |
+| noaa18 | 1.572744 | 0.428571 | 0.048053 | 1.000000 | 0.120877 | yes | yes |
+| noaa19 | 1.584260 | 0.412698 | 0.056082 | 1.000000 | 0.120371 | yes | yes |
+| metop01 | 1.572559 | 0.393701 | −0.034783 | 1.000000 | 0.117669 | yes | yes |
+| metop03 | 1.583358 | 0.396825 | −0.040630 | 1.000000 | 0.116626 | yes | yes |
+
+## Narrative interpretation (after rubric evaluation)
+
+The NOAA-19 low-Btot description generalizes cleanly across the five January-2024 platforms under
+the frozen particle-footprint definitions: each footprint is concentrated in the lowest roughly 12%
+of its own regional Btot distribution, and Btot separates inside from outside more sharply than L or
+absolute MLT. The MLT result is not uniform: four satellites are close to zero, while NOAA-15 has
+substantial positive MLT separation (+0.920); it still remains below NOAA-15's Btot separation
+(+1.596). This is descriptive co-location with NOAA-provided IGRF model quantities, not causality and
+not a magnetic definition of the SAA.
+
+The fit-flag diagnostic is consistent across satellites rather than identifying one anomalous
+platform: 99.76–100% of principal-footprint samples have `mep_omni_flux_flag_fit == 0`. It is reported
+as a diagnostic only; no new fit-flag filtering was introduced. `mep_IFC_on == 1` removed one NOAA-15
+regional row and none for the other satellites; `-1` remains retained and uninterpreted.
+
+## Outputs and validation
+
+Five regenerable regional Parquets, five tables in CSV+Parquet form, and two figures were produced by
+`notebooks/05c_multisatellite_magnetic_generality.ipynb`. Independent validation is in
+`scripts/validate_cp5c_outputs.py`; all checks passed on the real 31-files-per-satellite inputs.
