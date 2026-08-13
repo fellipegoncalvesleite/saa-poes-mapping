@@ -10,10 +10,13 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 
 from scripts.validate_cp5c_outputs import (
+    expected_fit_flag_diagnostic,
     forbidden_cross_satellite_flux_columns,
     independent_classification,
+    keyed_table_matches,
     main,
     notebook_has_outputs,
+    semantic_table_pair_matches,
     source_name_matches_satellite,
 )
 
@@ -73,6 +76,67 @@ class CP5CValidatorPredicateTests(unittest.TestCase):
             source_name_matches_satellite("poes_n19_20240101_proc.nc", "noaa15")
         )
         self.assertFalse(source_name_matches_satellite("synthetic_noaa15.nc", "noaa15"))
+
+    def test_keyed_table_comparison_rejects_corrupted_metrics_and_counts(self) -> None:
+        expected = pd.DataFrame(
+            {
+                "case": ["top10"],
+                "inside_count": [20],
+                "separation_metric": [1.5],
+            }
+        )
+        self.assertTrue(
+            keyed_table_matches(
+                expected.copy(), expected, ["case"], ["inside_count"], ["separation_metric"]
+            )
+        )
+        altered_count = expected.assign(inside_count=19)
+        altered_metric = expected.assign(separation_metric=1.5001)
+        self.assertFalse(
+            keyed_table_matches(
+                altered_count, expected, ["case"], ["inside_count"], ["separation_metric"]
+            )
+        )
+        self.assertFalse(
+            keyed_table_matches(
+                altered_metric, expected, ["case"], ["inside_count"], ["separation_metric"]
+            )
+        )
+
+    def test_expected_fit_flag_diagnostic_preserves_each_flag_distribution(self) -> None:
+        flagged = pd.DataFrame(
+            {
+                "mep_omni_flux_flag_fit": [0, 0, 1, 2],
+                "in_top10_5deg": [True, False, True, False],
+            }
+        )
+
+        actual = expected_fit_flag_diagnostic(flagged, "noaa18")
+
+        regional_zero = actual.loc[
+            (actual["scope"] == "regional_sample") & (actual["flag_value"] == 0)
+        ].iloc[0]
+        footprint_one = actual.loc[
+            (actual["scope"] == "top10_5deg_mean_footprint")
+            & (actual["flag_value"] == 1)
+        ].iloc[0]
+        self.assertEqual(int(regional_zero["sample_count"]), 2)
+        self.assertAlmostEqual(float(regional_zero["fraction"]), 0.5)
+        self.assertEqual(int(footprint_one["sample_count"]), 1)
+        self.assertAlmostEqual(float(footprint_one["fraction"]), 0.5)
+
+    def test_csv_parquet_semantic_comparison_detects_corruption(self) -> None:
+        frame = pd.DataFrame(
+            {"satellite": ["noaa15", "noaa18"], "metric": [1.5, 1.6], "support": [True, False]}
+        )
+        with TemporaryDirectory() as tmp:
+            csv_path = Path(tmp) / "result.csv"
+            parquet_path = Path(tmp) / "result.parquet"
+            frame.to_csv(csv_path, index=False)
+            frame.to_parquet(parquet_path, index=False)
+            self.assertTrue(semantic_table_pair_matches(csv_path, parquet_path))
+            frame.assign(metric=[9.0, 1.6]).to_csv(csv_path, index=False)
+            self.assertFalse(semantic_table_pair_matches(csv_path, parquet_path))
 
     def test_validator_fails_loudly_when_outputs_are_missing(self) -> None:
         with TemporaryDirectory() as tmp, redirect_stdout(StringIO()) as captured:

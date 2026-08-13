@@ -162,15 +162,25 @@ def omni_fit_flag_diagnostic(
 
 def evaluate_satellite_support(row: Mapping[str, object]) -> tuple[bool, bool]:
     """Apply the predeclared CP5C per-satellite criteria to one principal-case row."""
-    btot = float(row["btot_separation_metric"])
+    numeric_fields = (
+        "btot_separation_metric",
+        "l_igrf_separation_metric",
+        "mlt_separation_metric",
+        "btot_fraction_below_regional_q25",
+        "btot_regional_fraction_to_capture_90pct",
+    )
+    values = {field: float(row[field]) for field in numeric_fields}
+    if not all(np.isfinite(value) for value in values.values()):
+        raise ValueError("CP5C rubric inputs must all be finite")
+    btot = values["btot_separation_metric"]
     low_btot = (
         btot > 0.0
-        and float(row["btot_fraction_below_regional_q25"]) > 0.50
-        and float(row["btot_regional_fraction_to_capture_90pct"]) <= 0.50
+        and values["btot_fraction_below_regional_q25"] > 0.50
+        and values["btot_regional_fraction_to_capture_90pct"] <= 0.50
     )
     dominance = (
-        btot > float(row["l_igrf_separation_metric"])
-        and btot > abs(float(row["mlt_separation_metric"]))
+        btot > values["l_igrf_separation_metric"]
+        and btot > abs(values["mlt_separation_metric"])
     )
     return bool(low_btot), bool(dominance)
 
@@ -179,9 +189,15 @@ def classify_generality(summary: pd.DataFrame) -> str:
     """Classify the five-satellite principal case with the frozen CP5C rubric."""
     if len(summary) != len(SATELLITES):
         raise ValueError(f"CP5C classification requires exactly {len(SATELLITES)} satellite rows")
-    low_count = int(summary["low_btot_support"].astype(bool).sum())
-    dominance_count = int(summary["btot_dominance_support"].astype(bool).sum())
-    reversed_count = int((summary["btot_separation_metric"].astype(float) < 0.0).sum())
+    for column in ("low_btot_support", "btot_dominance_support"):
+        if not pd.api.types.is_bool_dtype(summary[column].dtype):
+            raise TypeError(f"{column} must have boolean dtype")
+    btot = summary["btot_separation_metric"].astype(float)
+    if not np.isfinite(btot).all():
+        raise ValueError("btot_separation_metric must be finite for classification")
+    low_count = int(summary["low_btot_support"].sum())
+    dominance_count = int(summary["btot_dominance_support"].sum())
+    reversed_count = int((btot < 0.0).sum())
     if low_count >= 4 and dominance_count >= 4:
         return "CONSISTENT"
     if low_count <= 1 or reversed_count >= 4:

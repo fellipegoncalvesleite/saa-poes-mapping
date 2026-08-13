@@ -223,6 +223,18 @@ class MagneticGeneralityCoreTests(unittest.TestCase):
 
 
 class MagneticGeneralityRubricTests(unittest.TestCase):
+    def test_rubric_rejects_nonfinite_inputs(self) -> None:
+        row = {
+            "btot_separation_metric": np.nan,
+            "l_igrf_separation_metric": 0.5,
+            "mlt_separation_metric": 0.1,
+            "btot_fraction_below_regional_q25": 0.75,
+            "btot_regional_fraction_to_capture_90pct": 0.25,
+        }
+
+        with self.assertRaises(ValueError):
+            evaluate_satellite_support(row)
+
     def test_low_btot_support_uses_predeclared_strict_boundaries(self) -> None:
         baseline = {
             "btot_separation_metric": 1.0,
@@ -305,6 +317,18 @@ class MagneticGeneralityRubricTests(unittest.TestCase):
         )
 
         self.assertEqual(classify_generality(summary), "INCONSISTENT")
+
+    def test_classification_requires_boolean_support_columns(self) -> None:
+        summary = pd.DataFrame(
+            {
+                "low_btot_support": ["False"] * 5,
+                "btot_dominance_support": ["False"] * 5,
+                "btot_separation_metric": [1.0] * 5,
+            }
+        )
+
+        with self.assertRaises(TypeError):
+            classify_generality(summary)
 
 
 class MagneticGeneralityReferenceTests(unittest.TestCase):

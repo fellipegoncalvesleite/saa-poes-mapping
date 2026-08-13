@@ -19,6 +19,9 @@ from saa.magnetic_framing import (  # noqa: E402
     FOOTPRINT_SUMMARY_COLUMNS,
     VALIDITY_COLUMNS,
     add_footprint_flags,
+    concentration_metrics,
+    footprint_magnetic_summary,
+    magnetic_validity_table,
     valid_mask,
 )
 
@@ -52,6 +55,114 @@ def source_name_matches_satellite(source_name: str, satellite: str) -> bool:
     if token is None:
         return False
     return re.fullmatch(rf"poes_{token}_202401\d{{2}}_proc\.nc", source_name) is not None
+
+
+def keyed_table_matches(
+    actual: pd.DataFrame,
+    expected: pd.DataFrame,
+    keys: list[str],
+    exact_columns: list[str],
+    float_columns: list[str],
+) -> bool:
+    """Compare keyed tables with exact discrete and fixed-tolerance float contracts."""
+    required = keys + exact_columns + float_columns
+    if any(column not in actual.columns or column not in expected.columns for column in required):
+        return False
+
+    def keyed(frame: pd.DataFrame) -> pd.DataFrame | None:
+        selected = frame.loc[:, required].copy()
+        for key in keys:
+            selected[key] = selected[key].map(
+                lambda value: "<NA>" if pd.isna(value) else str(value)
+            )
+        if selected.duplicated(keys).any():
+            return None
+        return selected.sort_values(keys).set_index(keys)
+
+    actual_keyed = keyed(actual)
+    expected_keyed = keyed(expected)
+    if actual_keyed is None or expected_keyed is None:
+        return False
+    if not actual_keyed.index.equals(expected_keyed.index):
+        return False
+    if any(
+        not actual_keyed[column].equals(expected_keyed[column]) for column in exact_columns
+    ):
+        return False
+    return all(
+        np.allclose(
+            actual_keyed[column].to_numpy(dtype="float64"),
+            expected_keyed[column].to_numpy(dtype="float64"),
+            rtol=REFERENCE_RTOL,
+            atol=REFERENCE_ATOL,
+            equal_nan=True,
+        )
+        for column in float_columns
+    )
+
+
+def expected_fit_flag_diagnostic(flagged: pd.DataFrame, satellite: str) -> pd.DataFrame:
+    """Independently derive the complete regional and principal-footprint flag distribution."""
+    rows: list[dict[str, object]] = []
+    for scope, subset in (
+        ("regional_sample", flagged),
+        ("top10_5deg_mean_footprint", flagged.loc[flagged["in_top10_5deg"]]),
+    ):
+        total = int(len(subset))
+        counts = subset["mep_omni_flux_flag_fit"].value_counts(dropna=False).sort_index()
+        for flag_value, count in counts.items():
+            rows.append(
+                {
+                    "satellite": satellite,
+                    "analysis_month": "2024-01",
+                    "scope": scope,
+                    "flag_value": flag_value,
+                    "sample_count": int(count),
+                    "scope_total": total,
+                    "fraction": float(count / total) if total else float("nan"),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def semantic_table_pair_matches(csv_path: Path, parquet_path: Path) -> bool:
+    """Verify that a generated CSV/Parquet pair carries the same ordered values."""
+    csv = pd.read_csv(csv_path)
+    parquet = pd.read_parquet(parquet_path)
+    if list(csv.columns) != list(parquet.columns) or len(csv) != len(parquet):
+        return False
+    for column in parquet.columns:
+        if pd.api.types.is_numeric_dtype(parquet[column].dtype) and not pd.api.types.is_bool_dtype(
+            parquet[column].dtype
+        ):
+            if not np.allclose(
+                csv[column].to_numpy(dtype="float64"),
+                parquet[column].to_numpy(dtype="float64"),
+                rtol=REFERENCE_RTOL,
+                atol=REFERENCE_ATOL,
+                equal_nan=True,
+            ):
+                return False
+        else:
+            csv_values = csv[column].map(
+                lambda value: "<NA>" if pd.isna(value) or value == "" else str(value)
+            )
+            parquet_values = parquet[column].map(
+                lambda value: "<NA>" if pd.isna(value) or value == "" else str(value)
+            )
+            if not csv_values.equals(parquet_values):
+                return False
+    return True
+
+
+def _single_value(table: pd.DataFrame, filters: dict[str, object], column: str) -> object:
+    mask = pd.Series(True, index=table.index)
+    for key, value in filters.items():
+        mask &= table[key] == value
+    values = table.loc[mask, column]
+    if len(values) != 1:
+        raise ValueError(f"expected one {column} value for {filters}, found {len(values)}")
+    return values.iloc[0]
 
 
 def independent_classification(summary: pd.DataFrame) -> str:
@@ -92,6 +203,8 @@ def main(root: Path = ROOT) -> int:
         root / "outputs" / "tables" / "cp5b_magnetic_concentration_metrics.csv",
         root / "outputs" / "tables" / "cp4a_noaa19_2024-01_grid_5deg.parquet",
         root / "outputs" / "tables" / "cp4a_noaa19_2024-01_grid_2deg.parquet",
+        root / "outputs" / "tables" / "cp6a_key_results_summary.csv",
+        root / "outputs" / "tables" / "cp6a_key_results_summary.parquet",
         root / "data" / "processed" / "cp5a_noaa19_2024-01_region_flux_plus_magnetic.parquet",
         root / "docs" / "CLAIM_AUDIT.md",
         root / "docs" / "PAPER_OUTLINE.md",
@@ -128,6 +241,12 @@ def main(root: Path = ROOT) -> int:
             print(f"[{'PASS' if ok else 'FAIL'}] {name}  ->  {detail}")
         print("RESULT: ONE OR MORE CHECKS FAILED")
         return 1
+
+    for stem in table_stems:
+        add(
+            f"CSV/Parquet pair is semantically equivalent: {stem}",
+            semantic_table_pair_matches(table_dir / f"{stem}.csv", table_dir / f"{stem}.parquet"),
+        )
 
     validity = pd.read_parquet(table_dir / "cp5c_magnetic_variable_validity_by_satellite.parquet")
     summary = pd.read_parquet(table_dir / "cp5c_footprint_magnetic_summary_by_satellite.parquet")
@@ -183,6 +302,27 @@ def main(root: Path = ROOT) -> int:
         add(f"{label} is January 2024 only", set(frame["analysis_month"]) == {"2024-01"})
 
     add("generality has exactly one row per satellite", len(generality) == 5 and generality["satellite"].is_unique)
+    add(
+        "generality support columns have boolean dtype",
+        all(
+            pd.api.types.is_bool_dtype(generality[column].dtype)
+            for column in ("low_btot_support", "btot_dominance_support")
+        ),
+    )
+    add(
+        "generality rubric inputs are finite",
+        np.isfinite(
+            generality[
+                [
+                    "btot_separation_metric",
+                    "l_igrf_separation_metric",
+                    "mlt_separation_metric",
+                    "btot_fraction_below_regional_q25",
+                    "btot_regional_fraction_to_capture_90pct",
+                ]
+            ].to_numpy(dtype="float64")
+        ).all(),
+    )
     add("no forbidden absolute-flux comparison columns", not forbidden_cross_satellite_flux_columns(generality.columns), str(forbidden_cross_satellite_flux_columns(generality.columns)))
     add("absolute flux comparison guard is False", (generality["absolute_flux_comparison_allowed"] == False).all())  # noqa: E712
 
@@ -193,6 +333,7 @@ def main(root: Path = ROOT) -> int:
     add("no naive mag_lon_sat summary", "mag_lon_sat" not in set(summary["magnetic_variable"]))
 
     noaa19_cell_sets: dict[str, set[tuple[float, float]]] | None = None
+    recomputed_principal_rows: list[dict[str, object]] = []
     for satellite in SATELLITES:
         region_path = processed_dir / f"cp5c_{satellite}_2024-01_region_flux_plus_magnetic.parquet"
         region = pd.read_parquet(region_path)
@@ -253,31 +394,163 @@ def main(root: Path = ROOT) -> int:
                 counts_match = len(row) == 1 and int(row["inside_count"].iloc[0]) == expected_inside and int(row["outside_count"].iloc[0]) == expected_outside
                 add(f"{satellite} {case} {variable} membership counts reproduce", counts_match)
 
+        expected_validity = magnetic_validity_table(flagged)
+        saved_validity = validity.loc[validity["satellite"] == satellite]
+        add(
+            f"{satellite} full validity metrics recompute from processed data",
+            keyed_table_matches(
+                saved_validity,
+                expected_validity,
+                ["variable_name"],
+                ["rows_total", "rows_valid", "rows_invalid"],
+                ["valid_min", "valid_max"],
+            ),
+        )
+
+        expected_summary = footprint_magnetic_summary(flagged)
+        saved_summary = summary.loc[summary["satellite"] == satellite]
+        add(
+            f"{satellite} full separation metrics recompute from processed data",
+            keyed_table_matches(
+                saved_summary,
+                expected_summary,
+                ["comparison_case", "magnetic_variable"],
+                ["inside_count", "outside_count"],
+                [
+                    "median_inside",
+                    "median_outside",
+                    "iqr_inside",
+                    "iqr_outside",
+                    "p10_inside",
+                    "p90_inside",
+                    "p10_outside",
+                    "p90_outside",
+                    "separation_metric",
+                ],
+            ),
+        )
+
+        expected_concentration = concentration_metrics(flagged)
+        saved_concentration = concentration.loc[concentration["satellite"] == satellite]
+        add(
+            f"{satellite} full concentration metrics recompute from processed data",
+            keyed_table_matches(
+                saved_concentration,
+                expected_concentration,
+                ["metric", "footprint", "variable"],
+                [],
+                ["value"],
+            ),
+        )
+
         principal = generality.loc[generality["satellite"] == satellite].iloc[0]
         add(f"{satellite} principal selected-cell count reproduces CP4F", int(principal["selected_cell_count"]) == len(cell_sets["top10_5deg_mean"]))
         add(f"{satellite} principal selected-sample count reproduces membership", int(principal["selected_sample_count"]) == int(flagged["in_top10_5deg"].sum()))
         add(f"{satellite} IFC retained counts reconcile", int(principal["ifc_minus1_retained"]) == int((region["mep_IFC_on"] == -1).sum()) and int(principal["regional_rows_after_ifc"]) == len(region))
 
         satellite_flags = fit_flags.loc[fit_flags["satellite"] == satellite]
-        for scope, expected_total in (
-            ("regional_sample", len(region)),
-            ("top10_5deg_mean_footprint", int(flagged["in_top10_5deg"].sum())),
-        ):
-            scoped = satellite_flags.loc[satellite_flags["scope"] == scope]
-            add(f"{satellite} fit-flag {scope} counts reconcile", not scoped.empty and int(scoped["sample_count"].sum()) == expected_total and (scoped["scope_total"] == expected_total).all())
+        expected_flags = expected_fit_flag_diagnostic(flagged, satellite)
+        add(
+            f"{satellite} exact per-flag diagnostic recomputes from processed data",
+            keyed_table_matches(
+                satellite_flags,
+                expected_flags,
+                ["satellite", "analysis_month", "scope", "flag_value"],
+                ["sample_count", "scope_total"],
+                ["fraction"],
+            ),
+        )
 
+        def expected_separation(variable: str) -> float:
+            return float(
+                _single_value(
+                    expected_summary,
+                    {
+                        "comparison_case": "top10_5deg_mean",
+                        "magnetic_variable": variable,
+                    },
+                    "separation_metric",
+                )
+            )
+
+        def expected_concentration_value(metric: str) -> float:
+            return float(
+                _single_value(
+                    expected_concentration,
+                    {"metric": metric, "footprint": "top10", "variable": "Btot_sat"},
+                    "value",
+                )
+            )
+
+        recomputed_principal_rows.append(
+            {
+                "satellite": satellite,
+                "principal_case": "top10_5deg_mean",
+                "btot_separation_metric": expected_separation("Btot_sat"),
+                "l_igrf_separation_metric": expected_separation("L_IGRF"),
+                "mlt_separation_metric": expected_separation("MLT"),
+                "btot_fraction_below_regional_q25": expected_concentration_value(
+                    "fraction_below_regional_q25"
+                ),
+                "btot_regional_fraction_to_capture_50pct": expected_concentration_value(
+                    "regional_fraction_to_capture_50pct"
+                ),
+                "btot_regional_fraction_to_capture_75pct": expected_concentration_value(
+                    "regional_fraction_to_capture_75pct"
+                ),
+                "btot_regional_fraction_to_capture_90pct": expected_concentration_value(
+                    "regional_fraction_to_capture_90pct"
+                ),
+                "selected_cell_count": len(cell_sets["top10_5deg_mean"]),
+                "selected_sample_count": int(flagged["in_top10_5deg"].sum()),
+            }
+        )
+
+    recomputed_principal = pd.DataFrame(recomputed_principal_rows)
+    add(
+        "principal raw metrics recompute from processed data",
+        keyed_table_matches(
+            generality,
+            recomputed_principal,
+            ["satellite", "principal_case"],
+            ["selected_cell_count", "selected_sample_count"],
+            [
+                "btot_separation_metric",
+                "l_igrf_separation_metric",
+                "mlt_separation_metric",
+                "btot_fraction_below_regional_q25",
+                "btot_regional_fraction_to_capture_50pct",
+                "btot_regional_fraction_to_capture_75pct",
+                "btot_regional_fraction_to_capture_90pct",
+            ],
+        ),
+    )
     recalculated_low = (
-        (generality["btot_separation_metric"] > 0)
-        & (generality["btot_fraction_below_regional_q25"] > 0.50)
-        & (generality["btot_regional_fraction_to_capture_90pct"] <= 0.50)
+        (recomputed_principal["btot_separation_metric"] > 0)
+        & (recomputed_principal["btot_fraction_below_regional_q25"] > 0.50)
+        & (recomputed_principal["btot_regional_fraction_to_capture_90pct"] <= 0.50)
     )
     recalculated_dominance = (
-        (generality["btot_separation_metric"] > generality["l_igrf_separation_metric"])
-        & (generality["btot_separation_metric"] > generality["mlt_separation_metric"].abs())
+        (recomputed_principal["btot_separation_metric"] > recomputed_principal["l_igrf_separation_metric"])
+        & (recomputed_principal["btot_separation_metric"] > recomputed_principal["mlt_separation_metric"].abs())
     )
-    add("low-Btot support booleans recompute from raw metrics", recalculated_low.equals(generality["low_btot_support"].astype(bool)))
-    add("Btot-dominance booleans recompute from raw metrics", recalculated_dominance.equals(generality["btot_dominance_support"].astype(bool)))
-    expected_classification = independent_classification(generality)
+    recomputed_principal["low_btot_support"] = recalculated_low
+    recomputed_principal["btot_dominance_support"] = recalculated_dominance
+    saved_support = generality.set_index("satellite")
+    expected_support = recomputed_principal.set_index("satellite")
+    add(
+        "low-Btot support booleans recompute from processed data",
+        saved_support["low_btot_support"].astype(bool).equals(
+            expected_support["low_btot_support"].astype(bool)
+        ),
+    )
+    add(
+        "Btot-dominance booleans recompute from processed data",
+        saved_support["btot_dominance_support"].astype(bool).equals(
+            expected_support["btot_dominance_support"].astype(bool)
+        ),
+    )
+    expected_classification = independent_classification(recomputed_principal)
     add("saved classification matches independent rubric", set(generality["cp5c_classification"]) == {expected_classification}, expected_classification)
     add("saved support counts match independent counts", (generality["low_btot_support_count"] == int(recalculated_low.sum())).all() and (generality["btot_dominance_support_count"] == int(recalculated_dominance.sum())).all())
 

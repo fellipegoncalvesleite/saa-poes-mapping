@@ -34,8 +34,9 @@ Run each with:
 9. `notebooks/04f_multisatellite_consistency.ipynb` — CP4F 5 satellites (downloads n15/m01/m03 months)
 10. `notebooks/05a_magnetic_coordinate_audit.ipynb` — CP5A IGRF audit + flux+magnetic parquet
 11. `notebooks/05b_magnetic_framing.ipynb` — CP5B quantitative magnetic framing
-12. `notebooks/05c_multisatellite_magnetic_generality.ipynb` — CP5C five-satellite magnetic generality
-(CP6A adds no notebook; `outputs/tables/cp6a_key_results_summary.*` is generated from accepted tables.)
+12. Run `.venv/bin/python scripts/generate_cp6a_summary.py`, then
+    `.venv/bin/python scripts/validate_cp6a_outputs.py` — CP6A synthesis (no notebook)
+13. `notebooks/05c_multisatellite_magnetic_generality.ipynb` — CP5C five-satellite magnetic generality
 
 ## 4. Validation scripts in order (each prints PASS/FAIL, exit 0 on success)
 ```
@@ -72,9 +73,10 @@ Run each with:
 tracked so outputs are verifiable after regeneration.
 
 ## 7. Regenerate from scratch
-1. Create the venv (§1). 2. Run notebooks in order (§3) — they download required NOAA files on demand.
-3. Generate the CP6A synthesis table (`outputs/tables/cp6a_key_results_summary.*`). 4. Run all
-validators (§4) — all should report ALL CHECKS PASSED. 5. Open `outputs/viewer/index.html`.
+1. Create the venv (§1). 2. Run steps 1–11 in §3 — they download required NOAA files on demand.
+3. Generate and validate CP6A at step 12. 4. Execute CP5C at step 13; it requires and hash-snapshots
+the CP6A pair. 5. Run all validators (§4) — all should report ALL CHECKS PASSED.
+6. Open `outputs/viewer/index.html`.
 
 ## 8. Known limitations
 Single month (Jan 2024); primary channel `mep_omni_flux_p1`; geographic/sub-satellite binning; no

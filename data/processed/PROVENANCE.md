@@ -314,8 +314,8 @@ top10/top5 × 5°/2° mean cases. No cross-satellite absolute-flux comparison.
 **Frozen decision result:** `CONSISTENT` (5/5 low-Btot, 5/5 Btot dominance, zero reversed Btot signs).
 The cutoffs are predeclared operational CP5C criteria, not physical SAA thresholds. NOAA-19 hard
 gate passed exact deterministic comparisons and floats at `rtol=1e-9`, `atol=1e-12`,
-`equal_nan=True`. Accepted CP4A/CP4F/CP5B artifacts were hash-checked before and after execution and
-were unchanged.
+`equal_nan=True`. Accepted CP4A/CP4F/CP5A/CP5B/CP6A artifacts were hash-checked before and after
+execution and were unchanged.
 
 Produced by `notebooks/05c_multisatellite_magnetic_generality.ipynb`; validated by
 `scripts/validate_cp5c_outputs.py` (all checks passed).
