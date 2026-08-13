@@ -53,6 +53,29 @@ class ViewerGridExportTests(unittest.TestCase):
         self.assertEqual(actual["color_domains"]["mean_flux"], [1.0, 10.0])
         self.assertEqual(actual["color_domains"]["median_flux"], [0.5, 8.0])
 
+    def test_grid_export_rejects_null_and_non_boolean_coverage_masks(self) -> None:
+        base = {
+            "lat_bin_center": [-67.5],
+            "lon_bin_center": [-97.5],
+            "mean_flux": [1.0],
+            "median_flux": [0.5],
+            "sample_count": [31],
+        }
+        for invalid in (None, 1, "true"):
+            with self.subTest(invalid=invalid):
+                table = pd.DataFrame({**base, "enough_samples_5deg": [invalid]})
+                with self.assertRaises(TypeError):
+                    export_grid(table, grid_deg=5, mask_col="enough_samples_5deg")
+
+    def test_selected_indices_reject_non_boolean_exported_coverage(self) -> None:
+        grid = {
+            "columns": ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered"],
+            "cells": [[-67.5, -97.5, 1.0, 0.5, 31, None]],
+        }
+
+        with self.assertRaises(TypeError):
+            selected_cell_indices(grid, "mean_flux", 0.5)
+
     def test_selected_indices_use_exported_coverage_and_canonical_cutoff(self) -> None:
         grid = {
             "columns": ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered"],
