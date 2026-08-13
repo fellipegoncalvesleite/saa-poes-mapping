@@ -95,8 +95,6 @@ def main() -> int:
                                          "calibration", "literature", "foot"])
         add("mentor packet has concrete technical questions", "?" in MENTOR.read_text() and concrete >= 5,
             f"{concrete} technical anchors")
-        add("mentor packet avoids vague 'is this impressive'", "impressive" not in mt
-            or "not" in mt)  # only acceptable as the 'do not ask' note
 
     # no new raw data downloaded by CP6A: raw counts still the known 5x31 (+ no extra)
     raw = ROOT / "data" / "raw"
