@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -20,8 +21,13 @@ from saa.magnetic_generality import (  # noqa: E402
     classify_generality,
     compare_noaa19_reference,
     evaluate_satellite_support,
+    finalize_generality_summary,
+    footprint_cell_sets,
     ifc_counts,
     omni_fit_flag_diagnostic,
+    plot_capture90_comparison,
+    plot_separation_comparison,
+    principal_summary_row,
     summaries_by_satellite,
     validity_by_satellite,
 )
@@ -325,6 +331,121 @@ class MagneticGeneralityReferenceTests(unittest.TestCase):
         for forbidden in ("mean_flux", "peak_flux", "flux_ratio_between_satellites"):
             with self.subTest(forbidden=forbidden), self.assertRaises(ValueError):
                 assert_cross_satellite_schema_safe(["satellite", forbidden])
+
+
+class MagneticGeneralityOutputTests(unittest.TestCase):
+    def test_footprint_cell_sets_cover_all_accepted_cases(self) -> None:
+        grid5 = _grid([(-67.5, -97.5, 10.0), (-62.5, -92.5, 1.0)], 5)
+        grid2 = _grid([(-67.0, -97.0, 10.0), (-63.0, -93.0, 1.0)], 2)
+
+        actual = footprint_cell_sets(grid5, grid2)
+
+        self.assertEqual(
+            actual,
+            {
+                "top10_5deg_mean": {(-67.5, -97.5)},
+                "top5_5deg_mean": {(-67.5, -97.5)},
+                "top10_2deg_mean": {(-67.0, -97.0)},
+                "top5_2deg_mean": {(-67.0, -97.0)},
+            },
+        )
+
+    def test_principal_summary_row_extracts_raw_metrics_and_counts(self) -> None:
+        footprint_summary = pd.DataFrame(
+            {
+                "comparison_case": ["top10_5deg_mean"] * 3,
+                "magnetic_variable": ["Btot_sat", "L_IGRF", "MLT"],
+                "separation_metric": [1.2, 0.4, -0.1],
+            }
+        )
+        concentration = pd.DataFrame(
+            {
+                "metric": [
+                    "fraction_below_regional_q25",
+                    "regional_fraction_to_capture_50pct",
+                    "regional_fraction_to_capture_75pct",
+                    "regional_fraction_to_capture_90pct",
+                ],
+                "footprint": ["top10"] * 4,
+                "variable": ["Btot_sat"] * 4,
+                "value": [0.8, 0.1, 0.2, 0.3],
+            }
+        )
+        validity = pd.DataFrame(
+            {
+                "variable_name": ["Btot_sat", "L_IGRF", "MLT"],
+                "rows_valid": [100, 95, 100],
+                "rows_invalid": [0, 5, 0],
+            }
+        )
+        flagged = pd.DataFrame({"in_top10_5deg": [True, True, False, False]})
+        processing = {
+            "regional_rows_before_ifc": 105,
+            "regional_rows_after_ifc": 100,
+            "ifc_on_dropped": 5,
+            "ifc_minus1_retained": 90,
+            "ifc_zero_retained": 10,
+            "ifc_other_retained": 0,
+            "top10_5deg_selected_cell_count": 44,
+        }
+
+        actual = principal_summary_row(
+            "noaa15", footprint_summary, concentration, validity, flagged, processing
+        )
+
+        self.assertEqual(actual["satellite"], "noaa15")
+        self.assertEqual(actual["analysis_month"], "2024-01")
+        self.assertEqual(actual["btot_separation_metric"], 1.2)
+        self.assertEqual(actual["l_igrf_separation_metric"], 0.4)
+        self.assertEqual(actual["mlt_separation_metric"], -0.1)
+        self.assertEqual(actual["btot_fraction_below_regional_q25"], 0.8)
+        self.assertEqual(actual["btot_regional_fraction_to_capture_90pct"], 0.3)
+        self.assertEqual(actual["selected_cell_count"], 44)
+        self.assertEqual(actual["selected_sample_count"], 2)
+        self.assertEqual(actual["l_igrf_rows_invalid"], 5)
+        self.assertIs(actual["low_btot_support"], True)
+        self.assertIs(actual["btot_dominance_support"], True)
+        self.assertIs(actual["absolute_flux_comparison_allowed"], False)
+
+    def test_finalize_generality_summary_adds_global_rubric_result(self) -> None:
+        rows = []
+        for i, satellite in enumerate(("noaa15", "noaa18", "noaa19", "metop01", "metop03")):
+            rows.append(
+                {
+                    "satellite": satellite,
+                    "low_btot_support": i < 4,
+                    "btot_dominance_support": i < 4,
+                    "btot_separation_metric": 1.0,
+                    "absolute_flux_comparison_allowed": False,
+                }
+            )
+
+        actual = finalize_generality_summary(rows)
+
+        self.assertEqual(actual["cp5c_classification"].unique().tolist(), ["CONSISTENT"])
+        self.assertTrue((actual["low_btot_support_count"] == 4).all())
+        self.assertTrue((actual["btot_dominance_support_count"] == 4).all())
+        self.assertTrue((actual["reversed_btot_sign_count"] == 0).all())
+
+    def test_required_plots_are_created_and_nonempty(self) -> None:
+        summary = pd.DataFrame(
+            {
+                "satellite": ["noaa15", "noaa18", "noaa19", "metop01", "metop03"],
+                "btot_separation_metric": [1.0, 1.1, 1.2, 1.3, 1.4],
+                "l_igrf_separation_metric": [0.2, 0.3, 0.4, 0.5, 0.6],
+                "mlt_separation_metric": [0.0, 0.1, -0.1, 0.05, -0.05],
+                "btot_regional_fraction_to_capture_90pct": [0.2, 0.2, 0.2, 0.2, 0.2],
+            }
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            separation_path = Path(tmp) / "separation.png"
+            capture_path = Path(tmp) / "capture.png"
+
+            plot_separation_comparison(summary, separation_path)
+            plot_capture90_comparison(summary, capture_path)
+
+            self.assertGreater(separation_path.stat().st_size, 1000)
+            self.assertGreater(capture_path.stat().st_size, 1000)
 
 
 if __name__ == "__main__":

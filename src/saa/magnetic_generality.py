@@ -9,7 +9,9 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -19,6 +21,7 @@ from .magnetic_framing import (
     footprint_magnetic_summary,
     magnetic_validity_table,
 )
+from .magnetic_audit import selected_cells_from_grid
 
 SATELLITES: tuple[str, ...] = ("noaa15", "noaa18", "noaa19", "metop01", "metop03")
 ANALYSIS_MONTH = "2024-01"
@@ -34,6 +37,23 @@ class ReferenceBundle:
     validity: pd.DataFrame
     footprint_summary: pd.DataFrame
     concentration: pd.DataFrame
+
+
+def footprint_cell_sets(
+    grid5: pd.DataFrame,
+    grid2: pd.DataFrame,
+) -> dict[str, set[tuple[float, float]]]:
+    """Return exact selected-cell coordinate sets for the four accepted mean-flux cases."""
+    cases = (
+        ("top10_5deg_mean", grid5, "enough_samples_5deg", 90),
+        ("top5_5deg_mean", grid5, "enough_samples_5deg", 95),
+        ("top10_2deg_mean", grid2, "enough_samples_2deg", 90),
+        ("top5_2deg_mean", grid2, "enough_samples_2deg", 95),
+    )
+    return {
+        name: selected_cells_from_grid(grid, "mean_flux", mask, percentile)[0]
+        for name, grid, mask, percentile in cases
+    }
 
 
 def add_cp5c_footprint_flags(
@@ -276,3 +296,156 @@ def compare_noaa19_reference(actual: ReferenceBundle, expected: ReferenceBundle)
         equal_nan=True,
         err_msg="NOAA-19 concentration values differ",
     )
+
+
+def _single_value(
+    table: pd.DataFrame,
+    filters: Mapping[str, object],
+    value_column: str,
+) -> object:
+    mask = pd.Series(True, index=table.index)
+    for column, value in filters.items():
+        mask &= table[column] == value
+    values = table.loc[mask, value_column]
+    if len(values) != 1:
+        raise ValueError(f"expected one {value_column} row for {dict(filters)}, found {len(values)}")
+    return values.iloc[0]
+
+
+def principal_summary_row(
+    satellite: str,
+    footprint_summary: pd.DataFrame,
+    concentration: pd.DataFrame,
+    validity: pd.DataFrame,
+    flagged_region: pd.DataFrame,
+    processing_counts: Mapping[str, int],
+) -> dict[str, object]:
+    """Build one raw-metric evidence row for the principal top10 5-degree mean case."""
+    separations = {
+        variable: float(
+            _single_value(
+                footprint_summary,
+                {"comparison_case": "top10_5deg_mean", "magnetic_variable": variable},
+                "separation_metric",
+            )
+        )
+        for variable in ("Btot_sat", "L_IGRF", "MLT")
+    }
+
+    def concentration_value(metric: str) -> float:
+        return float(
+            _single_value(
+                concentration,
+                {"metric": metric, "footprint": "top10", "variable": "Btot_sat"},
+                "value",
+            )
+        )
+
+    def validity_count(variable: str, column: str) -> int:
+        return int(_single_value(validity, {"variable_name": variable}, column))
+
+    row: dict[str, object] = {
+        "satellite": satellite,
+        "analysis_month": ANALYSIS_MONTH,
+        "principal_case": "top10_5deg_mean",
+        "btot_separation_metric": separations["Btot_sat"],
+        "l_igrf_separation_metric": separations["L_IGRF"],
+        "mlt_separation_metric": separations["MLT"],
+        "btot_fraction_below_regional_q25": concentration_value("fraction_below_regional_q25"),
+        "btot_regional_fraction_to_capture_50pct": concentration_value(
+            "regional_fraction_to_capture_50pct"
+        ),
+        "btot_regional_fraction_to_capture_75pct": concentration_value(
+            "regional_fraction_to_capture_75pct"
+        ),
+        "btot_regional_fraction_to_capture_90pct": concentration_value(
+            "regional_fraction_to_capture_90pct"
+        ),
+        "selected_cell_count": int(processing_counts["top10_5deg_selected_cell_count"]),
+        "selected_sample_count": int(flagged_region["in_top10_5deg"].astype(bool).sum()),
+        "btot_rows_valid": validity_count("Btot_sat", "rows_valid"),
+        "btot_rows_invalid": validity_count("Btot_sat", "rows_invalid"),
+        "l_igrf_rows_valid": validity_count("L_IGRF", "rows_valid"),
+        "l_igrf_rows_invalid": validity_count("L_IGRF", "rows_invalid"),
+        "mlt_rows_valid": validity_count("MLT", "rows_valid"),
+        "mlt_rows_invalid": validity_count("MLT", "rows_invalid"),
+        "absolute_flux_comparison_allowed": False,
+        "rubric_note": "predeclared operational CP5C criteria; not physical SAA thresholds",
+    }
+    for key in (
+        "regional_rows_before_ifc",
+        "regional_rows_after_ifc",
+        "ifc_on_dropped",
+        "ifc_minus1_retained",
+        "ifc_zero_retained",
+        "ifc_other_retained",
+    ):
+        row[key] = int(processing_counts[key])
+    low_btot, dominance = evaluate_satellite_support(row)
+    row["low_btot_support"] = low_btot
+    row["btot_dominance_support"] = dominance
+    return row
+
+
+def finalize_generality_summary(rows: Iterable[Mapping[str, object]]) -> pd.DataFrame:
+    """Order five principal rows and attach the independently auditable global rubric result."""
+    summary = pd.DataFrame(list(rows))
+    if set(summary["satellite"]) != set(SATELLITES) or len(summary) != len(SATELLITES):
+        raise ValueError(f"generality summary must contain exactly one row for each {SATELLITES}")
+    order = {satellite: index for index, satellite in enumerate(SATELLITES)}
+    summary = summary.sort_values("satellite", key=lambda s: s.map(order)).reset_index(drop=True)
+    assert_cross_satellite_schema_safe(summary.columns)
+    low_count = int(summary["low_btot_support"].astype(bool).sum())
+    dominance_count = int(summary["btot_dominance_support"].astype(bool).sum())
+    reversed_count = int((summary["btot_separation_metric"].astype(float) < 0.0).sum())
+    summary["low_btot_support_count"] = low_count
+    summary["btot_dominance_support_count"] = dominance_count
+    summary["reversed_btot_sign_count"] = reversed_count
+    summary["cp5c_classification"] = classify_generality(summary)
+    return summary
+
+
+def plot_separation_comparison(summary: pd.DataFrame, save_path: Path) -> None:
+    """Plot principal-case Btot/L/MLT separation without flux or causal comparisons."""
+    x = np.arange(len(summary))
+    width = 0.24
+    fig, ax = plt.subplots(figsize=(8.2, 5.2))
+    for offset, column, label, color in (
+        (-width, "btot_separation_metric", "Btot_sat", "#1f77b4"),
+        (0.0, "l_igrf_separation_metric", "L_IGRF", "#ff7f0e"),
+        (width, "mlt_separation_metric", "MLT", "#7f7f7f"),
+    ):
+        ax.bar(x + offset, summary[column], width=width, label=label, color=color)
+    ax.axhline(0.0, color="black", linewidth=0.8)
+    ax.set_xticks(x)
+    ax.set_xticklabels(summary["satellite"])
+    ax.set_ylabel("inside/outside separation metric")
+    ax.set_title(
+        "DESCRIPTIVE magnetic separation by satellite\n"
+        "Jan-2024 top10 5-degree mean; within-satellite; not causal or a boundary"
+    )
+    ax.legend()
+    ax.grid(axis="y", alpha=0.25)
+    fig.savefig(save_path, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_capture90_comparison(summary: pd.DataFrame, save_path: Path) -> None:
+    """Plot each satellite's regional low-Btot fraction needed for 90% footprint capture."""
+    fig, ax = plt.subplots(figsize=(7.8, 5.0))
+    ax.bar(
+        summary["satellite"],
+        summary["btot_regional_fraction_to_capture_90pct"],
+        color="#1f77b4",
+    )
+    ax.axhline(0.5, color="#d62728", linestyle="--", linewidth=1.2, label="CP5C operational cutoff")
+    ax.set_ylim(0.0, 1.0)
+    ax.set_ylabel("within-satellite regional low-Btot fraction")
+    ax.set_title(
+        "DESCRIPTIVE low-Btot fraction needed to capture 90% of footprint\n"
+        "Jan-2024 top10 5-degree mean; method-dependent; not a physical threshold"
+    )
+    ax.legend(fontsize=8)
+    ax.grid(axis="y", alpha=0.25)
+    fig.savefig(save_path, dpi=120, bbox_inches="tight")
+    plt.close(fig)
