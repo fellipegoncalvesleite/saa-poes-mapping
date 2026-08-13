@@ -7,7 +7,7 @@ from public NOAA/EUMETSAT POES/MetOp SEM‑2 MEPED particle data.
 (load real satellite data with *time, latitude, longitude, satellite ID, and at least one
 proton channel*). **No maps and no scientific conclusions are produced in this checkpoint.**
 
-> Framing reminder (carried from the project brief): we are **not** discovering the SAA,
+> Scientific scope: this study is **not** discovering the SAA,
 > **not** computing biological dose, **not** replacing radiation‑transport models, and
 > **not** doing generic Monte‑Carlo. The contribution is *methodological*: reproducible
 > mapping + sensitivity analysis on public data.
@@ -64,7 +64,7 @@ Archive root: `https://www.ncei.noaa.gov/data/poes-metop-space-environment-monit
 metop03 (MetOp‑C)`}. In 2024 the L1b tree contains `metop01, metop03, noaa15, noaa18, noaa19`
 (NOAA‑16/17 and MetOp‑A retired). `<sat>` token in filenames uses `n15…n19` / `m01…m03`.
 
-> **Product discontinuity to remember:** modern NetCDF (`l1a/l1b`) starts in **2012**; the ASCII/CDF
+> **Product discontinuity:** modern NetCDF (`l1a/l1b`) starts in **2012**; the ASCII/CDF
 > legacy product (`l2`) ends in **2014**. Any pre‑2012 window *must* use `l2`; any post‑2014 window
 > *must* use `l1b`. The two products use different processing/units → a multi‑year span crosses a
 > **processing boundary** (relevant to the project's "time window" sensitivity axis).
@@ -195,7 +195,7 @@ technical dependency (the NetCDF stack).
 
 ---
 
-## 8. Scientific caveats (must be remembered before interpreting anything)
+## 8. Scientific caveats
 
 1. **Detector degradation.** MEPED proton telescopes degrade over a satellite's lifetime; absolute
    sensitivity drifts. Long‑duration single‑satellite trends need degradation correction. *(Stated by NOAA, §3.2.2.)*
@@ -232,7 +232,7 @@ This audit ran on Python **3.14.4** with **no `pip`**, **no** numpy/pandas/xarra
 Jupyter**. Consequences: the NetCDF path could not be opened with xarray *here* (variable names were
 instead confirmed by scanning the file's HDF5 metadata); the ASCII path **was** executed with the
 standard library; and `notebooks/01_data_access_test.ipynb` is **authored but not executed in this
-environment** (it carries no fabricated outputs). To run it, create a venv elsewhere and
+environment** (it contains no executed outputs). To run it, create a venv elsewhere and
 `pip install xarray netCDF4` (Path B) — Path A needs only the standard library.
 
 ## 11. Recommended next checkpoint (Checkpoint 2)
@@ -254,7 +254,7 @@ environment** (it carries no fabricated outputs). To run it, create a venv elsew
 **Date:** 2026-06-07 · **Status:** ✅ complete & validated (loader runs on real data; all checks pass).
 
 ## Environment (this resolved the CP1 blocker)
-CP1 noted the box had Python 3.14 with no `pip`/sci-libs/Jupyter. **`uv` (0.11.9) turned out to be
+The CP1 environment had Python 3.14 with no `pip`/sci-libs/Jupyter. **`uv` (0.11.9) was
 installed**, so a clean **Python 3.12.13** venv was created and the real scientific stack installed
 and import-verified: `numpy 2.4.6, pandas 3.0.3, xarray 2026.4.0, netCDF4 1.7.4, pyarrow 24.0.0,
 matplotlib 3.10.9` (+ `nbconvert 7.17.1, ipykernel 7.2.0` to execute the notebook). See
@@ -399,8 +399,8 @@ cells rose to **429/432** (vs 206 one day) — better coverage, as expected. Ful
 the sensitivity study are deferred to **Checkpoint 4**.
 
 ## Validation
-`python scripts/validate_cp3_outputs.py` -> **ALL CHECKS PASSED**: parquet present; real source file
-(no fake data); 4 figures exist; region rows > 0; longitude converted & within box; 5°/2° grids
+`python scripts/validate_cp3_outputs.py` -> **ALL CHECKS PASSED**: parquet present; source-file
+provenance verified; 4 figures exist; region rows > 0; longitude converted & within box; 5°/2° grids
 non-empty; sample-count populated; top cells computable.
 
 ## Caveats
@@ -483,8 +483,8 @@ Top coverage-passing cells cluster in the **South America / South Atlantic secto
 ## Validation
 `python scripts/validate_cp4a_outputs.py` → **ALL CHECKS PASSED**: regional parquet present;
 31/31 daily files; monthly region rows (205,153) > one-day (7,244); grid tables + required columns;
-sample-count populated; coverage masks present; 6 figures present; notebook executed; real source
-files (no fake data).
+sample-count populated; coverage masks present; 6 figures present; notebook executed; source-file
+provenance verified.
 
 ## Caveats
 1. **Exploratory monthly aggregation**, single channel/satellite — not a final SAA boundary/center.
@@ -558,7 +558,7 @@ flux-weighted centroid `x`; blank = no data / coverage-failed; no smoothing/inte
 `python scripts/validate_cp4b_outputs.py` → **ALL CHECKS PASSED**: CP4A tables present; sensitivity
 CSV+Parquet; required columns; **20 rows**; selected_cell_count>0 & selected_area_km2>0 for all;
 both centroids inside region; finite cutoffs; 5 figures; notebook executed; available counts match the
-real CP4A coverage (432/2,685 — no fake data).
+CP4A coverage (432/2,685).
 
 ## Caveats
 1. **Threshold-defined footprints are methodological objects**, not physical boundaries; the center
