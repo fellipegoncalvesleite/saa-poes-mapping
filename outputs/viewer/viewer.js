@@ -2,6 +2,7 @@
   "use strict";
 
   const DATA = window.SAA_VIEWER_DATA;
+  const GEOGRAPHY = window.SAA_VIEWER_GEOGRAPHY;
   const EXPERIMENT_ORDER = ["threshold", "channel", "time", "satellite"];
   const RANGE_CONTROL_KEYS = new Set(["threshold_label", "grid_deg", "channel"]);
   const SVG_NS = "http://www.w3.org/2000/svg";
@@ -113,6 +114,47 @@
     );
   }
 
+  function geographicPath(lines) {
+    return lines.map((line) => line.map((point, index) => {
+      const command = index === 0 ? "M" : "L";
+      return `${command}${xPosition(point[0]).toFixed(3)} ${yPosition(point[1]).toFixed(3)}`;
+    }).join(" ")).join(" ");
+  }
+
+  function appendGeography(svg) {
+    const clipId = "geography-plot-clip";
+    const definitions = svgElement("defs");
+    const clip = svgElement("clipPath", { id: clipId });
+    clip.appendChild(svgElement("rect", {
+      x: PLOT.left, y: PLOT.top, width: PLOT.width, height: PLOT.height,
+    }));
+    definitions.appendChild(clip);
+    svg.appendChild(definitions);
+
+    const group = svgElement("g", {
+      "aria-label": "Natural Earth geographic context",
+      "clip-path": `url(#${clipId})`,
+    });
+    group.appendChild(svgElement("path", {
+      d: geographicPath(GEOGRAPHY.borders),
+      fill: "none",
+      stroke: "#777777",
+      "stroke-width": 0.7,
+      "stroke-dasharray": "3 2",
+      "vector-effect": "non-scaling-stroke",
+      "pointer-events": "none",
+    }));
+    group.appendChild(svgElement("path", {
+      d: geographicPath(GEOGRAPHY.coastlines),
+      fill: "none",
+      stroke: "#333333",
+      "stroke-width": 1.35,
+      "vector-effect": "non-scaling-stroke",
+      "pointer-events": "none",
+    }));
+    svg.appendChild(group);
+  }
+
   function appendAxes(svg) {
     const region = DATA.region;
     const gridGroup = svgElement("g", { "aria-hidden": "true" });
@@ -192,22 +234,28 @@
     const cellWidth = (grid.grid_deg / (DATA.region.lon_max - DATA.region.lon_min)) * PLOT.width;
     const cellHeight = (grid.grid_deg / (DATA.region.lat_max - DATA.region.lat_min)) * PLOT.height;
 
+    appendGeography(svg);
     appendAxes(svg);
     const cells = svgElement("g", { "aria-label": "canonical geographic grid cells" });
+    const selectedOutlines = svgElement("g", { "aria-label": "selected footprint outlines" });
     grid.cells.forEach((cell, index) => {
       const lat = cell[0];
       const lon = cell[1];
       const value = cell[valueIndex];
       const covered = Boolean(cell[coveredIndex]);
       const isSelected = selected.has(index);
+      const hasVisibleFlux = covered && value > 0;
+      const x = xPosition(lon - grid.grid_deg / 2);
+      const y = yPosition(lat + grid.grid_deg / 2);
       const rect = svgElement("rect", {
-        x: xPosition(lon - grid.grid_deg / 2),
-        y: yPosition(lat + grid.grid_deg / 2),
+        x,
+        y,
         width: cellWidth,
         height: cellHeight,
-        fill: covered && value > 0 ? logColor(value, grid.color_domains[statistic]) : "#ffffff",
-        stroke: isSelected ? "#000000" : "#aaaaaa",
-        "stroke-width": isSelected ? 2.0 : 0.35,
+        fill: hasVisibleFlux ? logColor(value, grid.color_domains[statistic]) : "transparent",
+        "fill-opacity": hasVisibleFlux ? 0.82 : 0,
+        stroke: "#aaaaaa",
+        "stroke-width": 0.35,
         "vector-effect": "non-scaling-stroke",
       });
       const status = covered ? (value > 0 ? "coverage passed" : "non-positive on log scale") : "coverage failed";
@@ -215,8 +263,22 @@
         `lat ${lat}, lon ${lon}; ${statistic}=${value === null ? "blank" : value}; samples=${cell[sampleIndex]}; ${status}${isSelected ? "; selected footprint" : ""}`
       ));
       cells.appendChild(rect);
+      if (isSelected) {
+        selectedOutlines.appendChild(svgElement("rect", {
+          x,
+          y,
+          width: cellWidth,
+          height: cellHeight,
+          fill: "none",
+          stroke: "#000000",
+          "stroke-width": 2.0,
+          "vector-effect": "non-scaling-stroke",
+          "pointer-events": "none",
+        }));
+      }
     });
     svg.appendChild(cells);
+    svg.appendChild(selectedOutlines);
 
     const centroidX = xPosition(configuration.metrics.centroid_lon);
     const centroidY = yPosition(configuration.metrics.centroid_lat);
@@ -419,6 +481,14 @@
     if (!DATA || DATA.schema_version !== 1) {
       document.getElementById("viewer-error").textContent =
         "ERROR: viewer_data.js is missing or has an unsupported schema.";
+      return;
+    }
+    const sameRegion = GEOGRAPHY && Object.keys(DATA.region).every(
+      (key) => Number(GEOGRAPHY.region[key]) === Number(DATA.region[key])
+    );
+    if (!GEOGRAPHY || GEOGRAPHY.schema_version !== 1 || !sameRegion) {
+      document.getElementById("viewer-error").textContent =
+        "ERROR: geography.js is missing, unsupported, or does not match the viewer region.";
       return;
     }
     const experimentSelect = document.getElementById("experiment-control");
