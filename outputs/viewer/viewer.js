@@ -3,6 +3,7 @@
 
   const DATA = window.SAA_VIEWER_DATA;
   const EXPERIMENT_ORDER = ["threshold", "channel", "time", "satellite"];
+  const RANGE_CONTROL_KEYS = new Set(["threshold_label", "grid_deg", "channel"]);
   const SVG_NS = "http://www.w3.org/2000/svg";
   const SVG_WIDTH = 900;
   const SVG_HEIGHT = 690;
@@ -307,6 +308,54 @@
     container.replaceChildren();
     state.values = { ...specification.initial_values };
     specification.controls.forEach((control) => {
+      if (RANGE_CONTROL_KEYS.has(control.key)) {
+        const wrapper = htmlElement("span");
+        wrapper.className = "range-control";
+        const controlId = `control-${control.key}`;
+        const selectedValue = htmlElement("output");
+        selectedValue.className = "range-value";
+        selectedValue.htmlFor = controlId;
+        const label = htmlElement("label", `${control.label}: `);
+        label.htmlFor = controlId;
+        label.appendChild(selectedValue);
+        const slider = htmlElement("input");
+        slider.type = "range";
+        slider.id = controlId;
+        slider.name = control.key;
+        slider.min = "0";
+        slider.max = String(control.options.length - 1);
+        slider.step = "1";
+        const initialIndex = control.options.findIndex(
+          (item) => String(item.value) === String(state.values[control.key])
+        );
+        slider.value = String(initialIndex >= 0 ? initialIndex : 0);
+        const stepLabels = htmlElement("span");
+        stepLabels.className = "range-step-labels";
+        control.options.forEach((item) => {
+          stepLabels.appendChild(htmlElement(
+            "span",
+            control.key === "threshold_label" ? String(item.value) : item.label
+          ));
+        });
+        const updateSlider = () => {
+          const declared = control.options[Number(slider.value)];
+          state.values[control.key] = declared.value;
+          selectedValue.value = declared.label;
+          selectedValue.textContent = declared.label;
+          slider.setAttribute("aria-valuetext", declared.label);
+          renderConfiguration();
+        };
+        slider.addEventListener("input", updateSlider);
+        const initial = control.options[Number(slider.value)];
+        selectedValue.value = initial.label;
+        selectedValue.textContent = initial.label;
+        slider.setAttribute("aria-valuetext", initial.label);
+        wrapper.appendChild(label);
+        wrapper.appendChild(slider);
+        wrapper.appendChild(stepLabels);
+        container.appendChild(wrapper);
+        return;
+      }
       const label = htmlElement("label", `${control.label}: `);
       const select = htmlElement("select");
       select.name = control.key;

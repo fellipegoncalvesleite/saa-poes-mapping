@@ -41,12 +41,19 @@ class ViewerHtmlContractTests(unittest.TestCase):
         ):
             self.assertIn(statement, self.html)
 
-    def test_existing_evidence_is_preserved_under_static_debug_outputs(self) -> None:
-        self.assertIn("STATIC / DEBUG OUTPUTS", self.html)
-        self.assertIn("cp3_noaa19_2024-01-01_mean_flux_5deg.png", self.html)
-        self.assertIn("cp5b_flux_profile_by_Btot_sat.png", self.html)
-        self.assertIn("cp5c_multisatellite_magnetic_separation_top10_5deg_mean.png", self.html)
-        self.assertIn("cp5c_multisatellite_low_btot_capture90_top10_5deg_mean.png", self.html)
+    def test_viewer_ends_after_interactive_cp5c_material_without_legacy_gallery(self) -> None:
+        self.assertIn('id="cp5c-result"', self.html)
+        self.assertNotIn("STATIC / DEBUG OUTPUTS", self.html)
+        self.assertNotIn("../figures/", self.html)
+        self.assertNotIn("<img", self.html)
+        self.assertNotIn("Static/debug figures remain below", self.html)
+
+    def test_experiment_remains_a_select(self) -> None:
+        self.assertIn('<select id="experiment-control" aria-label="experiment"></select>', self.html)
+
+    def test_experiment_scoped_controls_wrap_within_the_viewport(self) -> None:
+        self.assertIn("#viewer-controls { display: flex; flex-wrap: wrap;", self.html)
+        self.assertIn("#method-controls { display: flex; flex-wrap: wrap;", self.html)
 
 
 class ViewerJavascriptContractTests(unittest.TestCase):
@@ -66,6 +73,18 @@ class ViewerJavascriptContractTests(unittest.TestCase):
     def test_all_experiments_are_explicitly_available(self) -> None:
         for experiment in ("threshold", "channel", "time", "satellite"):
             self.assertIn(f'"{experiment}"', self.source)
+
+    def test_only_ordered_payload_controls_use_discrete_range_inputs(self) -> None:
+        self.assertIn(
+            'const RANGE_CONTROL_KEYS = new Set(["threshold_label", "grid_deg", "channel"]);',
+            self.source,
+        )
+        self.assertIn('slider.type = "range"', self.source)
+        self.assertIn('slider.max = String(control.options.length - 1)', self.source)
+        self.assertIn('const declared = control.options[Number(slider.value)]', self.source)
+        self.assertNotIn('"window_label"]);', self.source)
+        self.assertNotIn('"satellite"]);', self.source)
+        self.assertNotIn('"statistic_used"]);', self.source)
 
     def test_current_grid_color_normalization_notice_is_unconditional(self) -> None:
         notice = '["color normalization", "within the current grid only"]'
