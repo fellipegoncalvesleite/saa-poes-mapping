@@ -25,7 +25,7 @@ reproducibility + sensitivity analysis on public data.
 - **Headline numbers:** threshold centroid shift ~386 km / area ~17.7×; channel ~100–300 km; day→month
   ~288 km (weekly ~118 km); 5-satellite maximum pairwise spread ~272 km for top10 5° mean (top5:
   ~437 km); all 5 satellites pass CP5C's predeclared low-`Btot_sat` and Btot-dominance criteria.
-- **Interactive viewer:** one raw static SVG instrument over the validated threshold (20), channel
+- **Interactive viewer:** one static SVG viewer over the validated threshold (20), channel
   (60), time-window (160), and satellite (100) configurations. Python exports canonical selected-cell
   membership and metrics; the browser only selects, colors, and displays them.
 - **Synthesis docs:** `docs/{CLAIM_AUDIT,PAPER_OUTLINE,FIGURE_PLAN,MENTOR_PACKET,REPRODUCIBILITY_CHECKLIST}.md`.
@@ -103,7 +103,7 @@ notebooks/05b_magnetic_framing.ipynb      CP5B: executed quantitative magnetic f
 notebooks/05c_multisatellite_magnetic_generality.ipynb CP5C: executed five-satellite generality test
 scripts/validate_*.py                     per-checkpoint validation
 outputs/figures/  outputs/tables/         CP3/CP4A figures & grid tables (git-ignored)
-outputs/viewer/index.html                 raw interactive SVG viewer + preserved static/debug figures
+outputs/viewer/index.html                 interactive SVG viewer + preserved static/debug figures
 outputs/viewer/{viewer.js,viewer_data.js} display logic + generated canonical static data
 data/{raw,processed,samples}/             data payloads (git-ignored) + PROVENANCE.md files
 requirements*.txt                         runtime / notebook-execution dependencies

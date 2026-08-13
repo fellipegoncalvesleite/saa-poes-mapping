@@ -1,6 +1,7 @@
 """Deterministic export of validated checkpoint outputs for the static viewer.
 
-The browser is deliberately not a second scientific implementation.  This module reads the
+Scientific calculations remain in the Python pipeline.  The viewer consumes exported
+validated values for display.  This module reads the
 accepted grid and sensitivity Parquets, checks that their discrete contracts agree, computes the
 selected-cell membership in Python from each canonical stored cutoff, and writes ordinary
 JavaScript data that works through both ``file://`` and static hosting.

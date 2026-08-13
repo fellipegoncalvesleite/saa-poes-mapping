@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>SAA method-sensitivity scientific viewer</title>
 <style>
-/* minimal: force white bg (override browser website-bg transparency) + plain rough look */
+/* Force an opaque white background across browser defaults. */
 html, body { background: #ffffff; }
 body { color: #000000; font-family: monospace; font-size: 14px; margin: 8px; }
 h1, h2 { font-size: 14px; font-weight: bold; margin: 12px 0 4px; }
@@ -18,7 +18,7 @@ th, td { border: 1px solid #000; padding: 2px 4px; text-align: left; vertical-al
 #readout-panel { max-width: 620px; }
 #viewer-error { color: #a00000; font-weight: bold; }
 #method-controls { display: inline; }
-.raw-note { max-width: 1050px; }
+.viewer-note { max-width: 1050px; }
 img { max-width: 100%; height: auto; }
 </style>
 </head>
@@ -26,7 +26,7 @@ img { max-width: 100%; height: auto; }
 
 <h1>interactive method-sensitivity scientific viewer</h1>
 
-<p class="raw-note">CHANGE A METHOD CHOICE -> WATCH THE CANDIDATE HIGH-FLUX FOOTPRINT CHANGE.
+<p class="viewer-note">CHANGE A METHOD CHOICE -> WATCH THE CANDIDATE HIGH-FLUX FOOTPRINT CHANGE.
 The cells, masks, selected membership, centroid, area, and readout come from validated Python outputs.
 This browser code selects, colors, and displays stored values; it does no scientific recomputation.</p>
 
