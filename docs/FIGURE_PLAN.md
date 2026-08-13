@@ -67,6 +67,6 @@ Legend: **M** = main paper, **S** = supplement.
 - S5 Btot–L diagnostic: `cp5b_flux_Btot_vs_L_IGRF.png`, `cp5b_high_flux_footprint_Btot_vs_L_IGRF.png`.
 - S6 flux-vs-L / flux-vs-MLT profiles: `cp5b_flux_profile_by_{L_IGRF,MLT}.png` (shows MLT non-discrimination).
 
-## Excluded (intentionally not in the paper)
-- The bare debug viewer screenshots; redundant median-vs-mean duplicates; 2° duplicates where the 5°
+## Excluded from the paper
+- Debug viewer screenshots; redundant median-vs-mean duplicates; 2° duplicates where the 5°
   figure carries the message; per-satellite sample-count maps (kept only as data-quality backup).

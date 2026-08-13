@@ -4,12 +4,12 @@ Builds on the accepted CP2 loader (:mod:`saa.load_poes`) and CP3 grid utilities
 (:mod:`saa.grid_flux`). Adds:
 
 * :func:`load_range` — download/load every day in a date range, **tolerating missing days**
-  (records them instead of failing the whole month; never fabricates data),
+  (records them instead of failing the whole month),
 * :func:`build_grid_table` — a tidy long grid table (one row per populated cell) with mean / median /
   sample-count / positive-count / min / max per cell,
 * :func:`add_coverage_mask` — a boolean coverage column from a minimum-sample threshold.
 
-Scope reminder: exploratory *monthly proton-flux aggregation* and a *coverage-aware gridded product*
+Scientific scope: exploratory *monthly proton-flux aggregation* and a *coverage-aware gridded product*
 — a foundation for later threshold sensitivity analysis. `mep_omni_flux_p1` is a differential proton
 flux (~25 MeV); it is **not** dose and **not** a health-risk quantity. No SAA boundary/center here.
 """
@@ -66,7 +66,7 @@ def load_range(
 
     Each day is fetched with the CP2 loader (download only if missing). On a download/open error,
     the date is recorded in ``missing_dates`` and processing continues (``on_error="skip"``); pass
-    ``on_error="raise"`` to fail hard. Returns a :class:`RangeLoad`. Nothing is fabricated.
+    ``on_error="raise"`` to fail hard. Returns a :class:`RangeLoad` with loaded and missing dates.
     """
     dates = pd.date_range(_as_date(start), _as_date(end), freq="D")
     frames, loaded, missing, paths = [], [], [], []

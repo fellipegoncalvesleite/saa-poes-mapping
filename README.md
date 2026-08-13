@@ -38,7 +38,7 @@ reproducibility + sensitivity analysis on public data.
 ## Status
 - **CP1 — Data access & feasibility audit: ✅** See [`docs/research_notes.md`](docs/research_notes.md).
 - **CP2 — Minimal reproducible loader: ✅** Real NOAA-19 L1b NetCDF → validated tidy one-day parquet.
-- **CP3 — First exploratory map: ✅** One-day lon/lat proton-flux maps + bare local HTML viewer.
+- **CP3 — First exploratory map: ✅** One-day lon/lat proton-flux maps + local HTML viewer.
 - **CP4A — Monthly aggregation & coverage-aware grids: ✅** Jan 2024 (31/31 days) → regional subset,
   5°/2° coverage-masked grid tables, monthly figures.
 - **CP4B — Threshold sensitivity analysis: ✅** Top 20/10/5/2/1% footprints on the coverage-masked
@@ -103,7 +103,7 @@ notebooks/05b_magnetic_framing.ipynb      CP5B: executed quantitative magnetic f
 notebooks/05c_multisatellite_magnetic_generality.ipynb CP5C: executed five-satellite generality test
 scripts/validate_*.py                     per-checkpoint validation
 outputs/figures/  outputs/tables/         CP3/CP4A figures & grid tables (git-ignored)
-outputs/viewer/index.html                 interactive SVG viewer + preserved static/debug figures
+outputs/viewer/index.html                 interactive SVG viewer + static/debug figures
 outputs/viewer/{viewer.js,viewer_data.js} display logic + generated canonical static data
 data/{raw,processed,samples}/             data payloads (git-ignored) + PROVENANCE.md files
 requirements*.txt                         runtime / notebook-execution dependencies

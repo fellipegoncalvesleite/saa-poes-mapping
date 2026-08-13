@@ -9,7 +9,7 @@ Pure numpy/pandas. Takes the tidy one-day table produced by :mod:`saa.load_poes`
   per cell,
 * ranks the top grid cells.
 
-**Scope reminder:** this is exploratory pipeline validation. ``mep_omni_flux_p1`` is a *differential
+**Scientific scope:** this is exploratory pipeline validation. ``mep_omni_flux_p1`` is a *differential
 proton flux* (~25 MeV, ``#/cm2-s-str-MeV``); it is **not** a dose and not a health-risk quantity.
 """
 from __future__ import annotations

@@ -28,7 +28,7 @@ the design choices below:
   says ``0=off / 1=on``, so ``-1`` is a fill/no-data marker. We carry the raw flag through
   unchanged; downstream analysis should drop records where it equals ``1``.
 
-This module fabricates nothing: every value comes from the official file.
+Extracted values come directly from the official file.
 """
 from __future__ import annotations
 
@@ -246,7 +246,7 @@ def load_date_range(
     """Download + extract every day in ``[start, end]`` (inclusive) and concatenate.
 
     Minimal multi-day helper (Checkpoint 3 preview / Checkpoint 4 building block). Returns
-    ``(dataframe, paths)``. Each day is a separate ~5 MB official file; nothing is fabricated.
+    ``(dataframe, paths)``. Each day is a separate ~5 MB official file.
     """
     dates = pd.date_range(_as_date(start), _as_date(end), freq="D")
     frames, paths = [], []
