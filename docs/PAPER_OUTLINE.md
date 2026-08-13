@@ -6,7 +6,7 @@ moves under analysis choices** (threshold, channel, time window, satellite) and 
 *descriptively* framed in geomagnetic coordinates.
 
 ## 1. Title options
-**Primary (chosen):**
+**Primary:**
 > *Mapping the South Atlantic Anomaly from Public POES/MetOp Proton Flux Data: A Reproducibility and
 > Method-Sensitivity Study*
 
@@ -54,7 +54,7 @@ Alternates:
   operational rubric evaluated before narrative interpretation. Its cutoffs are not physical SAA
   thresholds. NOAA-19 discrete references must match exactly and floats use fixed `rtol=1e-9`,
   `atol=1e-12`.
-- Validation harness (per-checkpoint scripts; "no fake data" checks).
+- Validation harness (per-checkpoint scripts; source and artifact consistency checks).
 
 ## 6. Results
 6.1 Footprint reference (monthly mean map). 6.2 Threshold sensitivity (~386 km / ~17.7×).

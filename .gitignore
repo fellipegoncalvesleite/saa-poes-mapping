@@ -10,7 +10,7 @@ data/processed/*.png
 outputs/figures/*.png
 outputs/tables/*.parquet
 outputs/tables/*.csv
-# (PROVENANCE.md files are intentionally NOT ignored)
+# Keep PROVENANCE.md files tracked.
 
 # Python / venv / notebooks
 __pycache__/

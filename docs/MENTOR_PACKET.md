@@ -1,7 +1,7 @@
 # Mentor / Professor Review Packet — SAA POES/MetOp Method-Sensitivity Study
 
 *Prepared for a physics professor / mentor. The goal is technical feedback on correctness, framing, and
-literature — not validation that the project is "impressive".*
+literature.*
 
 ## 1. Project summary (one paragraph)
 I built a reproducible pipeline that maps a *candidate high-flux footprint* of the South Atlantic
@@ -9,8 +9,8 @@ Anomaly (SAA) from public NOAA/NCEI POES/MetOp SEM-2 MEPED energetic-proton data
 quantified **how much the estimated footprint center, area, and intensity change under different
 analysis choices** (flux threshold, proton channel, time window, satellite). I then *descriptively*
 related the particle-defined footprint to NOAA-provided IGRF magnetic variables (`Btot_sat`, `L_IGRF`,
-`MLT`). The project is deliberately framed as a **methodological reproducibility / sensitivity study**,
-not a discovery, and it makes no dose/health/boundary claims.
+`MLT`). The project is a **methodological reproducibility / sensitivity study**, not a discovery, and
+it makes no dose/health/boundary claims.
 
 ## 2. Exact research question
 *When mapping the SAA from public LEO energetic-particle data, how much do the estimated center, area,
@@ -70,7 +70,7 @@ effects not fully separated; `mep_IFC_on == -1` retained but uninterpreted.
 8. Is the **coverage-threshold choice (≥30 samples/cell)** and our spherical-area + flux-weighted
    centroid methodology statistically sound for this kind of footprint metric?
 
-## 8. What I am *not* claiming (so feedback can focus)
+## 8. Claim boundaries
 No final SAA boundary/center, no dose/health/danger, no discovery, no replacement for AP-8/AP-9 or
 radiation-transport models, no causal claim from IGRF variables, no absolute cross-satellite flux
 comparison. See `docs/CLAIM_AUDIT.md`.

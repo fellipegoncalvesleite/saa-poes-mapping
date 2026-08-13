@@ -4,7 +4,7 @@ Everything here regenerates from public data + the code in this repo. Data/figur
 git-ignored; provenance (with checksums) is tracked in `data/processed/PROVENANCE.md`.
 
 ## 1. Required environment
-- Python **3.12** via **uv** (the box has Python 3.14 + no pip; uv provides the 3.12 venv).
+- Python **3.12** via **uv**.
 - Create + install:
   ```
   uv venv --python 3.12 .venv
