@@ -40,7 +40,7 @@ Run each with:
 
 ## 4. Validation scripts in order (each prints PASS/FAIL, exit 0 on success)
 ```
-.venv/bin/python -m unittest discover -s tests -v          # CP5C unit tests
+.venv/bin/python -m unittest discover -s tests -v          # CP5C + viewer unit/contract tests
 .venv/bin/python scripts/validate_processed_sample.py      # CP2
 .venv/bin/python scripts/validate_cp3_outputs.py           # CP3
 .venv/bin/python scripts/validate_cp4a_outputs.py          # CP4A
@@ -53,6 +53,8 @@ Run each with:
 .venv/bin/python scripts/validate_cp5b_outputs.py          # CP5B
 .venv/bin/python scripts/validate_cp6a_outputs.py          # CP6A (synthesis)
 .venv/bin/python scripts/validate_cp5c_outputs.py          # CP5C extension
+.venv/bin/python scripts/export_viewer_data.py             # deterministic static viewer payload
+.venv/bin/python scripts/validate_viewer_outputs.py        # all 340 map states + CP5C evidence
 ```
 
 ## 5. Expected key outputs
@@ -65,7 +67,9 @@ Run each with:
   `cp5a_*`, `cp5b_*`, `cp5c_*`, `cp6a_key_results_summary`.
 - Figures (`outputs/figures/`, git-ignored): `cp3_*`, `cp4a_*`, `cp4b_*`, `cp4c_*`, `cp4d_*`,
   `cp4e_*`, `cp4f_*`, `cp5a_*`, `cp5b_*`, `cp5c_*`.
-- Viewer: `outputs/viewer/index.html` (bare static page over the figures).
+- Viewer: `outputs/viewer/index.html`, `viewer.js`, and generated `viewer_data.js`. The interactive
+  payload contains exactly 20 threshold, 60 channel, 160 time-window, and 100 satellite states;
+  CP5C is a fixed five-row evidence table rather than another map dimension.
 
 ## 6. Known git-ignored (regenerable) outputs
 `.gitignore` excludes `data/{raw,processed,samples}` payloads, `outputs/figures/*.png`,
@@ -75,8 +79,9 @@ tracked so outputs are verifiable after regeneration.
 ## 7. Regenerate from scratch
 1. Create the venv (§1). 2. Run steps 1–11 in §3 — they download required NOAA files on demand.
 3. Generate and validate CP6A at step 12. 4. Execute CP5C at step 13; it requires and hash-snapshots
-the CP6A pair. 5. Run all validators (§4) — all should report ALL CHECKS PASSED.
-6. Open `outputs/viewer/index.html`.
+the CP6A pair. 5. Run the checkpoint validators through CP5C (§4). 6. Run `scripts/export_viewer_data.py`, then
+`scripts/validate_viewer_outputs.py`. 7. Open `outputs/viewer/index.html` directly or run
+`bash scripts/open_viewer.sh` (macOS `open`, Linux `xdg-open`). No local HTTP server is required.
 
 ## 8. Known limitations
 Single month (Jan 2024); primary channel `mep_omni_flux_p1`; geographic/sub-satellite binning; no
