@@ -165,6 +165,11 @@ def export_grid(table: pd.DataFrame, grid_deg: int, mask_col: str) -> dict[str, 
         raise KeyError(f"grid is missing required columns: {missing}")
     if table.duplicated(["lat_bin_center", "lon_bin_center"]).any():
         raise ValueError("grid contains duplicate cell centers")
+    coverage = table[mask_col]
+    if coverage.isna().any():
+        raise TypeError(f"{mask_col} must not contain null coverage values")
+    if not pd.api.types.is_bool_dtype(coverage.dtype):
+        raise TypeError(f"{mask_col} must contain boolean coverage values")
 
     ordered = table.sort_values(["lat_bin_center", "lon_bin_center"]).reset_index(drop=True)
     cells: list[list[Any]] = []
@@ -209,13 +214,14 @@ def selected_cell_indices(grid: dict[str, Any], statistic: str, cutoff: float) -
     except ValueError as exc:
         raise KeyError(f"grid does not carry required selection field: {exc}") from exc
     threshold = _finite_float(cutoff, "flux_cutoff_value")
-    return [
-        index
-        for index, cell in enumerate(grid["cells"])
-        if bool(cell[covered_index])
-        and cell[value_index] is not None
-        and float(cell[value_index]) >= threshold
-    ]
+    selected: list[int] = []
+    for index, cell in enumerate(grid["cells"]):
+        covered = cell[covered_index]
+        if type(covered) is not bool:
+            raise TypeError(f"covered must be boolean at cell index {index}")
+        if covered and cell[value_index] is not None and float(cell[value_index]) >= threshold:
+            selected.append(index)
+    return selected
 
 
 def stable_configuration_id(experiment: str, values: dict[str, Any]) -> str:

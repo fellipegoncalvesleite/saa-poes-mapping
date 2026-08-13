@@ -8,7 +8,10 @@ from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 
+import pandas as pd
+
 from scripts.validate_viewer_outputs import (
+    _grid_matches,
     deep_payload_matches,
     main,
     static_files_are_file_openable,
@@ -19,6 +22,33 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ViewerValidatorPredicateTests(unittest.TestCase):
+    def test_canonical_grid_rejects_null_and_non_boolean_coverage_masks(self) -> None:
+        actual = {
+            "grid_deg": 5,
+            "mask_column": "enough_samples_5deg",
+            "columns": [
+                "lat",
+                "lon",
+                "mean_flux",
+                "median_flux",
+                "sample_count",
+                "covered",
+            ],
+        }
+        base = {
+            "lat_bin_center": [-67.5],
+            "lon_bin_center": [-97.5],
+            "mean_flux": [1.0],
+            "median_flux": [0.5],
+            "sample_count": [31],
+        }
+        for invalid in (None, 1, "true"):
+            with self.subTest(invalid=invalid):
+                canonical = pd.DataFrame({**base, "enough_samples_5deg": [invalid]})
+                ok, detail = _grid_matches(actual, canonical, 5)
+                self.assertFalse(ok)
+                self.assertIn("coverage values", detail)
+
     def test_deep_comparison_uses_exact_discrete_values_and_fixed_float_tolerances(self) -> None:
         expected = {
             "count": 44,

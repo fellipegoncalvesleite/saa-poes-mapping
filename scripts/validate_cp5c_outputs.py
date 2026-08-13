@@ -179,6 +179,47 @@ def independent_classification(summary: pd.DataFrame) -> str:
     return "MIXED"
 
 
+def circularize_mlt_hours(values: np.ndarray) -> np.ndarray:
+    """Express MLT as shortest signed offsets from its pooled circular mean."""
+    hours = np.asarray(values, dtype="float64")
+    if hours.ndim != 1 or hours.size == 0:
+        raise ValueError("MLT circularization requires a non-empty one-dimensional array")
+    if not np.isfinite(hours).all() or ((hours < 0.0) | (hours > 24.0)).any():
+        raise ValueError("MLT circularization requires finite hours within [0, 24]")
+    angles = hours * (2.0 * np.pi / 24.0)
+    mean_sine = float(np.sin(angles).mean())
+    mean_cosine = float(np.cos(angles).mean())
+    if np.hypot(mean_sine, mean_cosine) <= np.finfo("float64").eps:
+        raise ValueError("MLT circular mean is undefined for this distribution")
+    center = (
+        (np.arctan2(mean_sine, mean_cosine) % (2.0 * np.pi))
+        * (24.0 / (2.0 * np.pi))
+    )
+    return (hours - center + 12.0) % 24.0 - 12.0
+
+
+def standardized_median_separation(values: np.ndarray, inside: np.ndarray) -> float:
+    """Reapply the accepted CP5B median/IQR separation formula to one coordinate."""
+    numeric = np.asarray(values, dtype="float64")
+    membership = np.asarray(inside, dtype=bool)
+    if numeric.shape != membership.shape or numeric.ndim != 1:
+        raise ValueError("separation values and membership must be aligned one-dimensional arrays")
+    inside_values = numeric[membership]
+    outside_values = numeric[~membership]
+    if not inside_values.size or not outside_values.size:
+        raise ValueError("separation requires non-empty inside and outside samples")
+    inside_q25, inside_median, inside_q75 = np.percentile(inside_values, [25, 50, 75])
+    outside_q25, outside_median, outside_q75 = np.percentile(
+        outside_values, [25, 50, 75]
+    )
+    pooled_iqr = 0.5 * (
+        (inside_q75 - inside_q25) + (outside_q75 - outside_q25)
+    )
+    if not np.isfinite(pooled_iqr) or pooled_iqr <= 0.0:
+        raise ValueError("separation requires a positive finite pooled IQR")
+    return float((outside_median - inside_median) / pooled_iqr)
+
+
 def main(root: Path = ROOT) -> int:
     """Validate all CP5C scientific, processing, reference, and artifact contracts."""
     table_dir = root / "outputs" / "tables"
@@ -334,6 +375,7 @@ def main(root: Path = ROOT) -> int:
 
     noaa19_cell_sets: dict[str, set[tuple[float, float]]] | None = None
     recomputed_principal_rows: list[dict[str, object]] = []
+    circular_mlt_separations: dict[str, float] = {}
     for satellite in SATELLITES:
         region_path = processed_dir / f"cp5c_{satellite}_2024-01_region_flux_plus_magnetic.parquet"
         region = pd.read_parquet(region_path)
@@ -448,6 +490,23 @@ def main(root: Path = ROOT) -> int:
         add(f"{satellite} principal selected-sample count reproduces membership", int(principal["selected_sample_count"]) == int(flagged["in_top10_5deg"].sum()))
         add(f"{satellite} IFC retained counts reconcile", int(principal["ifc_minus1_retained"]) == int((region["mep_IFC_on"] == -1).sum()) and int(principal["regional_rows_after_ifc"]) == len(region))
 
+        mlt_valid = valid_mask(flagged, "MLT")
+        circular_mlt_separation = standardized_median_separation(
+            circularize_mlt_hours(
+                flagged.loc[mlt_valid, "MLT"].to_numpy(dtype="float64")
+            ),
+            flagged.loc[mlt_valid, "in_top10_5deg"].to_numpy(dtype=bool),
+        )
+        circular_mlt_separations[satellite] = circular_mlt_separation
+        add(
+            f"{satellite} Btot dominance survives wrap-aware MLT audit",
+            float(principal["btot_separation_metric"]) > abs(circular_mlt_separation),
+            (
+                f"Btot={float(principal['btot_separation_metric']):.6f}; "
+                f"circular MLT={circular_mlt_separation:.6f}"
+            ),
+        )
+
         satellite_flags = fit_flags.loc[fit_flags["satellite"] == satellite]
         expected_flags = expected_fit_flag_diagnostic(flagged, satellite)
         add(
@@ -553,6 +612,28 @@ def main(root: Path = ROOT) -> int:
     expected_classification = independent_classification(recomputed_principal)
     add("saved classification matches independent rubric", set(generality["cp5c_classification"]) == {expected_classification}, expected_classification)
     add("saved support counts match independent counts", (generality["low_btot_support_count"] == int(recalculated_low.sum())).all() and (generality["btot_dominance_support_count"] == int(recalculated_dominance.sum())).all())
+    circular_dominance = recomputed_principal.apply(
+        lambda row: float(row["btot_separation_metric"])
+        > abs(circular_mlt_separations[str(row["satellite"])]),
+        axis=1,
+    )
+    circular_audit_summary = recomputed_principal.copy()
+    circular_audit_summary["btot_dominance_support"] = circular_dominance
+    circular_classification = independent_classification(circular_audit_summary)
+    add(
+        "wrap-aware MLT audit preserves CP5C classification",
+        circular_classification == expected_classification == "CONSISTENT",
+        circular_classification,
+    )
+    largest_circular_mlt = max(
+        circular_mlt_separations,
+        key=lambda satellite: abs(circular_mlt_separations[satellite]),
+    )
+    add(
+        "NOAA-15 remains the largest absolute MLT-separation case after circularization",
+        largest_circular_mlt == "noaa15",
+        f"largest={largest_circular_mlt}",
+    )
 
     cp4a_grid5 = pd.read_parquet(table_dir / "cp4a_noaa19_2024-01_grid_5deg.parquet")
     cp4a_grid2 = pd.read_parquet(table_dir / "cp4a_noaa19_2024-01_grid_2deg.parquet")
