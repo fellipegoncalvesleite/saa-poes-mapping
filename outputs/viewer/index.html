@@ -54,7 +54,8 @@ not a discovery claim. Cross-satellite absolute flux comparison is not allowed.<
 <div id="map-panel">
 <svg id="flux-map" role="img" aria-label="interactive latitude longitude proton flux grid"></svg>
 <p>color = selected validated mean/median flux on a log10 viridis scale; thin grey lines = canonical
-cell geometry; black outlines = selected footprint; X = stored flux-weighted centroid.</p>
+cell geometry; geographic lines = Natural Earth context; black outlines = selected footprint;
+X = stored flux-weighted centroid.</p>
 <p><strong>blank = missing cell, coverage-failed cell, or a non-positive value that cannot appear on a
 log scale. Blank is never treated as zero or interpolated.</strong></p>
 </div>
@@ -68,6 +69,8 @@ log scale. Blank is never treated as zero or interpolated.</strong></p>
 <li>Grid, statistic, channel, time, or satellite may change cell colors and footprint.</li>
 <li>Threshold changes the precomputed selected-cell membership.</li>
 <li>Coverage-failed cells are blank, not zero-filled.</li>
+<li>Geographic context uses Natural Earth 1:110m coastlines and country boundaries (public domain)
+and does not affect the scientific grid or metrics.</li>
 <li>Satellite comparison is location/shape only; no cross-satellite absolute flux comparison.</li>
 <li><code>mep_IFC_on == -1</code> retained and uninterpreted.</li>
 </ul>
@@ -82,6 +85,7 @@ log scale. Blank is never treated as zero or interpolated.</strong></p>
 <div id="cp5c-result"></div>
 
 <script src="viewer_data.js"></script>
+<script src="geography.js"></script>
 <script src="viewer.js"></script>
 </body>
 </html>

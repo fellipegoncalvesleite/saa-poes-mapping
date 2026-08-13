@@ -82,25 +82,57 @@ def load_viewer_data(path: Path) -> dict[str, Any]:
 
 def static_files_are_file_openable(viewer_dir: Path) -> tuple[bool, str]:
     viewer_dir = Path(viewer_dir)
-    required = [viewer_dir / "index.html", viewer_dir / "viewer.js", viewer_dir / "viewer_data.js"]
+    required = [
+        viewer_dir / "index.html",
+        viewer_dir / "viewer.js",
+        viewer_dir / "viewer_data.js",
+        viewer_dir / "geography.js",
+    ]
     missing = [path.name for path in required if not path.is_file()]
     if missing:
         return False, f"missing static files: {missing}"
     html = required[0].read_text(encoding="utf-8")
     renderer = required[1].read_text(encoding="utf-8")
+    geography = required[3].read_text(encoding="utf-8")
     problems = []
     data_tag = '<script src="viewer_data.js"></script>'
+    geography_tag = '<script src="geography.js"></script>'
     render_tag = '<script src="viewer.js"></script>'
-    if data_tag not in html or render_tag not in html or html.index(data_tag) > html.index(render_tag):
+    if (
+        data_tag not in html
+        or geography_tag not in html
+        or render_tag not in html
+        or html.index(data_tag) > html.index(render_tag)
+        or html.index(geography_tag) > html.index(render_tag)
+    ):
         problems.append("classic scripts are missing or out of order")
     if 'type="module"' in html or "type='module'" in html:
         problems.append("module scripts require a server under common file:// browser policies")
-    if "fetch(" in html or "fetch(" in renderer:
+    if "fetch(" in html or "fetch(" in renderer or "fetch(" in geography:
         problems.append("fetch is forbidden for the file-openable viewer")
     lowered = renderer.lower()
     for forbidden in ("react", "vue", "angular", "next.js", "mapbox", "leaflet"):
         if forbidden in lowered:
             problems.append(f"unnecessary framework/map dependency found: {forbidden}")
+    geography_prefix = "window.SAA_VIEWER_GEOGRAPHY = "
+    if not geography.startswith(geography_prefix) or not geography.endswith(";\n"):
+        problems.append("geography.js is not a classic global assignment")
+    else:
+        try:
+            geography_payload = json.loads(geography[len(geography_prefix) : -2])
+        except json.JSONDecodeError:
+            problems.append("geography.js contains invalid JSON")
+        else:
+            expected_region = {
+                "lat_min": -70.0,
+                "lat_max": 20.0,
+                "lon_min": -100.0,
+                "lon_max": 20.0,
+            }
+            if geography_payload.get("region") != expected_region:
+                problems.append("geography.js region differs from the scientific viewer")
+            if not geography_payload.get("coastlines") or not geography_payload.get("borders"):
+                problems.append("geography.js lacks coastline or border linework")
     return not problems, "; ".join(problems) if problems else "classic local/static files; no fetch/modules/framework"
 
 

@@ -70,6 +70,13 @@ class ViewerValidatorPredicateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             viewer = Path(tmp)
             (viewer / "viewer_data.js").write_text("window.SAA_VIEWER_DATA = {};\n", encoding="utf-8")
+            (viewer / "geography.js").write_text(
+                'window.SAA_VIEWER_GEOGRAPHY = {"region":{"lat_min":-70.0,'
+                '"lat_max":20.0,"lon_min":-100.0,"lon_max":20.0},'
+                '"coastlines":[[[-40,-10],[-35,-5]]],'
+                '"borders":[[[-60,-20],[-55,-15]]]};\n',
+                encoding="utf-8",
+            )
             (viewer / "viewer.js").write_text("fetch('data.json');\n", encoding="utf-8")
             (viewer / "index.html").write_text(
                 '<script type="module" src="viewer.js"></script>', encoding="utf-8"
@@ -79,6 +86,25 @@ class ViewerValidatorPredicateTests(unittest.TestCase):
             self.assertFalse(ok)
             self.assertIn("fetch", details)
             self.assertIn("module", details)
+
+    def test_static_contract_requires_the_bundled_geography_asset(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            viewer = Path(tmp)
+            (viewer / "viewer_data.js").write_text(
+                "window.SAA_VIEWER_DATA = {};\n", encoding="utf-8"
+            )
+            (viewer / "viewer.js").write_text("void 0;\n", encoding="utf-8")
+            (viewer / "index.html").write_text(
+                '<script src="viewer_data.js"></script>'
+                '<script src="geography.js"></script>'
+                '<script src="viewer.js"></script>',
+                encoding="utf-8",
+            )
+
+            ok, details = static_files_are_file_openable(viewer)
+
+            self.assertFalse(ok)
+            self.assertIn("geography.js", details)
 
     def test_validator_fails_loudly_when_outputs_are_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, redirect_stdout(StringIO()):

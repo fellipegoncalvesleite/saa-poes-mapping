@@ -16,10 +16,13 @@ class ViewerHtmlContractTests(unittest.TestCase):
 
     def test_viewer_uses_ordered_classic_scripts_and_no_network_loader(self) -> None:
         data_script = '<script src="viewer_data.js"></script>'
+        geography_script = '<script src="geography.js"></script>'
         render_script = '<script src="viewer.js"></script>'
         self.assertIn(data_script, self.html)
+        self.assertIn(geography_script, self.html)
         self.assertIn(render_script, self.html)
         self.assertLess(self.html.index(data_script), self.html.index(render_script))
+        self.assertLess(self.html.index(geography_script), self.html.index(render_script))
         self.assertNotIn('type="module"', self.html)
         self.assertNotIn("fetch(", self.html)
 
@@ -63,12 +66,32 @@ class ViewerJavascriptContractTests(unittest.TestCase):
 
     def test_javascript_only_renders_precomputed_payload(self) -> None:
         self.assertIn("window.SAA_VIEWER_DATA", self.source)
+        self.assertIn("window.SAA_VIEWER_GEOGRAPHY", self.source)
         self.assertIn("selected_cell_indices", self.source)
         self.assertIn("centroid_lat", self.source)
         self.assertIn("createElementNS", self.source)
         self.assertNotIn("fetch(", self.source)
         self.assertNotIn("percentile", self.source.lower())
         self.assertNotIn("quantile", self.source.lower())
+
+    def test_geography_cells_outlines_and_centroid_have_explicit_layer_order(self) -> None:
+        geography = "appendGeography(svg);"
+        guides = "appendAxes(svg);"
+        cells = "svg.appendChild(cells);"
+        outlines = "svg.appendChild(selectedOutlines);"
+        centroid = "svg.appendChild(marker);"
+        for statement in (geography, guides, cells, outlines, centroid):
+            self.assertIn(statement, self.source)
+        self.assertLess(self.source.index(geography), self.source.index(guides))
+        self.assertLess(self.source.index(guides), self.source.index(cells))
+        self.assertLess(self.source.index(cells), self.source.index(outlines))
+        self.assertLess(self.source.index(outlines), self.source.index(centroid))
+
+    def test_failed_coverage_cells_are_visually_transparent(self) -> None:
+        self.assertIn(
+            'fill: hasVisibleFlux ? logColor(value, grid.color_domains[statistic]) : "transparent"',
+            self.source,
+        )
 
     def test_all_experiments_are_explicitly_available(self) -> None:
         for experiment in ("threshold", "channel", "time", "satellite"):
