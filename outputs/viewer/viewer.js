@@ -274,10 +274,9 @@
       ["flux cutoff", `${formatFlux(metrics.flux_cutoff)} ${metadata.flux_units}`],
       ["coverage rule", metadata.coverage_rule],
     ];
+    rows.splice(rows.length - 1, 0, ["color normalization", "within the current grid only"]);
     if (state.experiment === "threshold" || state.experiment === "time") {
       rows.splice(rows.length - 1, 0, ["peak flux", `${formatFlux(metrics.peak_flux)} ${metadata.flux_units}`]);
-    } else {
-      rows.splice(rows.length - 1, 0, ["color normalization", "within this single channel/satellite grid only"]);
     }
     if (metadata.window_label) rows.splice(3, 0, ["time window", metadata.window_label]);
     if (metadata.coverage_warning) rows.push(["coverage warning", metadata.coverage_warning]);
