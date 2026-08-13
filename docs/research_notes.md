@@ -1092,6 +1092,17 @@ substantial positive MLT separation (+0.920); it still remains below NOAA-15's B
 (+1.596). This is descriptive co-location with NOAA-provided IGRF model quantities, not causality and
 not a magnetic definition of the SAA.
 
+### MLT circularity audit
+
+Because MLT is periodic, the accepted linear-hour separation is sensitive to the 0/24-hour seam. A
+read-only audit expressed every valid MLT sample as its shortest signed offset from the pooled regional
+circular mean, then reapplied the accepted median/IQR separation formula. The resulting MLT separations
+were NOAA-15 −0.801684, NOAA-18 −0.146728, NOAA-19 −0.163025, MetOp-01 +0.162683, and MetOp-03
++0.204946. Btot separation remained larger in all five cases, so the Btot-dominance vote stayed 5/5
+and the checkpoint stayed `CONSISTENT`; NOAA-15 also remained the largest absolute MLT-separation case.
+The accepted CP5C artifacts were therefore not regenerated or replaced. The audit is enforced by the
+CP5C validator and does not turn MLT into a physical SAA coordinate.
+
 The fit-flag diagnostic is consistent across satellites rather than identifying one anomalous
 platform: 99.76–100% of principal-footprint samples have `mep_omni_flux_flag_fit == 0`. It is reported
 as a diagnostic only; no new fit-flag filtering was introduced. `mep_IFC_on == 1` removed one NOAA-15

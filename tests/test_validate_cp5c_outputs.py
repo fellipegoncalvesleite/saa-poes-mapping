@@ -7,9 +7,11 @@ from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import numpy as np
 import pandas as pd
 
 from scripts.validate_cp5c_outputs import (
+    circularize_mlt_hours,
     expected_fit_flag_diagnostic,
     forbidden_cross_satellite_flux_columns,
     independent_classification,
@@ -22,6 +24,17 @@ from scripts.validate_cp5c_outputs import (
 
 
 class CP5CValidatorPredicateTests(unittest.TestCase):
+    def test_mlt_circularization_is_invariant_to_clock_rotation(self) -> None:
+        hours = np.array([22.0, 23.0, 0.0, 1.0, 2.0, 7.0])
+        rotated = (hours + 5.5) % 24.0
+
+        np.testing.assert_allclose(
+            circularize_mlt_hours(hours),
+            circularize_mlt_hours(rotated),
+            rtol=0.0,
+            atol=1e-12,
+        )
+
     def test_notebook_requires_output_in_every_code_cell(self) -> None:
         executed = {
             "cells": [

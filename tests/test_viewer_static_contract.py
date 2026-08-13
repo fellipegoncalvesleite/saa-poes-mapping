@@ -67,6 +67,11 @@ class ViewerJavascriptContractTests(unittest.TestCase):
         for experiment in ("threshold", "channel", "time", "satellite"):
             self.assertIn(f'"{experiment}"', self.source)
 
+    def test_current_grid_color_normalization_notice_is_unconditional(self) -> None:
+        notice = '["color normalization", "within the current grid only"]'
+        self.assertEqual(self.source.count(notice), 1)
+        self.assertLess(self.source.index(notice), self.source.index('if (state.experiment === "threshold"'))
+
 
 if __name__ == "__main__":
     unittest.main()

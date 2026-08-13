@@ -142,6 +142,11 @@ def _grid_matches(
         return False, "grid resolution/mask metadata differs"
     if actual.get("columns") != expected_columns:
         return False, "grid column contract differs"
+    coverage = canonical[mask]
+    if coverage.isna().any():
+        return False, f"{mask} contains null coverage values"
+    if not pd.api.types.is_bool_dtype(coverage.dtype):
+        return False, f"{mask} contains non-boolean coverage values"
     ordered = canonical.sort_values(["lat_bin_center", "lon_bin_center"]).reset_index(drop=True)
     cells = actual.get("cells", [])
     if len(cells) != len(ordered):
@@ -177,7 +182,7 @@ def _grid_matches(
 
 
 def independent_authority_matches(payload: dict[str, Any], table_dir: Path) -> tuple[bool, str]:
-    """Walk all 320 configurations directly against canonical rows and grid Parquets."""
+    """Walk all 340 configurations directly against canonical rows and grid Parquets."""
     experiments = payload.get("experiments", {})
     if set(experiments) != set(EXPECTED_COUNTS):
         return False, "experiment set differs"
