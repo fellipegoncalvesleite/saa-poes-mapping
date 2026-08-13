@@ -16,10 +16,13 @@ class ViewerHtmlContractTests(unittest.TestCase):
 
     def test_viewer_uses_ordered_classic_scripts_and_no_network_loader(self) -> None:
         data_script = '<script src="viewer_data.js"></script>'
+        geography_script = '<script src="geography.js"></script>'
         render_script = '<script src="viewer.js"></script>'
         self.assertIn(data_script, self.html)
+        self.assertIn(geography_script, self.html)
         self.assertIn(render_script, self.html)
         self.assertLess(self.html.index(data_script), self.html.index(render_script))
+        self.assertLess(self.html.index(geography_script), self.html.index(render_script))
         self.assertNotIn('type="module"', self.html)
         self.assertNotIn("fetch(", self.html)
 
@@ -41,12 +44,19 @@ class ViewerHtmlContractTests(unittest.TestCase):
         ):
             self.assertIn(statement, self.html)
 
-    def test_existing_evidence_is_preserved_under_static_debug_outputs(self) -> None:
-        self.assertIn("STATIC / DEBUG OUTPUTS", self.html)
-        self.assertIn("cp3_noaa19_2024-01-01_mean_flux_5deg.png", self.html)
-        self.assertIn("cp5b_flux_profile_by_Btot_sat.png", self.html)
-        self.assertIn("cp5c_multisatellite_magnetic_separation_top10_5deg_mean.png", self.html)
-        self.assertIn("cp5c_multisatellite_low_btot_capture90_top10_5deg_mean.png", self.html)
+    def test_viewer_ends_after_interactive_cp5c_material_without_legacy_gallery(self) -> None:
+        self.assertIn('id="cp5c-result"', self.html)
+        self.assertNotIn("STATIC / DEBUG OUTPUTS", self.html)
+        self.assertNotIn("../figures/", self.html)
+        self.assertNotIn("<img", self.html)
+        self.assertNotIn("Static/debug figures remain below", self.html)
+
+    def test_experiment_remains_a_select(self) -> None:
+        self.assertIn('<select id="experiment-control" aria-label="experiment"></select>', self.html)
+
+    def test_experiment_scoped_controls_wrap_within_the_viewport(self) -> None:
+        self.assertIn("#viewer-controls { display: flex; flex-wrap: wrap;", self.html)
+        self.assertIn("#method-controls { display: flex; flex-wrap: wrap;", self.html)
 
 
 class ViewerJavascriptContractTests(unittest.TestCase):
@@ -56,6 +66,7 @@ class ViewerJavascriptContractTests(unittest.TestCase):
 
     def test_javascript_only_renders_precomputed_payload(self) -> None:
         self.assertIn("window.SAA_VIEWER_DATA", self.source)
+        self.assertIn("window.SAA_VIEWER_GEOGRAPHY", self.source)
         self.assertIn("selected_cell_indices", self.source)
         self.assertIn("centroid_lat", self.source)
         self.assertIn("createElementNS", self.source)
@@ -63,9 +74,40 @@ class ViewerJavascriptContractTests(unittest.TestCase):
         self.assertNotIn("percentile", self.source.lower())
         self.assertNotIn("quantile", self.source.lower())
 
+    def test_geography_cells_outlines_and_centroid_have_explicit_layer_order(self) -> None:
+        geography = "appendGeography(svg);"
+        guides = "appendAxes(svg);"
+        cells = "svg.appendChild(cells);"
+        outlines = "svg.appendChild(selectedOutlines);"
+        centroid = "svg.appendChild(marker);"
+        for statement in (geography, guides, cells, outlines, centroid):
+            self.assertIn(statement, self.source)
+        self.assertLess(self.source.index(geography), self.source.index(guides))
+        self.assertLess(self.source.index(guides), self.source.index(cells))
+        self.assertLess(self.source.index(cells), self.source.index(outlines))
+        self.assertLess(self.source.index(outlines), self.source.index(centroid))
+
+    def test_failed_coverage_cells_are_visually_transparent(self) -> None:
+        self.assertIn(
+            'fill: hasVisibleFlux ? logColor(value, grid.color_domains[statistic]) : "transparent"',
+            self.source,
+        )
+
     def test_all_experiments_are_explicitly_available(self) -> None:
         for experiment in ("threshold", "channel", "time", "satellite"):
             self.assertIn(f'"{experiment}"', self.source)
+
+    def test_only_ordered_payload_controls_use_discrete_range_inputs(self) -> None:
+        self.assertIn(
+            'const RANGE_CONTROL_KEYS = new Set(["threshold_label", "grid_deg", "channel"]);',
+            self.source,
+        )
+        self.assertIn('slider.type = "range"', self.source)
+        self.assertIn('slider.max = String(control.options.length - 1)', self.source)
+        self.assertIn('const declared = control.options[Number(slider.value)]', self.source)
+        self.assertNotIn('"window_label"]);', self.source)
+        self.assertNotIn('"satellite"]);', self.source)
+        self.assertNotIn('"statistic_used"]);', self.source)
 
     def test_current_grid_color_normalization_notice_is_unconditional(self) -> None:
         notice = '["color normalization", "within the current grid only"]'
