@@ -14,7 +14,12 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from saa.magnetic_framing import concentration_metrics, magnetic_validity_table  # noqa: E402
 from saa.magnetic_generality import (  # noqa: E402
+    ReferenceBundle,
     add_cp5c_footprint_flags,
+    assert_cross_satellite_schema_safe,
+    classify_generality,
+    compare_noaa19_reference,
+    evaluate_satellite_support,
     ifc_counts,
     omni_fit_flag_diagnostic,
     summaries_by_satellite,
@@ -31,6 +36,50 @@ def _grid(rows: list[tuple[float, float, float]], resolution: int) -> pd.DataFra
             "mean_flux": [r[2] for r in rows],
             mask: [True] * len(rows),
         }
+    )
+
+
+def _reference_bundle(
+    separation: float = 1.0,
+    cells: set[tuple[float, float]] | None = None,
+) -> ReferenceBundle:
+    return ReferenceBundle(
+        cell_sets={"top10_5deg_mean": cells or {(-20.0, -50.0)}},
+        validity=pd.DataFrame(
+            {
+                "variable_name": ["Btot_sat"],
+                "rows_total": [10],
+                "rows_valid": [10],
+                "rows_invalid": [0],
+                "valid_min": [16000.0],
+                "valid_max": [32000.0],
+            }
+        ),
+        footprint_summary=pd.DataFrame(
+            {
+                "comparison_case": ["top10_5deg_mean"],
+                "magnetic_variable": ["Btot_sat"],
+                "inside_count": [2],
+                "outside_count": [8],
+                "median_inside": [16500.0],
+                "median_outside": [20000.0],
+                "iqr_inside": [500.0],
+                "iqr_outside": [4000.0],
+                "p10_inside": [16100.0],
+                "p90_inside": [17000.0],
+                "p10_outside": [17500.0],
+                "p90_outside": [28000.0],
+                "separation_metric": [separation],
+            }
+        ),
+        concentration=pd.DataFrame(
+            {
+                "metric": ["fraction_below_regional_q25"],
+                "footprint": ["top10"],
+                "variable": ["Btot_sat"],
+                "value": [1.0],
+            }
+        ),
     )
 
 
@@ -165,6 +214,117 @@ class MagneticGeneralityCoreTests(unittest.TestCase):
         self.assertTrue((regional["scope_total"] == 4).all())
         self.assertTrue((footprint["scope_total"] == 3).all())
         self.assertEqual(len(frame), 4)
+
+
+class MagneticGeneralityRubricTests(unittest.TestCase):
+    def test_low_btot_support_uses_predeclared_strict_boundaries(self) -> None:
+        baseline = {
+            "btot_separation_metric": 1.0,
+            "l_igrf_separation_metric": 0.5,
+            "mlt_separation_metric": 0.1,
+            "btot_fraction_below_regional_q25": 0.51,
+            "btot_regional_fraction_to_capture_90pct": 0.50,
+        }
+        cases = [
+            (baseline, True),
+            ({**baseline, "btot_separation_metric": 0.0}, False),
+            ({**baseline, "btot_fraction_below_regional_q25": 0.50}, False),
+            ({**baseline, "btot_regional_fraction_to_capture_90pct": 0.5000001}, False),
+        ]
+
+        for row, expected in cases:
+            with self.subTest(row=row):
+                low_btot, _ = evaluate_satellite_support(row)
+                self.assertIs(low_btot, expected)
+
+    def test_btot_dominance_uses_l_and_absolute_mlt_separation(self) -> None:
+        baseline = {
+            "btot_separation_metric": 1.0,
+            "l_igrf_separation_metric": 0.5,
+            "mlt_separation_metric": -0.9,
+            "btot_fraction_below_regional_q25": 0.75,
+            "btot_regional_fraction_to_capture_90pct": 0.25,
+        }
+        cases = [
+            (baseline, True),
+            ({**baseline, "l_igrf_separation_metric": 1.0}, False),
+            ({**baseline, "mlt_separation_metric": -1.0}, False),
+        ]
+
+        for row, expected in cases:
+            with self.subTest(row=row):
+                _, dominance = evaluate_satellite_support(row)
+                self.assertIs(dominance, expected)
+
+    def test_consistent_requires_four_supporters_for_both_criteria(self) -> None:
+        summary = pd.DataFrame(
+            {
+                "low_btot_support": [True, True, True, True, False],
+                "btot_dominance_support": [True, True, True, True, False],
+                "btot_separation_metric": [1.0, 1.0, 1.0, 1.0, 0.2],
+            }
+        )
+
+        self.assertEqual(classify_generality(summary), "CONSISTENT")
+
+    def test_mixed_covers_intermediate_support_counts(self) -> None:
+        summary = pd.DataFrame(
+            {
+                "low_btot_support": [True, True, True, False, False],
+                "btot_dominance_support": [True, True, True, True, False],
+                "btot_separation_metric": [1.0, 1.0, 1.0, 0.2, 0.1],
+            }
+        )
+
+        self.assertEqual(classify_generality(summary), "MIXED")
+
+    def test_inconsistent_when_at_most_one_satellite_supports_low_btot(self) -> None:
+        summary = pd.DataFrame(
+            {
+                "low_btot_support": [True, False, False, False, False],
+                "btot_dominance_support": [True, True, True, True, True],
+                "btot_separation_metric": [1.0, 0.2, 0.2, 0.2, 0.2],
+            }
+        )
+
+        self.assertEqual(classify_generality(summary), "INCONSISTENT")
+
+    def test_reversed_sign_safeguard_is_inconsistent(self) -> None:
+        summary = pd.DataFrame(
+            {
+                "low_btot_support": [True, True, False, False, False],
+                "btot_dominance_support": [True, True, True, True, False],
+                "btot_separation_metric": [1.0, -0.1, -0.2, -0.3, -0.4],
+            }
+        )
+
+        self.assertEqual(classify_generality(summary), "INCONSISTENT")
+
+
+class MagneticGeneralityReferenceTests(unittest.TestCase):
+    def test_noaa19_reference_requires_exact_discrete_values(self) -> None:
+        expected = _reference_bundle()
+        actual = _reference_bundle(cells={(-20.0, -55.0)})
+
+        with self.assertRaises(AssertionError):
+            compare_noaa19_reference(actual, expected)
+
+    def test_noaa19_reference_uses_fixed_float_tolerances(self) -> None:
+        expected = _reference_bundle(separation=1.0)
+        within_tolerance = _reference_bundle(separation=1.0 + 5e-10)
+        outside_tolerance = _reference_bundle(separation=1.0 + 2e-9)
+
+        compare_noaa19_reference(within_tolerance, expected)
+        with self.assertRaises(AssertionError):
+            compare_noaa19_reference(outside_tolerance, expected)
+
+    def test_cross_satellite_schema_rejects_absolute_flux_fields(self) -> None:
+        assert_cross_satellite_schema_safe(
+            ["satellite", "btot_separation_metric", "absolute_flux_comparison_allowed"]
+        )
+        for forbidden in ("mean_flux", "peak_flux", "flux_ratio_between_satellites"):
+            with self.subTest(forbidden=forbidden), self.assertRaises(ValueError):
+                assert_cross_satellite_schema_safe(["satellite", forbidden])
 
 
 if __name__ == "__main__":
