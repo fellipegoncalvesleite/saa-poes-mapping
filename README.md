@@ -15,18 +15,20 @@ time window?
 radiation-transport models · do generic Monte-Carlo. The contribution is *methodological*:
 reproducibility + sensitivity analysis on public data.
 
-## Current status (CP6A — synthesis)
-- **What works:** a reproducible, validated pipeline (CP1–CP5B) that maps a candidate high-flux
-  footprint from real NOAA/NCEI POES/MetOp data and quantifies its sensitivity to flux threshold,
+## Current status (CP5C — validated magnetic-generality extension after CP6A)
+- **What works:** a reproducible, validated pipeline through CP6A, plus the validated CP5C extension,
+  that maps a candidate high-flux footprint from real NOAA/NCEI POES/MetOp data and quantifies its
+  sensitivity to flux threshold,
   proton channel, time window, and satellite, plus a descriptive IGRF magnetic-coordinate framing.
 - **Current scientific question:** *how much does the estimated SAA footprint (center/area/intensity)
   move under method choices, and how can it be described — not defined — in geomagnetic coordinates?*
 - **Headline numbers:** threshold centroid shift ~386 km / area ~17.7×; channel ~100–300 km; day→month
-  ~288 km (weekly ~118 km); 5-satellite spread ~272 km (< threshold effect); footprint concentrated at
-  low `Btot_sat`. See `outputs/tables/cp6a_key_results_summary.csv`.
+  ~288 km (weekly ~118 km); 5-satellite maximum pairwise spread ~272 km for top10 5° mean (top5:
+  ~437 km); all 5 satellites pass CP5C's predeclared low-`Btot_sat` and Btot-dominance criteria.
 - **Synthesis docs:** `docs/{CLAIM_AUDIT,PAPER_OUTLINE,FIGURE_PLAN,MENTOR_PACKET,REPRODUCIBILITY_CHECKLIST}.md`.
 - **Open the viewer:** `bash scripts/open_cp3_viewer.sh` (or `xdg-open outputs/viewer/index.html`).
-- **Run validations:** `.venv/bin/python scripts/validate_cp6a_outputs.py` (and `validate_cp{3,4a..4f,5a,5b}_outputs.py`).
+- **Run validations:** `.venv/bin/python scripts/validate_cp5c_outputs.py` (plus the prerequisite
+  validators listed in `docs/REPRODUCIBILITY_CHECKLIST.md`).
 - **Do NOT claim:** final SAA boundary/center · dose · health risk · danger zone · discovery ·
   causality from IGRF variables · cross-satellite absolute-flux comparison. See `docs/CLAIM_AUDIT.md`.
 
@@ -59,7 +61,10 @@ reproducibility + sensitivity analysis on public data.
   non-discriminating. Descriptive, no boundary/causal claim.
 - **CP6A — Results synthesis, claim audit & mentor packet: ✅** Key-results table + claim audit + paper
   outline + figure plan + mentor packet + reproducibility checklist (no new analysis).
-- **Next — mentor review, then CP5C** (multi-satellite/temporal magnetic generality): ⬜
+- **CP5C — Multi-satellite magnetic generality: ✅** January-2024 fixed-scope replication across all
+  five CP4F satellites. Rubric result: **CONSISTENT** (5/5 low-Btot; 5/5 Btot dominance); NOAA-19
+  exactly reproduces discrete CP5B references and matches floats at `rtol=1e-9`, `atol=1e-12`.
+- **Next — mentor review, then multi-month/seasonal extension:** ⬜
 
 All exploratory: no SAA boundary/center, dose, health, or discovery claims.
 
@@ -80,6 +85,7 @@ src/saa/time_window_analysis.py           CP4D: per-window coverage thresholds /
 src/saa/satellite_analysis.py             CP4E/4F: archive audit / pilot / multi-satellite sweep / plots
 src/saa/magnetic_audit.py                 CP5A: IGRF variable audit / flux+magnetic / distributions / plots
 src/saa/magnetic_framing.py               CP5B: validity rules / binned profiles / footprint summary / concentration
+src/saa/magnetic_generality.py            CP5C: frozen rubric / NOAA-19 hard gate / multi-satellite summaries
 notebooks/01..03_*.ipynb                  CP1..CP3 (feasibility / loader / first maps)
 notebooks/04a_monthly_aggregation.ipynb   CP4A: executed monthly aggregation (real outputs)
 notebooks/04b_threshold_sensitivity.ipynb CP4B: executed threshold sensitivity (real outputs)
@@ -89,6 +95,7 @@ notebooks/04e_satellite_pilot_comparison.ipynb CP4E: executed satellite audit + 
 notebooks/04f_multisatellite_consistency.ipynb CP4F: executed 5-satellite consistency (real outputs)
 notebooks/05a_magnetic_coordinate_audit.ipynb CP5A: executed IGRF/magnetic audit + pilot (real outputs)
 notebooks/05b_magnetic_framing.ipynb      CP5B: executed quantitative magnetic framing (real outputs)
+notebooks/05c_multisatellite_magnetic_generality.ipynb CP5C: executed five-satellite generality test
 scripts/validate_*.py                     per-checkpoint validation
 outputs/figures/  outputs/tables/         CP3/CP4A figures & grid tables (git-ignored)
 outputs/viewer/index.html                 bare local HTML viewer of figures

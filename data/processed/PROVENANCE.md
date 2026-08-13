@@ -283,3 +283,39 @@ data file, no external IGRF added. Accepted CP4/CP5A files untouched.
 `cp5b_high_flux_footprint_Btot_vs_L_IGRF.png`, `cp5b_mag_lat_vs_mag_lon_wrapaware.png`.
 
 Produced by `notebooks/05b_magnetic_framing.ipynb`; validated by `scripts/validate_cp5b_outputs.py`.
+
+---
+
+## Checkpoint 5C — Multi-satellite magnetic generality (five satellites, Jan 2024)
+
+**Inputs:** 31 real NOAA/NCEI L1b `_proc.nc` files for each of `noaa15`, `noaa18`, `noaa19`,
+`metop01`, and `metop03` (155 source files total), plus the accepted CP4F footprint tables and CP5B
+NOAA-19 reference tables. Fixed scope: `mep_omni_flux_p1`, regional lat[-70,20]×lon[-100,20],
+top10/top5 × 5°/2° mean cases. No cross-satellite absolute-flux comparison.
+
+**Regional flux+magnetic Parquets (regenerable):**
+- `cp5c_noaa15_2024-01_region_flux_plus_magnetic.parquet` — 207,232 rows, 7,569,199 B, sha256 `aa6435e78ca4b485…`.
+- `cp5c_noaa18_2024-01_region_flux_plus_magnetic.parquet` — 208,722 rows, 7,617,613 B, sha256 `585f08f1ea6da56a…`.
+- `cp5c_noaa19_2024-01_region_flux_plus_magnetic.parquet` — 205,153 rows, 7,486,038 B, sha256 `760bc9a47a0935d1…`.
+- `cp5c_metop01_2024-01_region_flux_plus_magnetic.parquet` — 227,572 rows, 8,055,136 B, sha256 `37546c3bc0ba47ec…`.
+- `cp5c_metop03_2024-01_region_flux_plus_magnetic.parquet` — 226,645 rows, 8,070,350 B, sha256 `70edd3372eb92ec6…`.
+
+**Output tables (`outputs/tables/`, each CSV + Parquet):**
+- `cp5c_magnetic_variable_validity_by_satellite` — 25 rows; CSV 3,555 B, sha256 `df96f854cb656b6d…`.
+- `cp5c_footprint_magnetic_summary_by_satellite` — 80 rows; CSV 27,311 B, sha256 `a62e9e8ae879593c…`.
+- `cp5c_magnetic_concentration_by_satellite` — 80 rows; CSV 12,771 B, sha256 `97d8efdd7932ca84…`.
+- `cp5c_multisatellite_magnetic_generality_summary` — 5 rows; CSV 2,330 B, sha256 `d52d6e2f91cc81fb…`.
+- `cp5c_omni_fit_flag_diagnostic` — 26 rows; CSV 1,856 B, sha256 `73017888c7a3e1dc…`.
+
+**Figures (`outputs/figures/`):**
+- `cp5c_multisatellite_magnetic_separation_top10_5deg_mean.png` — 35,004 B, sha256 `7968935fd42c78cc…`.
+- `cp5c_multisatellite_low_btot_capture90_top10_5deg_mean.png` — 36,434 B, sha256 `378cb36dbf9fc502…`.
+
+**Frozen decision result:** `CONSISTENT` (5/5 low-Btot, 5/5 Btot dominance, zero reversed Btot signs).
+The cutoffs are predeclared operational CP5C criteria, not physical SAA thresholds. NOAA-19 hard
+gate passed exact deterministic comparisons and floats at `rtol=1e-9`, `atol=1e-12`,
+`equal_nan=True`. Accepted CP4A/CP4F/CP5A/CP5B/CP6A artifacts were hash-checked before and after
+execution and were unchanged.
+
+Produced by `notebooks/05c_multisatellite_magnetic_generality.ipynb`; validated by
+`scripts/validate_cp5c_outputs.py` (all checks passed).

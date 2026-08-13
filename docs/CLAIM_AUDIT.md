@@ -1,4 +1,4 @@
-# Claim Audit — SAA POES/MetOp Method-Sensitivity Study (as of CP6A)
+# Claim Audit — SAA POES/MetOp Method-Sensitivity Study (as of CP5C extension after CP6A)
 
 Scope note: this project is a **methodological reproducibility and sensitivity study** of how a
 *particle-defined candidate high-flux footprint* behaves under analysis choices, using public
@@ -9,7 +9,7 @@ radiation-hazard product. Every claim below is bounded by that scope.
 
 ## A. Claims supported by current evidence (cautious wording)
 
-These follow directly from accepted, validated outputs (CP4B–CP5B) and may be stated, with the
+These follow directly from accepted, validated outputs (CP4B–CP5C) and may be stated, with the
 hedging shown:
 
 1. **A persistent candidate high-flux sector exists over the South America / South Atlantic region**
@@ -30,11 +30,15 @@ hedging shown:
 6. **NOAA-15 is a footprint-location outlier** (~217–272 km from the others) with anomalously high
    *uncalibrated* peak flux — consistent with it being the oldest platform; reported descriptively,
    not as physical truth. (CP4F)
-7. **The particle-defined footprint occupies a low, narrow IGRF field-strength band:** descriptively,
-   ~**100%** of top10/top5 footprint samples have `Btot_sat` below the regional 25th percentile, and
-   90% of the top10 footprint falls within the lowest ~**12%** of regional `Btot_sat`. (CP5A/CP5B)
-8. **`Btot_sat` frames the footprint more sharply than `L_IGRF`, and `MLT` does not discriminate:**
-   inside/outside separation metric ~**+1.58** (Btot) vs **+0.41** (L) vs **+0.06** (MLT). (CP5B)
+7. **The particle-defined footprint occupies a low, narrow IGRF field-strength band across the five
+   satellites:** in the principal top10, 5° mean case, **100%** of each satellite's footprint samples
+   fall below its own regional `Btot_sat` q25, and 90% are contained within the lowest **11.7–12.1%**
+   of its regional `Btot_sat` distribution. (CP5C; within-satellite ranks only)
+8. **The predeclared CP5C rubric classifies multi-satellite magnetic generality as `CONSISTENT`:**
+   5/5 satellites satisfy all low-Btot criteria and 5/5 satisfy Btot-dominance. `Btot_sat`
+   separation is **+1.573 to +1.596**, versus `L_IGRF` **+0.387 to +0.429**. MLT separation is near
+   zero for four satellites but **+0.920 for NOAA-15**; Btot still dominates there. These cutoffs are
+   operational criteria for CP5C, not physical thresholds defining the SAA. (CP5C)
 
 ---
 
@@ -53,7 +57,6 @@ State these only as hypotheses / future work, never as findings:
    sampling effect** — not separated yet.
 6. **Foot-of-field-line vs satellite-coordinate framing equivalence** — only satellite-altitude
    magnetic coordinates were used in the pilot.
-7. **Generality of the magnetic framing across satellites** — CP5A/CP5B are NOAA-19 only.
 
 ---
 

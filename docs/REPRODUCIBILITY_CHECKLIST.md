@@ -1,4 +1,4 @@
-# Reproducibility Checklist — SAA POES/MetOp Method-Sensitivity Study (CP6A)
+# Reproducibility Checklist — SAA POES/MetOp Method-Sensitivity Study (through CP5C)
 
 Everything here regenerates from public data + the code in this repo. Data/figure payloads are
 git-ignored; provenance (with checksums) is tracked in `data/processed/PROVENANCE.md`.
@@ -34,10 +34,13 @@ Run each with:
 9. `notebooks/04f_multisatellite_consistency.ipynb` — CP4F 5 satellites (downloads n15/m01/m03 months)
 10. `notebooks/05a_magnetic_coordinate_audit.ipynb` — CP5A IGRF audit + flux+magnetic parquet
 11. `notebooks/05b_magnetic_framing.ipynb` — CP5B quantitative magnetic framing
-(CP6A adds no notebook; `outputs/tables/cp6a_key_results_summary.*` is generated from accepted tables.)
+12. Run `.venv/bin/python scripts/generate_cp6a_summary.py`, then
+    `.venv/bin/python scripts/validate_cp6a_outputs.py` — CP6A synthesis (no notebook)
+13. `notebooks/05c_multisatellite_magnetic_generality.ipynb` — CP5C five-satellite magnetic generality
 
 ## 4. Validation scripts in order (each prints PASS/FAIL, exit 0 on success)
 ```
+.venv/bin/python -m unittest discover -s tests -v          # CP5C unit tests
 .venv/bin/python scripts/validate_processed_sample.py      # CP2
 .venv/bin/python scripts/validate_cp3_outputs.py           # CP3
 .venv/bin/python scripts/validate_cp4a_outputs.py          # CP4A
@@ -49,18 +52,19 @@ Run each with:
 .venv/bin/python scripts/validate_cp5a_outputs.py          # CP5A
 .venv/bin/python scripts/validate_cp5b_outputs.py          # CP5B
 .venv/bin/python scripts/validate_cp6a_outputs.py          # CP6A (synthesis)
+.venv/bin/python scripts/validate_cp5c_outputs.py          # CP5C extension
 ```
 
 ## 5. Expected key outputs
 - Processed (git-ignored): `data/processed/noaa19_2024-01_mep_omni_flux_p1_region.parquet` (205,153
   rows), `..._p1_p2_p3_region.parquet`, `cp4d_*`, `cp4e_noaa18_*`, `cp4f_{sat}_*`,
-  `cp5a_noaa19_2024-01_region_flux_plus_magnetic.parquet`.
+  `cp5a_noaa19_2024-01_region_flux_plus_magnetic.parquet`, `cp5c_{sat}_2024-01_region_flux_plus_magnetic.parquet`.
 - Tables (`outputs/tables/`, git-ignored): `cp4a_*grid_{5,2}deg`, `cp4b_threshold_sensitivity`,
   `cp4c_channel_threshold_sensitivity`, `cp4d_time_window_threshold_sensitivity`,
   `cp4e_*`, `cp4f_multisatellite_threshold_sensitivity`, `cp4f_pairwise_centroid_distances`,
-  `cp5a_*`, `cp5b_*`, `cp6a_key_results_summary`.
+  `cp5a_*`, `cp5b_*`, `cp5c_*`, `cp6a_key_results_summary`.
 - Figures (`outputs/figures/`, git-ignored): `cp3_*`, `cp4a_*`, `cp4b_*`, `cp4c_*`, `cp4d_*`,
-  `cp4e_*`, `cp4f_*`, `cp5a_*`, `cp5b_*`.
+  `cp4e_*`, `cp4f_*`, `cp5a_*`, `cp5b_*`, `cp5c_*`.
 - Viewer: `outputs/viewer/index.html` (bare static page over the figures).
 
 ## 6. Known git-ignored (regenerable) outputs
@@ -69,9 +73,10 @@ Run each with:
 tracked so outputs are verifiable after regeneration.
 
 ## 7. Regenerate from scratch
-1. Create the venv (§1). 2. Run notebooks in order (§3) — they download required NOAA files on demand.
-3. Generate the CP6A synthesis table (`outputs/tables/cp6a_key_results_summary.*`). 4. Run all
-validators (§4) — all should report ALL CHECKS PASSED. 5. Open `outputs/viewer/index.html`.
+1. Create the venv (§1). 2. Run steps 1–11 in §3 — they download required NOAA files on demand.
+3. Generate and validate CP6A at step 12. 4. Execute CP5C at step 13; it requires and hash-snapshots
+the CP6A pair. 5. Run all validators (§4) — all should report ALL CHECKS PASSED.
+6. Open `outputs/viewer/index.html`.
 
 ## 8. Known limitations
 Single month (Jan 2024); primary channel `mep_omni_flux_p1`; geographic/sub-satellite binning; no
