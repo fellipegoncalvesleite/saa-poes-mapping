@@ -102,7 +102,7 @@ def load_month_region(start="2024-01-01", end="2024-01-31", satellite="noaa19",
     """Load the whole month once (real files), region+IFC filter, add ``obs_date``.
 
     Returns ``(region_df, loaded_dates)`` so each daily file is read exactly once and every window is
-    a cheap in-memory slice.  Nothing fabricated; missing days propagate from :func:`load_range`.
+    a cheap in-memory slice. Missing days propagate from :func:`load_range`.
     """
     rl = load_range(start, end, satellite=satellite, raw_dir=raw_dir, channel=channel)
     region, _ = prepare_region(rl.df)
