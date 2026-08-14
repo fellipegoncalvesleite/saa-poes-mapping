@@ -17,5 +17,9 @@ __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
 .venv/
+site/node_modules/
+site/dist/
+site/test-results/
+site/playwright-report/
 venv/
 env/

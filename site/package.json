@@ -1,0 +1,17 @@
+{
+  "name": "saa-poes-mapping-public-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "jsdom": "30.0.1",
+    "typescript": "7.0.2",
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
+  }
+}
