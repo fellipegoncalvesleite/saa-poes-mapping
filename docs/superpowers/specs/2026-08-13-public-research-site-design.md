@@ -45,6 +45,25 @@ the user and has these requirements:
 - the visual reference is the information hierarchy of NASA Earthdata and NOAA satellite technical
   pages, without copying their marks, logos, page code, or claiming affiliation.
 
+## Approved Map-Clarity Revision
+
+The 2026-08-13 map review replaces the per-cell white selection outlines with a clearer display-only
+hierarchy while preserving canonical selected-cell membership:
+
+- `Grid resolution` is a visible primary control with exactly `5°` and `2°`; it is not hidden in
+  `Analysis settings`.
+- The chosen grid resolution persists when switching among Threshold, Proton energy, Time, and
+  Satellite. Other incompatible dimensions still reset to the target experiment's canonical default.
+- Non-selected covered cells remain visible but are subdued. Selected cells retain full Viridis
+  intensity and receive a subtle translucent emphasis.
+- The selected-cell union is shown with a single high-contrast outer perimeter generated only from
+  stored selected membership. Internal cell borders are not presented as the footprint boundary.
+- The stored flux-weighted centroid receives a direct text label and distinct symbol.
+- The legend explicitly defines color, selected perimeter, and centroid using the active statistic
+  and threshold label.
+- These changes are presentation geometry only. They do not add interpolation, recompute selection,
+  or change scientific metrics.
+
 ## Selected Technical Approach
 
 Use a small static frontend built with Vite, TypeScript, semantic HTML, modern CSS, and SVG. Do not
