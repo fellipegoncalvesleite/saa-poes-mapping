@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import math
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -33,6 +34,9 @@ class ViewerValidatorPredicateTests(unittest.TestCase):
                 "median_flux",
                 "sample_count",
                 "covered",
+                "north_south_km",
+                "east_west_km",
+                "cell_area_km2",
             ],
         }
         base = {
@@ -48,6 +52,25 @@ class ViewerValidatorPredicateTests(unittest.TestCase):
                 ok, detail = _grid_matches(actual, canonical, 5)
                 self.assertFalse(ok)
                 self.assertIn("coverage values", detail)
+
+    def test_canonical_grid_rejects_altered_physical_geometry(self) -> None:
+        canonical = pd.DataFrame({
+            "lat_bin_center": [-67.5], "lon_bin_center": [-97.5], "mean_flux": [1.0],
+            "median_flux": [0.5], "sample_count": [31], "enough_samples_5deg": [True],
+        })
+        north_south = 6371.0 * math.radians(5)
+        east_west = north_south * math.cos(math.radians(-67.5))
+        north = math.radians(-65); south = math.radians(-70)
+        area = 6371.0 ** 2 * math.radians(5) * (math.sin(north) - math.sin(south))
+        actual = {
+            "grid_deg": 5, "mask_column": "enough_samples_5deg",
+            "columns": ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered", "north_south_km", "east_west_km", "cell_area_km2"],
+            "cells": [[-67.5, -97.5, 1.0, 0.5, 31, True, north_south, east_west, area + 10]],
+            "color_domains": {"mean_flux": [1.0, 1.0], "median_flux": [0.5, 0.5]},
+        }
+        ok, detail = _grid_matches(actual, canonical, 5)
+        self.assertFalse(ok)
+        self.assertIn("cell area", detail)
 
     def test_deep_comparison_uses_exact_discrete_values_and_fixed_float_tolerances(self) -> None:
         expected = {
