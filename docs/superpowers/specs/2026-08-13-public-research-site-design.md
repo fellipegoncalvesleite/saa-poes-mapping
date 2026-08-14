@@ -25,8 +25,25 @@ states and will preserve all restrictions in `docs/CLAIM_AUDIT.md`.
 6. Copy consistently describes candidate, threshold-defined, and method-dependent footprints and
    flux-weighted centroids. It does not imply a definitive boundary, true center, causality, dose,
    health risk, spacecraft danger, or cross-calibrated absolute comparisons.
-7. The visual language is a restrained modern scientific instrument: warm off-white ground,
-   near-white explorer, near-black text, limited interface accent, and Viridis as the dominant color.
+7. The visual language follows public NASA Earthdata/NOAA technical products: neutral sans-serif
+   typography, white and cool-gray surfaces, a compact dark institutional header, blue/red utility
+   accents, visible metadata, and Viridis reserved for the scientific map. It must not resemble a
+   marketing landing page.
+
+## Approved Visual Revision
+
+The 2026-08-13 review replaces the original editorial hero treatment. The revision is approved by
+the user and has these requirements:
+
+- no display serif, oversized headline, slogan, catchphrase, or promotional metric card;
+- the first content block identifies the project, scope, data source, date, and scientific status in
+  direct language;
+- a compact summary strip may report accepted counts or key comparison values with labels and units;
+- the explorer begins immediately after that summary and remains the dominant page element;
+- section headings are literal: `Interactive map`, `Results`, `Method`, `Magnetic-field context`,
+  `Reproducibility`, and `Limitations`;
+- the visual reference is the information hierarchy of NASA Earthdata and NOAA satellite technical
+  pages, without copying their marks, logos, page code, or claiming affiliation.
 
 ## Selected Technical Approach
 
@@ -99,7 +116,7 @@ membership, or any other scientific state.
 The page follows this order:
 
 1. compact header with Explore, Findings, Method, Reproducibility, and GitHub links;
-2. integrated hero and explorer;
+2. factual project summary and explorer;
 3. concise findings narrative;
 4. descriptive magnetic framing;
 5. public-facing method pipeline and technical disclosure;
@@ -107,18 +124,17 @@ The page follows this order:
 7. limitations;
 8. minimal footer with provenance and repository links.
 
-### Header and Hero
+### Header and Project Summary
 
-The hero uses the approved brief copy and keeps the scope note visible:
+The compact header identifies `SAA POES Mapping`, describes it as a public research project, and
+links directly to Map, Results, Method, Data and code, and Limitations. The project summary uses the
+literal title `Method sensitivity of particle-defined South Atlantic Anomaly maps`, followed by two
+sentences that state the January-2024 NOAA/MetOp scope and the one-choice-at-a-time method. A visible
+status line states `Candidate high-flux footprints; not a definitive SAA boundary.`
 
-- eyebrow: `SAA POES Mapping · Method-sensitivity study`;
-- headline: `How much does the mapped South Atlantic Anomaly change when the method changes?`;
-- explanation of public NOAA/MetOp measurements and one-choice-at-a-time testing;
-- scope note: `Candidate high-flux footprints—not a definitive SAA boundary.`;
-- threshold result: approximately 386 km between the top-20% and top-1% principal stored
-  flux-weighted centroids.
-
-The hero is compact enough that the explorer map begins within the first desktop viewport.
+A compact metadata grid reports dataset, observation period, number of satellites, validated map
+configurations, and the approximately 386 km principal threshold-centroid comparison. The explorer
+begins directly below it, without a promotional hero or decorative callout.
 
 ### Explorer Composition
 
