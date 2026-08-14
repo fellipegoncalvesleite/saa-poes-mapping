@@ -102,7 +102,9 @@ select { width: 100%; min-height: 2.7rem; padding: .55rem; color: var(--navy); b
 .centroid-cross { fill: none; stroke: #071d41; stroke-width: 2.2; }
 .centroid-leader { stroke: #071d41; stroke-width: 1.5; }
 .centroid-label-bg { fill: rgba(255,255,255,.94); stroke: #8e969d; stroke-width: 1; }
-.centroid-label { fill: #071d41; font-size: 12px; font-weight: 700; }
+.centroid-label { fill: #071d41; font-size: 24px; font-weight: 800; }
+.scale-bar-line { stroke: #071d41; stroke-width: 5; }
+.scale-bar-label { fill: #071d41; font-size: 20px; font-weight: 800; paint-order: stroke; stroke: rgba(255,255,255,.95); stroke-width: 5px; }
 .active-cell { fill: none; stroke: #ffbe2e; stroke-width: 4; }
 [data-layer="geography"], [data-layer="guides"], [data-layer="selected"], [data-layer="centroid"] { pointer-events: none; }
 .map-legend { display: grid; gap: .65rem; margin-top: .75rem; padding: .85rem; color: var(--muted); background: var(--surface); border: 1px solid var(--line); font-size: .74rem; }

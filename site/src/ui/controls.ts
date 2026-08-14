@@ -99,8 +99,7 @@ export function renderControls(root: HTMLElement, payload: ViewerPayload, active
   gridLegend.textContent = "Grid resolution";
   gridFieldset.append(gridLegend, segmented(gridControl.key, gridControl.options, currentGrid, (value) => onChange(activeExperiment, { ...values, grid_deg: value })));
   root.append(gridFieldset);
-  const details = document.createElement("details"); details.className = "analysis-settings";
-  const summary = document.createElement("summary"); summary.textContent = "Analysis settings"; details.append(summary);
+  const details = document.createElement("div"); details.className = "analysis-settings";
   const settings = document.createElement("div"); settings.className = "settings-grid";
   specification.controls.filter((control) => control.key !== focalKey && control.key !== "grid_deg").forEach((control) => {
     const fieldset = document.createElement("fieldset"); fieldset.dataset.control = control.key;

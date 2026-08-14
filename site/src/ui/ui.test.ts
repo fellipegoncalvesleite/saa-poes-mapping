@@ -26,7 +26,17 @@ describe("public explorer UI", () => {
     expect(root.querySelector('[data-control="grid_deg"] legend')?.textContent).toBe("Grid resolution");
     expect([...root.querySelectorAll('[data-control="grid_deg"] button')].map((node) => node.textContent)).toEqual(["5°", "2°"]);
     expect(root.querySelector('[data-control="grid_deg"]')?.closest("details")).toBeNull();
-    expect(root.querySelector("details")?.textContent).toContain("Analysis settings");
+    expect(root.querySelector("details")).toBeNull();
+    expect(root.querySelector('[data-control="statistic_used"]')?.textContent).toContain("Mean");
+    expect(root.querySelector('[data-control="statistic_used"]')?.textContent).toContain("Median");
+  });
+
+  it("keeps every applicable method setting explicit", () => {
+    const root = document.createElement("div");
+    renderControls(root, payload, "time", payload.experiments.time.initial_values, () => undefined);
+    expect([...root.querySelectorAll("[data-control]")].map((node) => node.getAttribute("data-control")))
+      .toEqual(["window_label", "grid_deg", "statistic_used", "threshold_label"]);
+    expect(root.querySelector('[data-control="threshold_label"]')?.textContent).toContain("Top 10%");
   });
 
   it("preserves the chosen grid resolution when switching experiment", () => {

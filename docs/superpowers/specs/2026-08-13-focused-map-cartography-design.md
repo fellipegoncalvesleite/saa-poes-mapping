@@ -18,7 +18,10 @@ Every map includes a 500 km scale bar near the lower-left plot edge. Its rendere
 
 The map renderer accepts an optional centroid label. Single-map mode retains `Flux-weighted centroid`. In comparison mode, Map A displays `A centroid`; Map B displays `→ N km from A`, using the Python-precomputed `centroid_distance_km` rounded to the nearest kilometre. No browser-side displacement calculation is permitted.
 
+## Explicit method controls
+
+All applicable method settings remain visible below the focal experiment choice. Grid resolution, mean/median statistic, and percentile threshold are ordinary controls rather than collapsed advanced settings.
+
 ## Verification
 
 Automated tests assert the fixed projection extent, clipped scientific layers, 500 km scale-bar label and width, and exact use of the stored comparison distance in the Map B annotation. Visual verification covers desktop and 320 px comparison layouts and confirms no console errors or horizontal overflow.
-

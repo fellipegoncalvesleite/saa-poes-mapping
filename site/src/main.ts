@@ -45,8 +45,8 @@ async function start(): Promise<void> {
       explorerState.hidden = Boolean(compared); comparisonState.hidden = !compared;
       if (compared) {
         const option = resolveComparison(loaded.payload, configuration, compared.id)!;
-        const mapA = renderMap(comparisonMapA, loaded, configuration, (cell, shouldAnnounce) => { if (shouldAnnounce) cellStatus.textContent = `Map A. ${activeCellStatus(cell)}`; });
-        const mapB = renderMap(comparisonMapB, loaded, compared, (cell, shouldAnnounce) => { if (shouldAnnounce) cellStatus.textContent = `Map B. ${activeCellStatus(cell)}`; });
+        const mapA = renderMap(comparisonMapA, loaded, configuration, (cell, shouldAnnounce) => { if (shouldAnnounce) cellStatus.textContent = `Map A. ${activeCellStatus(cell)}`; }, { centroidLabel: "A centroid" });
+        const mapB = renderMap(comparisonMapB, loaded, compared, (cell, shouldAnnounce) => { if (shouldAnnounce) cellStatus.textContent = `Map B. ${activeCellStatus(cell)}`; }, { centroidLabel: `→ ${Math.round(option.comparison.centroid_distance_km)} km from A` });
         mapA.setAttribute("aria-label", `Map A. ${mapA.getAttribute("aria-label")}`); mapB.setAttribute("aria-label", `Map B. ${mapB.getAttribute("aria-label")}`);
         document.querySelector("#comparison-a-label")!.textContent = `Map A · ${String(configuration.values[option.comparison.focal_dimension])}`;
         document.querySelector("#comparison-b-label")!.textContent = `Map B · ${String(compared.values[option.comparison.focal_dimension])}`;

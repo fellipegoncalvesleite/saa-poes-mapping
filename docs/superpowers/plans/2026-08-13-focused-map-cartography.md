@@ -36,6 +36,7 @@
 **Files:**
 - Modify: `site/src/map/render.ts`
 - Modify: `site/src/main.ts`
+- Modify: `site/src/ui/controls.ts`
 - Modify: `site/src/styles.css`
 
 **Interfaces:**
@@ -45,6 +46,7 @@
 - [ ] Render a 500 km bar at 25°S using `500 / (6371 × π/180 × cos(25°))` longitude degrees.
 - [ ] Clip geography, guides, cells, footprint perimeter, and inspection layers to the plot rectangle.
 - [ ] Pass `A centroid` to Map A and `→ ${Math.round(comparison.centroid_distance_km)} km from A` to Map B.
+- [ ] Replace the collapsed analysis-settings disclosure with always-visible mean/median and threshold controls.
 - [ ] Run focused tests and commit with `feat: focus maps and label centroid shifts`.
 
 ### Task 3: Verify and publish
@@ -59,4 +61,3 @@
 - [ ] Visually inspect single and comparison views at desktop and 320 px, confirm no overflow or console errors.
 - [ ] Run the complete Python suite and 7-check viewer validator to prove scientific outputs remain unchanged.
 - [ ] Push `feat/public-research-site` to the existing draft PR.
-

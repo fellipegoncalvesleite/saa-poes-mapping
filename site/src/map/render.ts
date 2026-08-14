@@ -1,11 +1,15 @@
-import type { ActiveCell, Configuration, Grid, LoadedData } from "../data/types";
+import type { ActiveCell, Configuration, Grid, LoadedData, Region } from "../data/types";
 import { colorForFlux, viridisAt } from "./colors";
 import { createProjection } from "./projection";
 
 const NS = "http://www.w3.org/2000/svg";
-const VIEW = { width: 940, height: 660 };
-const PLOT = { left: 58, top: 24, width: 780, height: 585 };
+const VIEW = { width: 940, height: 560 };
+const PLOT = { left: 58, top: 24, width: 820, height: 500 };
+export const DISPLAY_REGION: Region = { lat_min: -50, lat_max: 5, lon_min: -95, lon_max: 10 };
+const SCALE_BAR = { distanceKm: 500, referenceLat: -25 };
 let mapSequence = 0;
+
+export interface MapRenderOptions { centroidLabel?: string }
 
 function svg(name: string, attributes: Record<string, string | number> = {}): SVGElement {
   const element = document.createElementNS(NS, name);
@@ -42,11 +46,12 @@ export function renderMap(
   loaded: LoadedData,
   configuration: Configuration,
   onActiveCell: (cell: ActiveCell | null, announce?: boolean) => void,
+  options: MapRenderOptions = {},
 ): SVGSVGElement {
   host.replaceChildren();
   const { payload, geography } = loaded;
   const grid = payload.grids[configuration.grid_id]!;
-  const projection = createProjection(payload.region, PLOT);
+  const projection = createProjection(DISPLAY_REGION, PLOT);
   const selected = new Set(configuration.selected_cell_indices);
   const statistic = String(configuration.values.statistic_used);
   const valueIndex = grid.columns.indexOf(statistic as "mean_flux" | "median_flux");
@@ -56,6 +61,7 @@ export function renderMap(
     viewBox: `0 0 ${VIEW.width} ${VIEW.height}`,
     role: "img",
     tabindex: 0,
+    "data-display-region": "-50,5,-95,10",
     "aria-label": "Geographic proton-flux grid. Use arrow keys to inspect cells; Home returns near the centroid; Escape clears inspection.",
   }) as SVGSVGElement;
   const clipId = `scientific-plot-clip-${++mapSequence}`;
@@ -71,19 +77,19 @@ export function renderMap(
   geographyLayer.append(svg("path", { d: pathFor(geography.coastlines, projection.x, projection.y), class: "map-coast" }));
   map.append(geographyLayer);
 
-  const guides = svg("g", { "data-layer": "guides", "aria-hidden": "true" });
-  for (let lon = payload.region.lon_min; lon <= payload.region.lon_max; lon += 20) {
+  const guides = svg("g", { "data-layer": "guides", "aria-hidden": "true", "clip-path": `url(#${clipId})` });
+  for (let lon = -80; lon <= DISPLAY_REGION.lon_max; lon += 20) {
     guides.append(svg("line", { x1: projection.x(lon), x2: projection.x(lon), y1: PLOT.top, y2: PLOT.top + PLOT.height, class: "map-guide" }));
   }
-  for (let lat = payload.region.lat_min; lat <= payload.region.lat_max; lat += 10) {
+  for (let lat = DISPLAY_REGION.lat_min; lat <= DISPLAY_REGION.lat_max; lat += 10) {
     guides.append(svg("line", { x1: PLOT.left, x2: PLOT.left + PLOT.width, y1: projection.y(lat), y2: projection.y(lat), class: "map-guide" }));
   }
   map.append(guides);
 
-  const cellsLayer = svg("g", { "data-layer": "cells" });
-  const selectedLayer = svg("g", { "data-layer": "selected", "aria-label": "Selected footprint cells" });
-  const width = (grid.grid_deg / (payload.region.lon_max - payload.region.lon_min)) * PLOT.width;
-  const height = (grid.grid_deg / (payload.region.lat_max - payload.region.lat_min)) * PLOT.height;
+  const cellsLayer = svg("g", { "data-layer": "cells", "clip-path": `url(#${clipId})` });
+  const selectedLayer = svg("g", { "data-layer": "selected", "aria-label": "Selected footprint cells", "clip-path": `url(#${clipId})` });
+  const width = (grid.grid_deg / (DISPLAY_REGION.lon_max - DISPLAY_REGION.lon_min)) * PLOT.width;
+  const height = (grid.grid_deg / (DISPLAY_REGION.lat_max - DISPLAY_REGION.lat_min)) * PLOT.height;
   const active = svg("rect", { class: "active-cell", visibility: "hidden", "pointer-events": "none" });
   let activeIndex: number | null = null;
 
@@ -147,13 +153,27 @@ export function renderMap(
   const cy = projection.y(configuration.metrics.centroid_lat);
   centroid.append(svg("circle", { cx, cy, r: 8, class: "centroid-ring" }));
   centroid.append(svg("path", { d: `M${cx - 7} ${cy - 7}L${cx + 7} ${cy + 7}M${cx - 7} ${cy + 7}L${cx + 7} ${cy - 7}`, class: "centroid-cross" }));
-  centroid.append(svg("line", { x1: cx + 8, y1: cy - 8, x2: cx + 19, y2: cy - 20, class: "centroid-leader" }));
-  centroid.append(svg("rect", { x: cx + 17, y: cy - 36, width: 142, height: 24, rx: 2, class: "centroid-label-bg" }));
-  const centroidLabel = svg("text", { x: cx + 25, y: cy - 20, class: "centroid-label" });
-  centroidLabel.textContent = "Flux-weighted centroid";
+  centroid.append(svg("line", { x1: cx + 8, y1: cy - 8, x2: cx + 22, y2: cy - 25, class: "centroid-leader" }));
+  centroid.append(svg("rect", { x: cx + 18, y: cy - 52, width: 242, height: 38, rx: 3, class: "centroid-label-bg" }));
+  const centroidLabel = svg("text", { x: cx + 30, y: cy - 26, class: "centroid-label" });
+  centroidLabel.textContent = options.centroidLabel ?? "Flux-weighted centroid";
   centroid.append(centroidLabel);
   map.append(centroid);
-  const inspection = svg("g", { "data-layer": "inspection" });
+
+  const kmPerLongitudeDegree = 6371 * Math.PI / 180 * Math.cos(Math.abs(SCALE_BAR.referenceLat) * Math.PI / 180);
+  const scaleLongitudeDegrees = SCALE_BAR.distanceKm / kmPerLongitudeDegree;
+  const scaleWidth = scaleLongitudeDegrees / (DISPLAY_REGION.lon_max - DISPLAY_REGION.lon_min) * PLOT.width;
+  const scaleX = PLOT.left + 24; const scaleY = PLOT.top + PLOT.height - 22;
+  const scaleBar = svg("g", { "data-layer": "scale-bar", "data-distance-km": SCALE_BAR.distanceKm, "aria-label": "500 kilometre map scale at 25 degrees south" });
+  scaleBar.append(
+    svg("line", { x1: scaleX, y1: scaleY, x2: scaleX + scaleWidth, y2: scaleY, class: "scale-bar-line" }),
+    svg("line", { x1: scaleX, y1: scaleY - 6, x2: scaleX, y2: scaleY + 6, class: "scale-bar-line" }),
+    svg("line", { x1: scaleX + scaleWidth, y1: scaleY - 6, x2: scaleX + scaleWidth, y2: scaleY + 6, class: "scale-bar-line" }),
+  );
+  const scaleLabel = svg("text", { x: scaleX, y: scaleY - 11, class: "scale-bar-label" });
+  scaleLabel.textContent = "500 km at 25°S"; scaleBar.append(scaleLabel); map.append(scaleBar);
+
+  const inspection = svg("g", { "data-layer": "inspection", "clip-path": `url(#${clipId})` });
   inspection.append(active);
   map.append(inspection);
 
