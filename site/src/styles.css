@@ -153,7 +153,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible, svg:focus-visible,
 
 @media (max-width: 680px) {
   .site-header { position: static; }
-  .site-header nav { display: none; }
+  .site-header { display: block; padding-bottom: .45rem; }
+  .site-header nav { display: flex; max-width: none; margin: .7rem -1rem 0; padding: 0 1rem .25rem; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: thin; }
+  .site-header nav a { flex: 0 0 auto; }
   .utility-bar { font-size: .65rem; }
   h1 { font-size: 2.15rem; }
   .metadata-grid { grid-template-columns: 1fr; border-left-width: 4px; }

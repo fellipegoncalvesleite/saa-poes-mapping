@@ -25,6 +25,7 @@ async function start(): Promise<void> {
     const change = (experiment: ExperimentName, values: ConfigurationValues) => { const result = resolveValues(index, loaded.payload, experiment, values); errorRoot.textContent = result.ok ? "" : "Unsupported state reset to the experiment default."; show(result.configuration); };
     const show = (configuration: Configuration, announce = true) => {
       current = configuration; const experiment = experimentFromConfiguration(configuration); explorerState.dataset.configId = configuration.id;
+      explorerState.setAttribute("aria-labelledby", `experiment-${experiment}-tab`);
       history.replaceState(null, "", `${location.pathname}${canonicalQuery(configuration.id)}${location.hash}`);
       renderControls(controlsRoot, loaded.payload, experiment, configuration.values, change);
       renderMap(mapRoot, loaded, configuration, (cell, shouldAnnounce) => { renderReadout(readoutRoot, current!, cell); if (shouldAnnounce) cellStatus.textContent = activeCellStatus(cell); });

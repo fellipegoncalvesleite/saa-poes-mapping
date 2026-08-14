@@ -31,6 +31,7 @@ describe("display-only map rendering", () => {
     renderMap(host, loaded, configuration, () => undefined);
     expect([...host.querySelectorAll("[data-layer]")].map((item) => item.getAttribute("data-layer")))
       .toEqual(["geography", "guides", "cells", "selected", "centroid", "inspection"]);
+    expect(host.querySelector('[data-layer="geography"]')?.getAttribute("clip-path")).toBe("url(#scientific-plot-clip)");
     expect(host.querySelectorAll('[data-layer="selected"] rect')).toHaveLength(configuration.selected_cell_indices.length);
     expect(host.querySelector('[data-layer="centroid"]')?.getAttribute("data-lat"))
       .toBe(String(configuration.metrics.centroid_lat));

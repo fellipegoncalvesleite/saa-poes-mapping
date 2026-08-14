@@ -20,6 +20,27 @@ describe("scientific payload validation", () => {
     expect(() => validateLoadedData(altered, geographyJson)).toThrow(/duplicate configuration id/i);
   });
 
+  it("rejects extra experiments and mismatched canonical ids", () => {
+    const extra = structuredClone(payloadJson) as typeof payloadJson & { experiments: Record<string, unknown> };
+    extra.experiments.magnetic = extra.experiments.threshold;
+    expect(() => validateLoadedData(extra, geographyJson)).toThrow(/experiment set/i);
+
+    const mismatched = structuredClone(payloadJson);
+    mismatched.experiments.threshold.configurations[0]!.id = "threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top999";
+    expect(() => validateLoadedData(mismatched, geographyJson)).toThrow(/canonical id/i);
+  });
+
+  it("rejects unsupported values and malformed grid cells", () => {
+    const unsupported = structuredClone(payloadJson);
+    unsupported.experiments.threshold.configurations[0]!.values.grid_deg = 3;
+    expect(() => validateLoadedData(unsupported, geographyJson)).toThrow(/unsupported value/i);
+
+    const malformed = structuredClone(payloadJson);
+    const gridId = malformed.experiments.threshold.configurations[0]!.grid_id;
+    malformed.grids[gridId]!.cells[0]![5] = null as unknown as boolean;
+    expect(() => validateLoadedData(malformed, geographyJson)).toThrow(/covered flag/i);
+  });
+
   it("rejects geography with a different region", () => {
     const altered = structuredClone(geographyJson);
     altered.region.lon_min = -99;
