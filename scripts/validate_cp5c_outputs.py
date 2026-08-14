@@ -247,8 +247,8 @@ def main(root: Path = ROOT) -> int:
         root / "outputs" / "tables" / "cp6a_key_results_summary.csv",
         root / "outputs" / "tables" / "cp6a_key_results_summary.parquet",
         root / "data" / "processed" / "cp5a_noaa19_2024-01_region_flux_plus_magnetic.parquet",
-        root / "docs" / "CLAIM_AUDIT.md",
-        root / "docs" / "PAPER_OUTLINE.md",
+        root / "docs" / "claims.md",
+        root / "docs" / "paper_outline.md",
     ]
     accepted_paths.extend(
         table_dir / f"cp4f_{satellite}_2024-01_grid_{resolution}deg.parquet"

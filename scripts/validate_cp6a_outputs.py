@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Validate Checkpoint 6A synthesis + mentor-packet outputs (no new science).
+"""Validate the synthesis outputs and durable scientific documentation.
 
 Checks:
 
 * the key results summary table exists (CSV + Parquet) and covers the required result areas
-* the claim audit exists and contains supported / plausible / forbidden sections
+* the claims document states supported findings, qualifications, and unsupported claims
 * the paper outline exists (with the chosen primary title)
 * the figure plan exists
-* the mentor packet exists and contains concrete, technical professor questions
-* the reproducibility checklist exists
+* the methodology and reproducibility documents exist
 * no new raw data was downloaded by CP6A (raw file count unchanged vs the 5x31 + samples already present)
 * no new scientific-analysis outputs beyond synthesis tables/docs (only cp6a_* table is new in tables/)
 * existing accepted outputs were not overwritten (spot-check accepted tables still present)
@@ -28,11 +27,11 @@ DOCS = ROOT / "docs"
 
 KEY_CSV = TBL / "cp6a_key_results_summary.csv"
 KEY_PARQ = TBL / "cp6a_key_results_summary.parquet"
-CLAIM = DOCS / "CLAIM_AUDIT.md"
-OUTLINE = DOCS / "PAPER_OUTLINE.md"
-FIGPLAN = DOCS / "FIGURE_PLAN.md"
-MENTOR = DOCS / "MENTOR_PACKET.md"
-REPRO = DOCS / "REPRODUCIBILITY_CHECKLIST.md"
+CLAIM = DOCS / "claims.md"
+METHOD = DOCS / "methodology.md"
+OUTLINE = DOCS / "paper_outline.md"
+FIGPLAN = DOCS / "figure_plan.md"
+REPRO = DOCS / "reproducibility.md"
 
 REQUIRED_AREAS = {"threshold sensitivity", "channel sensitivity", "time-window sensitivity",
                   "satellite consistency", "magnetic-coordinate framing"}
@@ -65,21 +64,18 @@ def main() -> int:
         and (key.main_numeric_result.str.len() > 0).all())
 
     # docs exist
-    for name, p in [("claim audit", CLAIM), ("paper outline", OUTLINE), ("figure plan", FIGPLAN),
-                    ("mentor packet", MENTOR), ("reproducibility checklist", REPRO)]:
+    for name, p in [("claims", CLAIM), ("methodology", METHOD), ("paper outline", OUTLINE),
+                    ("figure plan", FIGPLAN), ("reproducibility", REPRO)]:
         add(f"{name} exists", p.exists() and p.stat().st_size > 200,
             f"{p.stat().st_size} B" if p.exists() else "MISSING")
 
-    # claim audit sections
+    # claims document sections
     if CLAIM.exists():
         t = CLAIM.read_text().lower()
-        add("claim audit has supported section", "supported by current evidence" in t)
-        add("claim audit has plausible-not-proven section", "plausible but not yet proven" in t
-            or "plausible but not" in t)
-        add("claim audit has forbidden section", "forbidden" in t)
-        for term in ["final", "boundary", "dose", "health", "danger", "discovery"]:
-            pass
-        add("forbidden section names boundary/dose/health/danger/discovery",
+        add("claims has supported findings", "supported findings" in t)
+        add("claims has qualification section", "require qualification" in t)
+        add("claims has unsupported section", "unsupported claims" in t)
+        add("unsupported section names boundary/dose/health/danger/discovery",
             all(w in t for w in ["boundary", "dose", "health", "danger", "discovery"]))
 
     # paper outline chosen title
@@ -87,14 +83,6 @@ def main() -> int:
         ot = OUTLINE.read_text().lower()
         add("paper outline has the chosen primary title",
             "method-sensitivity study" in ot and "south atlantic anomaly" in ot)
-
-    # mentor packet concrete questions
-    if MENTOR.exists():
-        mt = MENTOR.read_text().lower()
-        concrete = sum(w in mt for w in ["mep_omni_flux_p1", "btot_sat", "mep_ifc_on", "l_igrf",
-                                         "calibration", "literature", "foot"])
-        add("mentor packet has concrete technical questions", "?" in MENTOR.read_text() and concrete >= 5,
-            f"{concrete} technical anchors")
 
     # no new raw data downloaded by CP6A: raw counts still the known 5x31 (+ no extra)
     raw = ROOT / "data" / "raw"
