@@ -1,10 +1,8 @@
-"""Behavior and authority-contract tests for the static scientific viewer exporter."""
+"""Behavior and authority-contract tests for the public-site payload exporter."""
 from __future__ import annotations
 
-import json
 import math
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -21,7 +19,6 @@ from saa.viewer_export import (  # noqa: E402
     haversine_km,
     selected_cell_indices,
     stable_configuration_id,
-    write_viewer_data,
 )
 
 
@@ -105,23 +102,6 @@ class ViewerSerializationTests(unittest.TestCase):
             stable_configuration_id("channel", values),
             stable_configuration_id("threshold", values),
         )
-
-    def test_writer_is_deterministic_classic_javascript(self) -> None:
-        payload = {"schema_version": 1, "label": "raw", "nested": {"b": 2, "a": 1}}
-        with tempfile.TemporaryDirectory() as tmp:
-            first = Path(tmp) / "first.js"
-            second = Path(tmp) / "second.js"
-            hash_one = write_viewer_data(payload, first)
-            hash_two = write_viewer_data(payload, second)
-
-            self.assertEqual(hash_one, hash_two)
-            self.assertEqual(first.read_bytes(), second.read_bytes())
-            source = first.read_text(encoding="utf-8")
-            self.assertTrue(source.startswith("window.SAA_VIEWER_DATA = "))
-            self.assertTrue(source.endswith(";\n"))
-            decoded = json.loads(source.removeprefix("window.SAA_VIEWER_DATA = ").removesuffix(";\n"))
-            self.assertEqual(decoded, payload)
-
 
 @unittest.skipUnless(
     (ROOT / "outputs" / "tables" / "cp4f_multisatellite_threshold_sensitivity.parquet").exists(),

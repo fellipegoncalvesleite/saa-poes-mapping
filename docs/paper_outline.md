@@ -31,7 +31,7 @@ Alternates:
 
 ## 3. Introduction
 - What the SAA is (brief, cited); why LEO energetic-particle data sees it.
-- Prior SAA mapping approaches (model-based AP-8/AP-9; in-situ; POES/MEPED studies) — cite via mentor.
+- Prior SAA mapping approaches (model-based AP-8/AP-9; in-situ; POES/MEPED studies) — add primary citations during manuscript preparation.
 - Motivation: reproducibility + explicit method-sensitivity on public data.
 - Research question (verbatim, below) and contribution list.
 
@@ -78,7 +78,7 @@ is near zero for four satellites but separates on NOAA-15, while remaining weake
 
 ## 9. Reproducibility statement
 - Public data + open code; deterministic notebooks in order; per-checkpoint validators; provenance
-  with checksums; git-ignored regenerable payloads. (Point to `REPRODUCIBILITY_CHECKLIST.md`.)
+  with checksums; git-ignored regenerable payloads. (Point to `reproducibility.md`.)
 
 ## 10. Future work
 - Multi-month / seasonal extension; foot-point vs satellite

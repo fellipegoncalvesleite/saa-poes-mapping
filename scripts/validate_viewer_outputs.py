@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the static viewer against every canonical checkpoint map configuration."""
+"""Validate the public-site payload against every canonical map configuration."""
 from __future__ import annotations
 
 import json
@@ -15,7 +15,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from saa.viewer_export import build_viewer_payload, write_viewer_data  # noqa: E402
+from saa.viewer_export import build_viewer_payload, write_viewer_json  # noqa: E402
 
 RTOL = 1e-9
 ATOL = 1e-12
@@ -68,40 +68,12 @@ def deep_payload_matches(actual: Any, expected: Any) -> bool:
     return type(actual) is type(expected) and actual == expected
 
 
-def load_viewer_data(path: Path) -> dict[str, Any]:
-    source = Path(path).read_text(encoding="utf-8")
-    prefix = "window.SAA_VIEWER_DATA = "
-    suffix = ";\n"
-    if not source.startswith(prefix) or not source.endswith(suffix):
-        raise ValueError("viewer_data.js is not the required classic global assignment")
-    payload = json.loads(source[len(prefix):-len(suffix)])
+def load_site_data(path: Path) -> dict[str, Any]:
+    """Load the neutral JSON consumed by the public research site."""
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise TypeError("viewer payload root must be an object")
     return payload
-
-
-def static_files_are_file_openable(viewer_dir: Path) -> tuple[bool, str]:
-    viewer_dir = Path(viewer_dir)
-    required = [viewer_dir / "index.html", viewer_dir / "viewer.js", viewer_dir / "viewer_data.js"]
-    missing = [path.name for path in required if not path.is_file()]
-    if missing:
-        return False, f"missing static files: {missing}"
-    html = required[0].read_text(encoding="utf-8")
-    renderer = required[1].read_text(encoding="utf-8")
-    problems = []
-    data_tag = '<script src="viewer_data.js"></script>'
-    render_tag = '<script src="viewer.js"></script>'
-    if data_tag not in html or render_tag not in html or html.index(data_tag) > html.index(render_tag):
-        problems.append("classic scripts are missing or out of order")
-    if 'type="module"' in html or "type='module'" in html:
-        problems.append("module scripts require a server under common file:// browser policies")
-    if "fetch(" in html or "fetch(" in renderer:
-        problems.append("fetch is forbidden for the file-openable viewer")
-    lowered = renderer.lower()
-    for forbidden in ("react", "vue", "angular", "next.js", "mapbox", "leaflet"):
-        if forbidden in lowered:
-            problems.append(f"unnecessary framework/map dependency found: {forbidden}")
-    return not problems, "; ".join(problems) if problems else "classic local/static files; no fetch/modules/framework"
 
 
 def _configuration_id(experiment: str, values: dict[str, Any]) -> str:
@@ -319,21 +291,19 @@ def independent_cp5c_matches(payload: dict[str, Any], table_dir: Path) -> tuple[
 
 def main(
     table_dir: Path = ROOT / "outputs" / "tables",
-    viewer_dir: Path = ROOT / "outputs" / "viewer",
+    site_data_path: Path = ROOT / "site" / "public" / "data" / "viewer_data.json",
 ) -> int:
     checks: list[tuple[str, bool, str]] = []
 
     def add(name: str, ok: bool, detail: str) -> None:
         checks.append((name, bool(ok), detail))
 
-    viewer_data = Path(viewer_dir) / "viewer_data.js"
-    ok, detail = static_files_are_file_openable(viewer_dir)
-    add("file-openable static contract", ok, detail)
+    site_data_path = Path(site_data_path)
     try:
-        payload = load_viewer_data(viewer_data)
-        add("viewer data parses", True, f"schema={payload.get('schema_version')}")
+        payload = load_site_data(site_data_path)
+        add("site data parses", True, f"schema={payload.get('schema_version')}")
     except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
-        add("viewer data parses", False, str(exc))
+        add("site data parses", False, str(exc))
         payload = None
 
     if payload is not None:
@@ -350,9 +320,9 @@ def main(
                 "generated payload equals fresh authority export",
             )
             with tempfile.TemporaryDirectory() as tmp:
-                fresh_path = Path(tmp) / "viewer_data.js"
-                write_viewer_data(regenerated, fresh_path)
-                byte_exact = fresh_path.read_bytes() == viewer_data.read_bytes()
+                fresh_path = Path(tmp) / "viewer_data.json"
+                write_viewer_json(regenerated, fresh_path)
+                byte_exact = fresh_path.read_bytes() == site_data_path.read_bytes()
             add("byte-deterministic artifact", byte_exact, "fresh bytes equal checked artifact")
         except (OSError, ValueError, KeyError, TypeError) as exc:
             add("fresh deterministic payload", False, str(exc))
