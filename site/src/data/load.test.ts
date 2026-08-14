@@ -11,6 +11,7 @@ describe("scientific payload validation", () => {
     );
     expect(counts).toEqual({ channel: 60, satellite: 100, threshold: 20, time: 160 });
     expect(Object.keys(loaded.payload.grids)).toHaveLength(26);
+    expect(loaded.payload.comparisons).toHaveLength(860);
     expect(loaded.payload.cp5c.classification).toBe("CONSISTENT");
   });
 
@@ -39,6 +40,21 @@ describe("scientific payload validation", () => {
     const gridId = malformed.experiments.threshold.configurations[0]!.grid_id;
     malformed.grids[gridId]!.cells[0]![5] = null as unknown as boolean;
     expect(() => validateLoadedData(malformed, geographyJson)).toThrow(/covered flag/i);
+  });
+
+  it("rejects malformed physical geometry and comparison evidence", () => {
+    const geometry = structuredClone(payloadJson);
+    const gridId = geometry.experiments.threshold.configurations[0]!.grid_id;
+    geometry.grids[gridId]!.cells[0]![8] = -1;
+    expect(() => validateLoadedData(geometry, geographyJson)).toThrow(/physical geometry/i);
+
+    const comparison = structuredClone(payloadJson);
+    comparison.comparisons[0]!.jaccard_overlap = 2;
+    expect(() => validateLoadedData(comparison, geographyJson)).toThrow(/comparison metrics/i);
+
+    const unknown = structuredClone(payloadJson);
+    unknown.comparisons[0]!.configuration_b = "missing";
+    expect(() => validateLoadedData(unknown, geographyJson)).toThrow(/comparison configuration/i);
   });
 
   it("rejects geography with a different region", () => {

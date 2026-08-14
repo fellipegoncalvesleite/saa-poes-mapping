@@ -31,7 +31,7 @@ describe("display-only map rendering", () => {
     renderMap(host, loaded, configuration, () => undefined);
     expect([...host.querySelectorAll("[data-layer]")].map((item) => item.getAttribute("data-layer")))
       .toEqual(["geography", "guides", "cells", "selected", "centroid", "inspection"]);
-    expect(host.querySelector('[data-layer="geography"]')?.getAttribute("clip-path")).toBe("url(#scientific-plot-clip)");
+    expect(host.querySelector('[data-layer="geography"]')?.getAttribute("clip-path")).toMatch(/^url\(#scientific-plot-clip-/);
     expect(host.querySelectorAll(".map-cell.is-selected")).toHaveLength(configuration.selected_cell_indices.length);
     expect(host.querySelectorAll('[data-layer="selected"] path')).toHaveLength(2);
     expect(host.querySelector('[data-layer="selected"] rect')).toBeNull();
@@ -39,6 +39,16 @@ describe("display-only map rendering", () => {
       .toBe(String(configuration.metrics.centroid_lat));
     expect(host.querySelector('[data-layer="centroid"] text')?.textContent).toBe("Flux-weighted centroid");
     expect(host.querySelector(".map-legend")?.textContent).toContain("Selected top 10% footprint");
+    expect(host.querySelector(".map-legend")?.textContent).toContain("5° cell");
+    expect(host.querySelector(".map-legend")?.textContent).toContain("km N–S");
     expect(host.querySelectorAll("[data-cell-index][tabindex]")).toHaveLength(0);
+  });
+
+  it("uses distinct SVG clip identifiers for side-by-side maps", () => {
+    const configuration = loaded.payload.experiments.threshold.configurations[0]!;
+    const first = document.createElement("div"); const second = document.createElement("div");
+    renderMap(first, loaded, configuration, () => undefined);
+    renderMap(second, loaded, configuration, () => undefined);
+    expect(first.querySelector("clipPath")?.id).not.toBe(second.querySelector("clipPath")?.id);
   });
 });

@@ -12,7 +12,7 @@ const DIMENSIONS: Record<ExperimentName, string[]> = {
   time: ["window_label", "grid_deg", "statistic_used", "threshold_label"],
   satellite: ["satellite", "grid_deg", "statistic_used", "threshold_label"],
 };
-const GRID_COLUMNS = ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered"];
+const GRID_COLUMNS = ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered", "north_south_km", "east_west_km", "cell_area_km2"];
 const METRICS = ["flux_cutoff", "covered_cells", "selected_cells", "selected_area_km2", "selected_area_fraction", "centroid_lat", "centroid_lon", "peak_flux", "percentile_cutoff"];
 const CP5C_SATELLITES = ["metop01", "metop03", "noaa15", "noaa18", "noaa19"];
 
@@ -56,11 +56,12 @@ function validateGrid(id: string, input: unknown): number {
   }
   if (!Array.isArray(grid.cells) || grid.cells.length === 0) throw new Error(`Grid cells missing for ${id}`);
   for (const [index, cell] of grid.cells.entries()) {
-    if (!Array.isArray(cell) || cell.length !== 6 || !finite(cell[0]) || !finite(cell[1])) throw new Error(`Malformed grid cell ${id}:${index}`);
+    if (!Array.isArray(cell) || cell.length !== 9 || !finite(cell[0]) || !finite(cell[1])) throw new Error(`Malformed grid cell ${id}:${index}`);
     if (![cell[2], cell[3]].every((value) => value === null || finite(value))) throw new Error(`Invalid flux value for ${id}:${index}`);
     if (!Number.isInteger(cell[4]) || cell[4] < 0) throw new Error(`Invalid sample count for ${id}:${index}`);
     if (typeof cell[5] !== "boolean") throw new Error(`Invalid covered flag for ${id}:${index}`);
     if (!cell[5] && (cell[2] !== null || cell[3] !== null)) throw new Error(`Coverage-failed flux must be blank for ${id}:${index}`);
+    if (![cell[6], cell[7], cell[8]].every((value) => finite(value) && value > 0)) throw new Error(`Invalid physical geometry for ${id}:${index}`);
   }
   return grid.cells.length;
 }
@@ -98,6 +99,7 @@ export function validateLoadedData(payloadInput: unknown, geographyInput: unknow
   const gridLengths = new Map<string, number>();
   for (const [id, grid] of Object.entries(grids)) gridLengths.set(id, validateGrid(id, grid));
   const ids = new Set<string>();
+  const configurationsById = new Map<string, { experiment: ExperimentName; values: Record<string, unknown> }>();
   for (const [name, count] of Object.entries(EXPECTED) as Array<[ExperimentName, number]>) {
     const experiment = object(experiments[name], `${name} experiment`);
     const configurations = experiment.configurations;
@@ -151,7 +153,25 @@ export function validateLoadedData(payloadInput: unknown, geographyInput: unknow
       if (!exactKeys(metrics, METRICS) || METRICS.some((key) => !finite(metrics[key]))) throw new Error(`Canonical metrics are malformed for ${id}`);
       if (Number(metrics.selected_cells) !== configuration.selected_cell_indices.length || Number(metrics.covered_cells) < Number(metrics.selected_cells)) throw new Error(`Canonical counts are inconsistent for ${id}`);
       object(configuration.metadata, `metadata for ${id}`);
+      configurationsById.set(id, { experiment: name, values });
     }
+  }
+  if (!Array.isArray(payloadObject.comparisons) || payloadObject.comparisons.length !== 860) throw new Error("Scientific payload must contain 860 comparisons");
+  const comparisonKeys = ["id", "experiment", "focal_dimension", "configuration_a", "configuration_b", "centroid_distance_km", "selected_area_difference_km2", "selected_area_ratio", "intersection_area_km2", "union_area_km2", "jaccard_overlap"];
+  const focal: Record<ExperimentName, string> = { threshold: "threshold_label", channel: "channel", time: "window_label", satellite: "satellite" };
+  const comparisonIds = new Set<string>();
+  for (const input of payloadObject.comparisons) {
+    const comparison = object(input, "comparison");
+    if (!exactKeys(comparison, comparisonKeys) || typeof comparison.id !== "string" || comparisonIds.has(comparison.id)) throw new Error("Comparison record keys or id are invalid");
+    comparisonIds.add(comparison.id);
+    if (typeof comparison.configuration_a !== "string" || typeof comparison.configuration_b !== "string") throw new Error("Comparison configuration ids are invalid");
+    const a = configurationsById.get(comparison.configuration_a); const b = configurationsById.get(comparison.configuration_b);
+    if (!a || !b) throw new Error("Comparison configuration is unknown");
+    if (comparison.experiment !== a.experiment || comparison.experiment !== b.experiment || comparison.focal_dimension !== focal[a.experiment]) throw new Error("Comparison configuration scope is invalid");
+    const changed = Object.keys(a.values).filter((key) => a.values[key] !== b.values[key]);
+    if (changed.length !== 1 || changed[0] !== focal[a.experiment]) throw new Error("Comparison configuration background settings differ");
+    const metricValues = [comparison.centroid_distance_km, comparison.selected_area_difference_km2, comparison.selected_area_ratio, comparison.intersection_area_km2, comparison.union_area_km2, comparison.jaccard_overlap];
+    if (!metricValues.every(finite) || Number(comparison.centroid_distance_km) < 0 || Number(comparison.selected_area_difference_km2) < 0 || Number(comparison.selected_area_ratio) < 1 || Number(comparison.intersection_area_km2) < 0 || Number(comparison.union_area_km2) <= 0 || Number(comparison.jaccard_overlap) < 0 || Number(comparison.jaccard_overlap) > 1) throw new Error("Comparison metrics are invalid");
   }
   validateCp5c(payloadObject.cp5c);
   if (!Array.isArray(geographyObject.coastlines) || !Array.isArray(geographyObject.borders)) {

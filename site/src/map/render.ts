@@ -5,6 +5,7 @@ import { createProjection } from "./projection";
 const NS = "http://www.w3.org/2000/svg";
 const VIEW = { width: 940, height: 660 };
 const PLOT = { left: 58, top: 24, width: 780, height: 585 };
+let mapSequence = 0;
 
 function svg(name: string, attributes: Record<string, string | number> = {}): SVGElement {
   const element = document.createElementNS(NS, name);
@@ -57,14 +58,15 @@ export function renderMap(
     tabindex: 0,
     "aria-label": "Geographic proton-flux grid. Use arrow keys to inspect cells; Home returns near the centroid; Escape clears inspection.",
   }) as SVGSVGElement;
+  const clipId = `scientific-plot-clip-${++mapSequence}`;
 
   const definitions = svg("defs");
-  const plotClip = svg("clipPath", { id: "scientific-plot-clip" });
+  const plotClip = svg("clipPath", { id: clipId });
   plotClip.append(svg("rect", { x: PLOT.left, y: PLOT.top, width: PLOT.width, height: PLOT.height }));
   definitions.append(plotClip);
   map.append(definitions);
 
-  const geographyLayer = svg("g", { "data-layer": "geography", "aria-hidden": "true", "clip-path": "url(#scientific-plot-clip)" });
+  const geographyLayer = svg("g", { "data-layer": "geography", "aria-hidden": "true", "clip-path": `url(#${clipId})` });
   geographyLayer.append(svg("path", { d: pathFor(geography.borders, projection.x, projection.y), class: "map-border" }));
   geographyLayer.append(svg("path", { d: pathFor(geography.coastlines, projection.x, projection.y), class: "map-coast" }));
   map.append(geographyLayer);
@@ -104,6 +106,9 @@ export function renderMap(
       selected: selected.has(index),
       statistic,
       units,
+      northSouthKm: cell[6],
+      eastWestKm: cell[7],
+      areaKm2: cell[8],
     }, announce);
   };
 
@@ -190,8 +195,14 @@ function legend(grid: Grid, statistic: string, configuration: Configuration): HT
   const swatches = Array.from({ length: 9 }, (_, index) => `<i style="background:${viridisAt(index / 8)}"></i>`).join("");
   const domain = grid.color_domains[statistic]!;
   const threshold = String(configuration.values.threshold_label).replace(/^top(\d+)$/, "top $1%");
+  const representative = grid.cells[configuration.selected_cell_indices.reduce((best, index) => {
+    const cell = grid.cells[index]!; const current = grid.cells[best]!;
+    const distance = Math.hypot(cell[0] - configuration.metrics.centroid_lat, cell[1] - configuration.metrics.centroid_lon);
+    const bestDistance = Math.hypot(current[0] - configuration.metrics.centroid_lat, current[1] - configuration.metrics.centroid_lon);
+    return distance < bestDistance ? index : best;
+  }, configuration.selected_cell_indices[0] ?? 0)]!;
   element.innerHTML = `<div class="legend-title"><strong>What the map shows</strong><span>${statistic === "mean_flux" ? "Mean" : "Median"} proton flux · logarithmic scale</span></div>
     <div class="legend-row"><span class="legend-label">Lower flux</span><span class="legend-scale"><b>${domain[0].toPrecision(3)}</b>${swatches}<b>${domain[1].toPrecision(3)}</b></span><span class="legend-label">Higher flux</span></div>
-    <div class="legend-keys"><span class="legend-key"><i class="legend-footprint"></i><span><strong>Selected ${threshold} footprint</strong><small>Red perimeter; cells outside are dimmed context</small></span></span><span class="legend-key"><i class="legend-centroid">×</i><span><strong>Flux-weighted centroid</strong><small>Stored center of the selected cells</small></span></span></div>`;
+    <div class="legend-keys"><span class="legend-key"><i class="legend-footprint"></i><span><strong>Selected ${threshold} footprint</strong><small>Red perimeter; cells outside are dimmed context</small></span></span><span class="legend-key"><i class="legend-centroid">×</i><span><strong>Flux-weighted centroid</strong><small>Stored center of the selected cells</small></span></span><span class="legend-key legend-cell-scale"><i class="legend-cell"></i><span><strong>${grid.grid_deg}° cell near footprint</strong><small>Approx. ${Math.round(representative[6])} km N–S × ${Math.round(representative[7])} km E–W; width changes with latitude</small></span></span></div>`;
   return element;
 }

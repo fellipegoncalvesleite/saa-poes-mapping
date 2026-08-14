@@ -1,7 +1,7 @@
 export type ExperimentName = "threshold" | "channel" | "time" | "satellite";
 export type Primitive = string | number;
 export type ConfigurationValues = Record<string, Primitive>;
-export type CellTuple = [number, number, number | null, number | null, number, boolean];
+export type CellTuple = [number, number, number | null, number | null, number, boolean, number, number, number];
 
 export interface Region {
   lat_min: number;
@@ -43,10 +43,23 @@ export interface Experiment {
 export interface Grid {
   grid_deg: number;
   mask_column: string;
-  columns: ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered"];
+  columns: ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered", "north_south_km", "east_west_km", "cell_area_km2"];
   cells: CellTuple[];
   color_domains: Record<string, [number, number]>;
   sources: string[];
+}
+export interface Comparison {
+  id: string;
+  experiment: ExperimentName;
+  focal_dimension: string;
+  configuration_a: string;
+  configuration_b: string;
+  centroid_distance_km: number;
+  selected_area_difference_km2: number;
+  selected_area_ratio: number;
+  intersection_area_km2: number;
+  union_area_km2: number;
+  jaccard_overlap: number;
 }
 export interface Cp5cSatellite {
   satellite: string;
@@ -75,6 +88,7 @@ export interface ViewerPayload {
   region: Region;
   experiments: Record<ExperimentName, Experiment>;
   grids: Record<string, Grid>;
+  comparisons: Comparison[];
   cp5c: Cp5cPayload;
   global_caveats: string[];
 }
@@ -99,4 +113,7 @@ export interface ActiveCell {
   selected: boolean;
   statistic: string;
   units: string;
+  northSouthKm: number;
+  eastWestKm: number;
+  areaKm2: number;
 }
