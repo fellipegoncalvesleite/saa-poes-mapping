@@ -68,6 +68,29 @@
 
 ---
 
+### Revision Task: Institutional scientific-portal presentation
+
+**Files:**
+- Modify: `site/index.html`
+- Modify: `site/src/styles.css`
+- Modify: `site/src/ui/ui.test.ts`
+
+**Produces:** A direct, NASA Earthdata/NOAA-inspired information hierarchy without copied branding,
+page code, promotional copy, display-serif typography, or a landing-page hero.
+
+- [ ] Replace the copy test assertions so they require the literal project title, scope status,
+  dataset period, `Interactive map`, `Results`, `Method`, `Magnetic-field context`,
+  `Reproducibility`, and `Limitations`, and reject the old question headline.
+- [ ] Run `cd site && npm test -- --run` and verify the revised assertions fail.
+- [ ] Replace the hero with a compact project summary and metadata strip; rename navigation and
+  section headings literally; place the explorer immediately after the summary.
+- [ ] Replace the editorial palette/type scale with system sans-serif, navy/white/cool-gray surfaces,
+  blue/red utility accents, compact spacing, and technical-panel borders while preserving Viridis.
+- [ ] Run `cd site && npm test -- --run && npm run build` and verify both pass.
+- [ ] Render at desktop and 390×844, verify no horizontal overflow, exercise a threshold change and
+  satellite calibration restriction, and confirm an empty error console.
+- [ ] Commit the redesign as `feat: adopt scientific portal presentation`.
+
 ### Task 1: Deterministic Website JSON Authority
 
 **Files:**
