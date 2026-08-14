@@ -43,6 +43,7 @@
       </div>
       <div id="viewer-error" class="viewer-error" role="alert"></div>
       <div id="experiment-controls" class="controls"></div>
+      <div id="comparison-controls" class="comparison-controls"></div>
       <div id="explorer-state" class="explorer-layout" data-config-id="" role="tabpanel">
         <figure class="map-panel">
           <div id="map-root" class="map-root"></div>
@@ -50,12 +51,19 @@
         </figure>
         <aside id="readout-root" class="readout" aria-label="Canonical configuration readout"></aside>
       </div>
+      <div id="comparison-state" class="comparison-state" hidden>
+        <div class="comparison-maps">
+          <figure class="map-panel"><h3 id="comparison-a-label">Map A</h3><div id="comparison-map-a" class="map-root"></div></figure>
+          <figure class="map-panel"><h3 id="comparison-b-label">Map B</h3><div id="comparison-map-b" class="map-root"></div></figure>
+        </div>
+        <aside id="comparison-summary" class="comparison-summary" aria-label="Map difference summary"></aside>
+      </div>
       <p id="configuration-status" class="sr-only" aria-live="polite"></p>
       <p id="cell-status" class="sr-only" aria-live="polite"></p>
       <div class="map-key">
         <h3>How to read this map</h3>
         <dl>
-          <div><dt>Cell</dt><dd>A geographic region containing many satellite observations.</dd></div>
+          <div><dt>Cell</dt><dd>A geographic region containing many satellite observations. Its physical dimensions are shown for the current latitude.</dd></div>
           <div><dt>Color</dt><dd>Mean or median proton flux. Cells outside the selection are dimmed but remain measured context.</dd></div>
           <div><dt>Red perimeter</dt><dd>The outer edge of the current percentile-defined candidate footprint.</dd></div>
           <div><dt>Centroid marker</dt><dd>The stored flux-weighted centroid of the selected cells.</dd></div>
