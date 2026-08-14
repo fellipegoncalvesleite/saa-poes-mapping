@@ -1,4 +1,4 @@
-"""Unit tests for static-viewer validation predicates and failure behavior."""
+"""Unit tests for public-site payload validation and failure behavior."""
 from __future__ import annotations
 
 import copy
@@ -14,8 +14,8 @@ import pandas as pd
 from scripts.validate_viewer_outputs import (
     _grid_matches,
     deep_payload_matches,
+    load_site_data,
     main,
-    static_files_are_file_openable,
 )
 
 
@@ -89,48 +89,27 @@ class ViewerValidatorPredicateTests(unittest.TestCase):
         self.assertFalse(deep_payload_matches(altered_membership, expected))
         self.assertFalse(deep_payload_matches(altered_float, expected))
 
-    def test_static_contract_rejects_fetch_and_module_scripts(self) -> None:
+    def test_site_data_loader_accepts_neutral_json_object(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            viewer = Path(tmp)
-            (viewer / "viewer_data.js").write_text("window.SAA_VIEWER_DATA = {};\n", encoding="utf-8")
-            (viewer / "viewer.js").write_text("fetch('data.json');\n", encoding="utf-8")
-            (viewer / "index.html").write_text(
-                '<script type="module" src="viewer.js"></script>', encoding="utf-8"
-            )
-            ok, details = static_files_are_file_openable(viewer)
-
-            self.assertFalse(ok)
-            self.assertIn("fetch", details)
-            self.assertIn("module", details)
+            path = Path(tmp) / "viewer_data.json"
+            path.write_text('{"schema_version": 1}\n', encoding="utf-8")
+            self.assertEqual(load_site_data(path), {"schema_version": 1})
 
     def test_validator_fails_loudly_when_outputs_are_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, redirect_stdout(StringIO()):
             root = Path(tmp)
-            result = main(table_dir=root / "tables", viewer_dir=root / "viewer")
+            result = main(table_dir=root / "tables", site_data_path=root / "viewer_data.json")
         self.assertEqual(result, 1)
 
     @unittest.skipUnless(
-        (ROOT / "outputs" / "viewer" / "viewer_data.js").exists(),
-        "generated viewer data is not present",
+        (ROOT / "site" / "public" / "data" / "viewer_data.json").exists(),
+        "generated site data is not present",
     )
     def test_current_payload_corruption_is_detected(self) -> None:
-        from scripts.validate_viewer_outputs import load_viewer_data
-
-        actual = load_viewer_data(ROOT / "outputs" / "viewer" / "viewer_data.js")
+        actual = load_site_data(ROOT / "site" / "public" / "data" / "viewer_data.json")
         altered = copy.deepcopy(actual)
         altered["experiments"]["threshold"]["configurations"][0]["metrics"]["selected_cells"] += 1
         self.assertFalse(deep_payload_matches(altered, actual))
-
-
-class ViewerLauncherContractTests(unittest.TestCase):
-    def test_launcher_supports_macos_linux_and_legacy_command(self) -> None:
-        launcher = (ROOT / "scripts" / "open_viewer.sh").read_text(encoding="utf-8")
-        legacy = (ROOT / "scripts" / "open_cp3_viewer.sh").read_text(encoding="utf-8")
-
-        self.assertIn("Darwin", launcher)
-        self.assertIn("open", launcher)
-        self.assertIn("xdg-open", launcher)
-        self.assertIn("open_viewer.sh", legacy)
 
 
 if __name__ == "__main__":

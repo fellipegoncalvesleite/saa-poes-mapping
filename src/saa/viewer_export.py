@@ -1,6 +1,6 @@
-"""Deterministic export of validated checkpoint outputs for the static viewer.
+"""Deterministic export of validated analysis outputs for the public site.
 
-Scientific calculations remain in the Python pipeline.  The viewer consumes exported
+Scientific calculations remain in the Python pipeline.  The site consumes exported
 validated values for display.  This module reads the
 accepted grid and sensitivity Parquets, checks that their discrete contracts agree, computes the
 selected-cell membership in Python from each canonical stored cutoff, and writes ordinary
@@ -590,22 +590,6 @@ def build_viewer_payload(table_dir: Path) -> dict[str, Any]:
             "mep_IFC_on == -1 is retained and remains uninterpreted",
         ],
     }
-
-
-def write_viewer_data(payload: dict[str, Any], output: Path) -> str:
-    """Write deterministic classic JavaScript and return its SHA-256 digest."""
-    encoded = json.dumps(
-        payload,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-        allow_nan=False,
-    )
-    source = f"window.SAA_VIEWER_DATA = {encoded};\n"
-    output = Path(output)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(source, encoding="utf-8", newline="\n")
-    return hashlib.sha256(source.encode("utf-8")).hexdigest()
 
 
 def write_viewer_json(payload: dict[str, Any], output: Path) -> str:
