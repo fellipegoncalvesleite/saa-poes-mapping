@@ -140,7 +140,8 @@ loaded, no missing days. The month is read once and each window is an in-memory 
 - `cp4d_noaa19_2024-01-01_to_14_mep_omni_flux_p1_region.parquet` — 88,277 rows, 2,583,567 B
 - `cp4d_noaa19_2024-01_full_month_mep_omni_flux_p1_region.parquet` — 205,153 rows, 4,949,364 B,
   sha256 `5ada9229275b0d75…` (identical content to the CP4A monthly region subset).
-Weekly windows are sliced in-memory (no separate parquet) and documented in `research_notes.md`.
+Weekly windows are sliced in-memory (no separate parquet); the coverage rule is documented in
+`docs/methodology.md`.
 
 **Grid tables (new, `outputs/tables/`, 16):** `cp4d_{window}_grid_{5deg,2deg}.parquet` for windows
 `day_2024-01-01, days_2024-01-01_to_07, days_2024-01-01_to_14, month_2024-01, week1..week4`. Same

@@ -1,4 +1,4 @@
-# Figure Plan — core figures for the paper (CP6A)
+# Figure plan
 
 Only the strongest figures are selected. All file paths are git-ignored but regenerable from the
 executed notebooks. Every caption must keep the exploratory / descriptive framing.
@@ -14,7 +14,7 @@ Legend: **M** = main paper, **S** = supplement.
 - Caption draft: "Exploratory monthly mean omnidirectional proton flux (NOAA-19, Jan 2024, ~25 MeV,
   5° coverage-masked) with top-10%/top-5% threshold-defined footprints (× = flux-weighted centroid).
   Not a final SAA boundary."
-- Supports: existence of a persistent candidate high-flux sector (Claim A1).
+- Supports: existence of a persistent candidate high-flux sector (claim 1 in `claims.md`).
 - Must NOT claim: a definitive boundary/center.
 
 ## F2 — Threshold overlay (M)
@@ -22,7 +22,7 @@ Legend: **M** = main paper, **S** = supplement.
 - Why: shows nested footprints shrinking/moving as the threshold tightens.
 - Caption draft: "Threshold-defined footprints (top 20→1%) on the coverage-masked 5° mean grid;
   centers and areas are method-dependent."
-- Supports: threshold method-dependence (Claim A2).
+- Supports: threshold method-dependence (claim 2 in `claims.md`).
 - Must NOT claim: that any one threshold is 'the' SAA.
 
 ## F3 — Centroid shift vs threshold (M)
@@ -30,7 +30,7 @@ Legend: **M** = main paper, **S** = supplement.
 - Why: quantifies the ~386 km centroid travel and area ~17.7× change.
 - Caption draft: "Flux-weighted centroid path as the flux threshold tightens (labels = top-X%);
   ~386 km total shift (5° mean). Method-dependent, exploratory."
-- Supports: A2. Must NOT claim: physical motion of the SAA.
+- Supports: claim 2. Must NOT claim: physical motion of the SAA.
 
 ## F4 — Time-window stabilization (M)
 - Source: CP4D. Path: `outputs/figures/cp4d_centroid_by_time_window_top10.png`
@@ -38,7 +38,7 @@ Legend: **M** = main paper, **S** = supplement.
 - Why: shows the day→7-day jump then stabilization (~288 km day→month; ~118 km weekly).
 - Caption draft: "Flux-weighted centroid by aggregation window (top10, 5° mean); one-day maps are
   coverage-limited, stabilizing by ~7 days."
-- Supports: A4. Must NOT claim: a one-day footprint as final.
+- Supports: claim 4. Must NOT claim: a one-day footprint as final.
 
 ## F5 — Multi-satellite centroid comparison (M)
 - Source: CP4F. Path: `outputs/figures/cp4f_multisatellite_centroid_comparison_top10_top5.png`
@@ -46,7 +46,7 @@ Legend: **M** = main paper, **S** = supplement.
 - Why: footprint location agrees across 5 satellites (~272 km), NOAA-15 outlier; < threshold effect.
 - Caption draft: "Flux-weighted footprint centroids across five POES/MetOp satellites (top10/top5,
   5° mean); broad location agreement (calibration-limited; absolute flux not compared)."
-- Supports: A5, A6. Must NOT claim: absolute-intensity satellite comparison.
+- Supports: claims 5 and 6. Must NOT claim: absolute-intensity satellite comparison.
 
 ## F6 — Magnetic-coordinate framing (M)
 - Source: CP5B. Path: `outputs/figures/cp5b_inside_outside_Btot_sat.png`
@@ -54,12 +54,12 @@ Legend: **M** = main paper, **S** = supplement.
 - Why: inside-footprint samples sit in a low, narrow `Btot_sat` band vs the regional background.
 - Caption draft: "Descriptive inside-vs-outside footprint distribution of IGRF total field `Btot_sat`
   (top10, 5° mean); the footprint concentrates at low field strength. Co-location, not causation."
-- Supports: A7, A8. Must NOT claim: causality or footprint = field minimum.
+- Supports: claims 7 and 8. Must NOT claim: causality or footprint = field minimum.
 
 ---
 
 ## Supplement (S)
-- S1 channel sensitivity: `cp4c_channel_centroid_comparison.png` (Claim A3).
+- S1 channel sensitivity: `cp4c_channel_centroid_comparison.png` (claim 3).
 - S2 channel maps p1/p2/p3: `cp4c_noaa19_2024-01_{p1,p2,p3}_mean_flux_5deg.png`.
 - S3 time-window sample-count panels: `cp4d_sample_count_{5deg,2deg}_time_windows.png`.
 - S4 multi-satellite per-sat maps + overlays: `cp4f_{sat}_mean_flux_5deg.png`,
