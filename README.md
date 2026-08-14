@@ -137,3 +137,21 @@ The exporter reads only canonical Parquet outputs. It exports 340 supported conf
 by experiment—never a satellite × channel × time Cartesian product—and precomputes selected-cell
 indices in Python. `viewer_data.js` is deterministic and tracked so the viewer remains usable even
 though the source tables are regenerable/git-ignored.
+
+## Public research website
+
+The new static public site lives in `site/`. It is a TypeScript/SVG display layer over the same
+canonical Python exporter and exposes only the 340 validated configurations.
+
+```bash
+.venv/bin/python scripts/export_site_data.py
+.venv/bin/python scripts/generate_site_geography.py
+cd site
+npm ci
+npm test
+npm run dev
+```
+
+Build static assets with `npm run build`; output is written to `site/dist/`. The root
+`vercel.json` configures the same build for Vercel. The browser does not calculate thresholds,
+coverage, physical area, centroids, or new parameter combinations.

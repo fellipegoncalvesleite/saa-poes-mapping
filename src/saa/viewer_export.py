@@ -11,10 +11,13 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from itertools import combinations
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+from .threshold_analysis import R_EARTH_KM, cell_area_km2, haversine_km
 
 REGION = {"lat_min": -70.0, "lat_max": 20.0, "lon_min": -100.0, "lon_max": 20.0}
 
@@ -30,6 +33,13 @@ EXPECTED_CONFIGURATION_COUNTS = {
     "channel": 60,
     "time": 160,
     "satellite": 100,
+}
+
+FOCAL_DIMENSIONS = {
+    "threshold": "threshold_label",
+    "channel": "channel",
+    "time": "window_label",
+    "satellite": "satellite",
 }
 
 CONTROL_OPTIONS = {
@@ -189,7 +199,13 @@ def export_grid(table: pd.DataFrame, grid_deg: int, mask_col: str) -> dict[str, 
                 exported_flux.append(numeric)
             else:
                 exported_flux.append(None)
-        cells.append([lat, lon, *exported_flux, count, covered])
+        north_south_km = R_EARTH_KM * math.radians(grid_deg)
+        east_west_km = north_south_km * math.cos(math.radians(lat))
+        area_km2 = float(cell_area_km2(lat, grid_deg, grid_deg))
+        cells.append([
+            lat, lon, *exported_flux, count, covered,
+            north_south_km, east_west_km, area_km2,
+        ])
 
     domains: dict[str, list[float]] = {}
     for statistic, values in covered_values.items():
@@ -200,7 +216,10 @@ def export_grid(table: pd.DataFrame, grid_deg: int, mask_col: str) -> dict[str, 
     return {
         "grid_deg": int(grid_deg),
         "mask_column": mask_col,
-        "columns": ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered"],
+        "columns": [
+            "lat", "lon", "mean_flux", "median_flux", "sample_count", "covered",
+            "north_south_km", "east_west_km", "cell_area_km2",
+        ],
         "cells": cells,
         "color_domains": domains,
     }
@@ -321,7 +340,8 @@ def _configuration(
             f"{stable_configuration_id(experiment, values)} selected-cell mismatch: "
             f"grid/cutoff={len(selected)}, canonical={selected_count}"
         )
-    actual_covered = sum(bool(cell[-1]) for cell in grid["cells"])
+    covered_index = grid["columns"].index("covered")
+    actual_covered = sum(bool(cell[covered_index]) for cell in grid["cells"])
     if actual_covered != covered_count:
         raise ValueError(
             f"{stable_configuration_id(experiment, values)} covered-cell mismatch: "
@@ -415,6 +435,71 @@ def _require_unique_rows(table: pd.DataFrame, experiment: str) -> None:
         raise ValueError(f"{experiment} requires {expected} rows; found {len(table)}")
 
 
+def _selected_cell_areas(
+    configuration: dict[str, Any], grids: dict[str, dict[str, Any]]
+) -> dict[tuple[float, float], float]:
+    grid = grids[configuration["grid_id"]]
+    lat_index = grid["columns"].index("lat")
+    lon_index = grid["columns"].index("lon")
+    area_index = grid["columns"].index("cell_area_km2")
+    return {
+        (float(grid["cells"][index][lat_index]), float(grid["cells"][index][lon_index])):
+        float(grid["cells"][index][area_index])
+        for index in configuration["selected_cell_indices"]
+    }
+
+
+def _comparison_record(
+    experiment: str,
+    a: dict[str, Any],
+    b: dict[str, Any],
+    grids: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    if b["id"] < a["id"]:
+        a, b = b, a
+    a_areas = _selected_cell_areas(a, grids)
+    b_areas = _selected_cell_areas(b, grids)
+    shared = a_areas.keys() & b_areas.keys()
+    all_cells = a_areas.keys() | b_areas.keys()
+    intersection = sum(a_areas[key] for key in shared)
+    union = sum(a_areas.get(key, b_areas.get(key, 0.0)) for key in all_cells)
+    area_a = float(a["metrics"]["selected_area_km2"])
+    area_b = float(b["metrics"]["selected_area_km2"])
+    return {
+        "id": f"comparison|{a['id']}||{b['id']}",
+        "experiment": experiment,
+        "focal_dimension": FOCAL_DIMENSIONS[experiment],
+        "configuration_a": a["id"],
+        "configuration_b": b["id"],
+        "centroid_distance_km": haversine_km(
+            a["metrics"]["centroid_lat"], a["metrics"]["centroid_lon"],
+            b["metrics"]["centroid_lat"], b["metrics"]["centroid_lon"],
+        ),
+        "selected_area_difference_km2": abs(area_a - area_b),
+        "selected_area_ratio": max(area_a, area_b) / min(area_a, area_b),
+        "intersection_area_km2": intersection,
+        "union_area_km2": union,
+        "jaccard_overlap": intersection / union,
+    }
+
+
+def _comparison_payload(
+    experiments: dict[str, dict[str, Any]], grids: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for experiment, spec in experiments.items():
+        focal = FOCAL_DIMENSIONS[experiment]
+        background = [dimension for dimension in spec["dimensions"] if dimension != focal]
+        groups: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+        for configuration in spec["configurations"]:
+            key = tuple(configuration["values"][dimension] for dimension in background)
+            groups.setdefault(key, []).append(configuration)
+        for group in groups.values():
+            for a, b in combinations(sorted(group, key=lambda item: item["id"]), 2):
+                records.append(_comparison_record(experiment, a, b, grids))
+    return sorted(records, key=lambda item: item["id"])
+
+
 def build_viewer_payload(table_dir: Path) -> dict[str, Any]:
     """Build the complete static-viewer payload from validated canonical Parquet outputs."""
     table_dir = Path(table_dir)
@@ -486,6 +571,7 @@ def build_viewer_payload(table_dir: Path) -> dict[str, Any]:
         for path in sorted(source_paths, key=lambda item: item.name)
     ]
     cp5c = _cp5c_payload(pd.read_parquet(cp5c_path))
+    comparisons = _comparison_payload(experiments, grids)
     return {
         "schema_version": 1,
         "export_contract": "validated Python outputs -> deterministic static data; browser display only",
@@ -493,6 +579,7 @@ def build_viewer_payload(table_dir: Path) -> dict[str, Any]:
         "flux_color_scale": "viridis/log10",
         "experiments": experiments,
         "grids": dict(sorted(grids.items())),
+        "comparisons": comparisons,
         "cp5c": cp5c,
         "authority_sources": authority_sources,
         "global_caveats": [
@@ -519,3 +606,18 @@ def write_viewer_data(payload: dict[str, Any], output: Path) -> str:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(source, encoding="utf-8", newline="\n")
     return hashlib.sha256(source.encode("utf-8")).hexdigest()
+
+
+def write_viewer_json(payload: dict[str, Any], output: Path) -> str:
+    """Write deterministic neutral JSON and return its SHA-256 digest."""
+    encoded = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ) + "\n"
+    output = Path(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(encoded, encoding="utf-8", newline="\n")
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()

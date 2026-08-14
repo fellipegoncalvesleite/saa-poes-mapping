@@ -137,7 +137,10 @@ def _grid_matches(
     resolution: int,
 ) -> tuple[bool, str]:
     mask = f"enough_samples_{resolution}deg"
-    expected_columns = ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered"]
+    expected_columns = [
+        "lat", "lon", "mean_flux", "median_flux", "sample_count", "covered",
+        "north_south_km", "east_west_km", "cell_area_km2",
+    ]
     if actual.get("grid_deg") != resolution or actual.get("mask_column") != mask:
         return False, "grid resolution/mask metadata differs"
     if actual.get("columns") != expected_columns:
@@ -154,7 +157,7 @@ def _grid_matches(
     positive = {"mean_flux": [], "median_flux": []}
     for index, row in ordered.iterrows():
         cell = cells[index]
-        if len(cell) != 6:
+        if len(cell) != 9:
             return False, f"grid cell width differs at index {index}"
         covered = bool(row[mask])
         if not _float_matches(cell[0], row["lat_bin_center"]):
@@ -165,6 +168,18 @@ def _grid_matches(
             return False, f"sample count differs at index {index}"
         if type(cell[5]) is not bool or cell[5] is not covered:
             return False, f"coverage state differs at index {index}"
+        latitude = float(row["lat_bin_center"])
+        north_south = 6371.0 * math.radians(resolution)
+        east_west = north_south * math.cos(math.radians(latitude))
+        north = math.radians(latitude + resolution / 2)
+        south = math.radians(latitude - resolution / 2)
+        area = 6371.0 ** 2 * math.radians(resolution) * (math.sin(north) - math.sin(south))
+        if not _float_matches(cell[6], north_south):
+            return False, f"north-south span differs at index {index}"
+        if not _float_matches(cell[7], east_west):
+            return False, f"east-west span differs at index {index}"
+        if not _float_matches(cell[8], area):
+            return False, f"cell area differs at index {index}"
         for column_index, statistic in ((2, "mean_flux"), (3, "median_flux")):
             if covered:
                 if not _float_matches(cell[column_index], row[statistic]):
