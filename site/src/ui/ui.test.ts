@@ -21,7 +21,20 @@ describe("public explorer UI", () => {
     expect(root.querySelector('[role="tab"]')?.getAttribute("aria-controls")).toBe("explorer-state");
     expect([...root.querySelectorAll('[data-control="threshold_label"] button')].map((node) => node.textContent))
       .toEqual(["Top 20%", "Top 10%", "Top 5%", "Top 2%", "Top 1%"]);
+    expect(root.querySelector('[data-control="grid_deg"] legend')?.textContent).toBe("Grid resolution");
+    expect([...root.querySelectorAll('[data-control="grid_deg"] button')].map((node) => node.textContent)).toEqual(["5°", "2°"]);
+    expect(root.querySelector('[data-control="grid_deg"]')?.closest("details")).toBeNull();
     expect(root.querySelector("details")?.textContent).toContain("Analysis settings");
+  });
+
+  it("preserves the chosen grid resolution when switching experiment", () => {
+    const root = document.createElement("div");
+    let next: { experiment: string; grid: string | number | undefined } | undefined;
+    renderControls(root, payload, "threshold", { ...payload.experiments.threshold.initial_values, grid_deg: 2 }, (experiment, values) => {
+      next = { experiment, grid: values.grid_deg };
+    });
+    root.querySelector<HTMLButtonElement>("#experiment-channel-tab")!.click();
+    expect(next).toEqual({ experiment: "channel", grid: 2 });
   });
 
   it("keeps satellite readout location-only and hides peak flux", () => {

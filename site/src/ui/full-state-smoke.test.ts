@@ -18,7 +18,7 @@ describe("full exported-state runtime smoke test", () => {
       renderMap(mapHost, loaded, configuration, () => undefined);
       renderReadout(readoutHost, configuration, null);
 
-      expect(mapHost.querySelectorAll('[data-layer="selected"] rect')).toHaveLength(configuration.selected_cell_indices.length);
+      expect(mapHost.querySelectorAll(".map-cell.is-selected")).toHaveLength(configuration.selected_cell_indices.length);
       expect(mapHost.querySelector('[data-layer="centroid"]')?.getAttribute("data-lat")).toBe(String(configuration.metrics.centroid_lat));
       expect(readoutHost.querySelector('[data-testid="selected-cells"]')?.textContent).toBe(String(configuration.metrics.selected_cells));
     }
