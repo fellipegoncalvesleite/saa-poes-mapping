@@ -91,6 +91,37 @@ page code, promotional copy, display-serif typography, or a landing-page hero.
   satellite calibration restriction, and confirm an empty error console.
 - [ ] Commit the redesign as `feat: adopt scientific portal presentation`.
 
+### Revision Task: Persistent grid control and readable footprint
+
+**Files:**
+- Modify: `site/src/ui/controls.ts`
+- Modify: `site/src/ui/ui.test.ts`
+- Modify: `site/src/map/render.ts`
+- Modify: `site/src/map/map.test.ts`
+- Modify: `site/src/ui/full-state-smoke.test.ts`
+- Modify: `site/src/styles.css`
+- Modify: `site/index.html`
+
+**Produces:** A visible 2°/5° grid selector that persists across experiment changes and a map whose
+canonical selected-cell union reads as one footprint rather than many outlined squares.
+
+- [ ] Add failing control tests proving `Grid resolution` sits outside `Analysis settings` and that
+  switching experiment with `grid_deg: 2` passes `grid_deg: 2` into the target canonical values.
+- [ ] Add failing map tests proving selected base cells carry `is-selected`, the selected layer uses
+  perimeter paths rather than one rectangle per cell, and the centroid has a direct text label.
+- [ ] Run the focused tests and confirm they fail for the intended missing behavior.
+- [ ] Update `renderControls()` so grid resolution is a primary fieldset and experiment switches copy
+  only the current `grid_deg` into the target experiment's canonical initial values.
+- [ ] Build the selected perimeter by canceling shared edges from stored selected cell indices; render
+  a white halo plus red perimeter, dim non-selected cells, and label the stored centroid.
+- [ ] Replace the compact legend with active-statistic color, active-threshold selected perimeter,
+  and centroid explanations; update the public map explanation accordingly.
+- [ ] Run `cd site && npm test -- --run && npm run build` and verify both pass.
+- [ ] Inspect the live desktop page at 5° and 2°, switch experiments after choosing 2°, and confirm
+  the grid persists, the map remains canonical, and the console is clear.
+- [ ] Commit as `feat: clarify footprint map and preserve grid choice`, push the existing branch, and
+  leave PR #5 open and unmerged.
+
 ### Task 1: Deterministic Website JSON Authority
 
 **Files:**
