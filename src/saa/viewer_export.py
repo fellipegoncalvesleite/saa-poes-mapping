@@ -519,3 +519,18 @@ def write_viewer_data(payload: dict[str, Any], output: Path) -> str:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(source, encoding="utf-8", newline="\n")
     return hashlib.sha256(source.encode("utf-8")).hexdigest()
+
+
+def write_viewer_json(payload: dict[str, Any], output: Path) -> str:
+    """Write deterministic neutral JSON and return its SHA-256 digest."""
+    encoded = json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ) + "\n"
+    output = Path(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(encoded, encoding="utf-8", newline="\n")
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
