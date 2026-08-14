@@ -38,6 +38,7 @@ export function renderControls(root: HTMLElement, payload: ViewerPayload, active
   tabs.setAttribute("role", "tablist");
   tabs.setAttribute("aria-label", "Scientific question");
   const names = Object.keys(LABELS) as ExperimentName[];
+  const currentGrid = values.grid_deg ?? payload.experiments[activeExperiment].initial_values.grid_deg ?? 5;
   names.forEach((name, index) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -47,7 +48,7 @@ export function renderControls(root: HTMLElement, payload: ViewerPayload, active
     button.setAttribute("aria-selected", String(name === activeExperiment));
     button.setAttribute("aria-controls", "explorer-state");
     button.tabIndex = name === activeExperiment ? 0 : -1;
-    button.addEventListener("click", () => onChange(name, { ...payload.experiments[name].initial_values }));
+    button.addEventListener("click", () => onChange(name, { ...payload.experiments[name].initial_values, grid_deg: currentGrid }));
     button.addEventListener("keydown", (event) => {
       const destination = event.key === "Home" ? 0 : event.key === "End" ? names.length - 1
         : event.key === "ArrowRight" ? (index + 1) % names.length
@@ -55,7 +56,7 @@ export function renderControls(root: HTMLElement, payload: ViewerPayload, active
       if (destination < 0) return;
       event.preventDefault();
       const next = names[destination]!;
-      onChange(next, { ...payload.experiments[next].initial_values });
+      onChange(next, { ...payload.experiments[next].initial_values, grid_deg: currentGrid });
       queueMicrotask(() => document.querySelector<HTMLElement>(`#experiment-${next}-tab`)?.focus());
     });
     tabs.append(button);
@@ -90,10 +91,18 @@ export function renderControls(root: HTMLElement, payload: ViewerPayload, active
     focalFieldset.append(segmented(focal.key, focal.options, values[focal.key], (value) => onChange(activeExperiment, { ...values, [focal.key]: value })));
   }
   root.append(focalFieldset);
+  const gridControl = specification.controls.find((control) => control.key === "grid_deg")!;
+  const gridFieldset = document.createElement("fieldset");
+  gridFieldset.className = "persistent-control";
+  gridFieldset.dataset.control = gridControl.key;
+  const gridLegend = document.createElement("legend");
+  gridLegend.textContent = "Grid resolution";
+  gridFieldset.append(gridLegend, segmented(gridControl.key, gridControl.options, currentGrid, (value) => onChange(activeExperiment, { ...values, grid_deg: value })));
+  root.append(gridFieldset);
   const details = document.createElement("details"); details.className = "analysis-settings";
   const summary = document.createElement("summary"); summary.textContent = "Analysis settings"; details.append(summary);
   const settings = document.createElement("div"); settings.className = "settings-grid";
-  specification.controls.filter((control) => control.key !== focalKey).forEach((control) => {
+  specification.controls.filter((control) => control.key !== focalKey && control.key !== "grid_deg").forEach((control) => {
     const fieldset = document.createElement("fieldset"); fieldset.dataset.control = control.key;
     const fieldLegend = document.createElement("legend"); fieldLegend.textContent = control.label[0]!.toUpperCase() + control.label.slice(1); fieldset.append(fieldLegend);
     fieldset.append(segmented(control.key, control.options, values[control.key], (value) => onChange(activeExperiment, { ...values, [control.key]: value })));
