@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description" content="Method-sensitivity analysis of particle-defined South Atlantic Anomaly maps using public January 2024 NOAA POES/MetOp observations.">
+  <title>SAA POES Mapping | Method sensitivity analysis</title>
+  <script type="module" src="/src/main.ts"></script>
+</head>
+<body>
+  <a class="skip-link" href="#explorer">Skip to interactive map</a>
+  <div class="utility-bar">Independent public research · Data source: NOAA/NCEI</div>
+  <header class="site-header">
+    <a class="brand" href="#top"><strong>SAA POES Mapping</strong><span>Method sensitivity analysis</span></a>
+    <nav aria-label="Primary">
+      <a href="#explorer">Map</a><a href="#findings">Results</a><a href="#method">Method</a>
+      <a href="#magnetic">Magnetic field</a><a href="#reproducibility">Data and code</a><a href="#limitations">Limitations</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="project-summary" aria-labelledby="page-title">
+      <div class="summary-copy">
+        <p class="section-label">Research overview</p>
+        <h1 id="page-title">Method sensitivity of particle-defined South Atlantic Anomaly maps</h1>
+        <p>Public NOAA POES/MetOp proton observations are mapped on coverage-aware geographic grids. The analysis changes one methodological choice at a time: flux threshold, proton channel, observation window, satellite, grid resolution, or summary statistic.</p>
+        <p class="scope-status"><strong>Scientific scope:</strong> Candidate high-flux footprints; not a definitive SAA boundary.</p>
+      </div>
+      <dl class="metadata-grid" aria-label="Study metadata">
+        <div><dt>Observation period</dt><dd>January 2024</dd></div>
+        <div><dt>Data product</dt><dd>POES/MetOp SEM-2 MEPED L1b</dd></div>
+        <div><dt>Satellites</dt><dd>5 NOAA/MetOp spacecraft</dd></div>
+        <div><dt>Validated states</dt><dd>340 map configurations</dd></div>
+        <div><dt>Principal threshold comparison</dt><dd>~386 km centroid difference</dd></div>
+      </dl>
+    </section>
+
+    <section id="explorer" class="explorer" aria-labelledby="explorer-title">
+      <div class="section-header">
+        <p class="section-label">340 validated configurations</p>
+        <h2 id="explorer-title">Interactive map</h2>
+        <p>Select an analysis question and configuration. The browser displays stored, validated results and does not recompute scientific metrics.</p>
+      </div>
+      <div id="viewer-error" class="viewer-error" role="alert"></div>
+      <div id="experiment-controls" class="controls"></div>
+      <div id="comparison-controls" class="comparison-controls"></div>
+      <div id="explorer-state" class="explorer-layout" data-config-id="" role="tabpanel">
+        <figure class="map-panel">
+          <div id="map-root" class="map-root"></div>
+          <figcaption><strong>Blank cells</strong> are missing, insufficiently sampled, or non-positive for the logarithmic display. They are not zero and are not interpolated.</figcaption>
+        </figure>
+        <aside id="readout-root" class="readout" aria-label="Canonical configuration readout"></aside>
+      </div>
+      <div id="comparison-state" class="comparison-state" hidden>
+        <div class="comparison-maps">
+          <figure class="map-panel"><h3 id="comparison-a-label">Map A</h3><div id="comparison-map-a" class="map-root"></div></figure>
+          <figure class="map-panel"><h3 id="comparison-b-label">Map B</h3><div id="comparison-map-b" class="map-root"></div></figure>
+        </div>
+        <aside id="comparison-summary" class="comparison-summary" aria-label="Map difference summary"></aside>
+      </div>
+      <p id="configuration-status" class="sr-only" aria-live="polite"></p>
+      <p id="cell-status" class="sr-only" aria-live="polite"></p>
+      <div class="map-key">
+        <h3>How to read this map</h3>
+        <dl>
+          <div><dt>Cell</dt><dd>A geographic region containing many satellite observations. Its physical dimensions are shown for the current latitude.</dd></div>
+          <div><dt>Color</dt><dd>Mean or median proton flux. Cells outside the selection are dimmed but remain measured context.</dd></div>
+          <div><dt>Red perimeter</dt><dd>The outer edge of the current percentile-defined candidate footprint.</dd></div>
+          <div><dt>Centroid marker</dt><dd>The stored flux-weighted centroid of the selected cells.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section id="findings" class="content-section" aria-labelledby="results-title">
+      <div class="section-header"><p class="section-label">Validated January 2024 outputs</p><h2 id="results-title">Results</h2></div>
+      <div class="result-block result-primary">
+        <div><h3>Threshold sensitivity</h3><p>Changing only the high-flux percentile moves and resizes the candidate footprint. The principal top-20% to top-1% comparison changes the stored flux-weighted centroid by about 386 km and selected area by about 17.7×.</p></div>
+        <div class="finding-actions"><button type="button" data-show-config="threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top20">Map: top 20%</button><button type="button" data-show-config="threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top1">Map: top 1%</button></div>
+      </div>
+      <div class="result-grid">
+        <article><h3>Observation-window sensitivity</h3><p>One day to the full month differs by about 288 km. Four separate weekly windows remain within about 118 km. The one-day result is orbit-track sparse and does not establish physical SAA motion.</p></article>
+        <article><h3>Satellite sensitivity</h3><p>The five-satellite principal top-10% spread is about 272 km. NOAA-18 and NOAA-19 differ by about 13 km. This comparison is limited to location and shape; absolute proton flux is not cross-calibrated.</p></article>
+        <article><h3>Proton-channel sensitivity</h3><p>Stored centroids for p1, p2, and p3 are separated by roughly 100–300 km. Absolute values at approximately 25, 50, and 100 MeV are different physical measurements.</p></article>
+      </div>
+    </section>
+
+    <section id="method" class="content-section muted" aria-labelledby="method-title">
+      <div class="section-header"><p class="section-label">Analysis pipeline</p><h2 id="method-title">Method</h2><p>Each experiment changes one declared method choice while holding the other supported choices fixed.</p></div>
+      <ol class="pipeline"><li>NOAA satellite observations</li><li>Assign observations to geographic cells</li><li>Calculate statistic and sample count</li><li>Apply coverage requirement</li><li>Rank cells by flux</li><li>Select the requested percentile</li><li>Calculate area and flux-weighted centroid</li></ol>
+      <details class="technical-details"><summary>Technical parameters</summary><p>Region: latitude −70° to +20°, longitude −100° to +20°. Grids: 5° and 2°. January monthly coverage requires approximately 30 samples per cell; shorter windows scale that threshold with exposure. Tested statistics are mean and median; footprints use top 20/10/5/2/1 percentiles. Physical cell area uses spherical geometry. Rows with <code>mep_IFC_on == 1</code> are removed; <code>== -1</code> is retained and uninterpreted.</p></details>
+    </section>
+
+    <section id="magnetic" class="content-section dark" aria-labelledby="magnetic-title">
+      <div class="section-header"><p class="section-label">Descriptive IGRF comparison</p><h2 id="magnetic-title">Magnetic-field context</h2><p>The particle-defined footprint is concentrated at relatively low regional modeled magnetic-field strength. The magnetic field describes the result; it does not define the footprint or establish causality.</p></div>
+      <div id="cp5c-root"></div>
+    </section>
+
+    <section id="reproducibility" class="content-section" aria-labelledby="repro-title">
+      <div class="section-header"><p class="section-label">Data and code</p><h2 id="repro-title">Reproducibility</h2></div>
+      <p class="measure">The project uses NOAA/NCEI processed L1b POES/MetOp SEM-2 MEPED data from five spacecraft, a Python 3.12 pipeline, checkpoint validators, provenance records, checksums, and a deterministic frontend export.</p>
+      <div class="link-row"><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping">Source repository</a><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping/blob/main/docs/CLAIM_AUDIT.md">Claim audit</a><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping/blob/main/docs/REPRODUCIBILITY_CHECKLIST.md">Reproducibility checklist</a><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping/blob/main/docs/PAPER_OUTLINE.md">Paper outline</a></div>
+    </section>
+
+    <section id="limitations" class="content-section muted" aria-labelledby="limits-title">
+      <div class="section-header"><p class="section-label">Interpretation constraints</p><h2 id="limits-title">Limitations</h2></div>
+      <ul class="limitations-list"><li>January 2024 only.</li><li>Percentile-defined candidate footprint, not a universal boundary.</li><li>Primary analysis centered on p1 (~25 MeV).</li><li>No calibrated absolute cross-satellite flux comparison.</li><li>IGRF values are modeled quantities.</li><li>Sampling and local-time effects are not fully separated.</li><li><code>mep_IFC_on == -1</code> is retained and uninterpreted.</li><li>External scientific review is still required.</li></ul>
+      <p><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping/blob/main/docs/CLAIM_AUDIT.md">Complete scientific claim audit</a></p>
+    </section>
+  </main>
+
+  <footer><p><strong>SAA POES Mapping</strong> · Scientific display layer</p><p>Natural Earth 1:110m geography supplies visual context and does not enter scientific calculations.</p></footer>
+</body>
+</html>
