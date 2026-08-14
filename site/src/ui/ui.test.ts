@@ -17,6 +17,8 @@ describe("public explorer UI", () => {
     expect([...root.querySelectorAll('[role="tab"]')].map((node) => node.textContent)).toEqual([
       "Threshold", "Proton energy", "Time", "Satellite",
     ]);
+    expect([...root.querySelectorAll<HTMLElement>('[role="tab"]')].map((node) => node.tabIndex)).toEqual([0, -1, -1, -1]);
+    expect(root.querySelector('[role="tab"]')?.getAttribute("aria-controls")).toBe("explorer-state");
     expect([...root.querySelectorAll('[data-control="threshold_label"] button')].map((node) => node.textContent))
       .toEqual(["Top 20%", "Top 10%", "Top 5%", "Top 2%", "Top 1%"]);
     expect(root.querySelector("details")?.textContent).toContain("Analysis settings");

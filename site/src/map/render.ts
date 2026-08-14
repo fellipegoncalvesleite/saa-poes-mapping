@@ -38,7 +38,13 @@ export function renderMap(
     "aria-label": "Geographic proton-flux grid. Use arrow keys to inspect cells; Home returns near the centroid; Escape clears inspection.",
   }) as SVGSVGElement;
 
-  const geographyLayer = svg("g", { "data-layer": "geography", "aria-hidden": "true" });
+  const definitions = svg("defs");
+  const plotClip = svg("clipPath", { id: "scientific-plot-clip" });
+  plotClip.append(svg("rect", { x: PLOT.left, y: PLOT.top, width: PLOT.width, height: PLOT.height }));
+  definitions.append(plotClip);
+  map.append(definitions);
+
+  const geographyLayer = svg("g", { "data-layer": "geography", "aria-hidden": "true", "clip-path": "url(#scientific-plot-clip)" });
   geographyLayer.append(svg("path", { d: pathFor(geography.borders, projection.x, projection.y), class: "map-border" }));
   geographyLayer.append(svg("path", { d: pathFor(geography.coastlines, projection.x, projection.y), class: "map-coast" }));
   map.append(geographyLayer);

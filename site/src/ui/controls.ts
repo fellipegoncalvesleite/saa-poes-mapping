@@ -37,13 +37,27 @@ export function renderControls(root: HTMLElement, payload: ViewerPayload, active
   tabs.className = "experiment-tabs";
   tabs.setAttribute("role", "tablist");
   tabs.setAttribute("aria-label", "Scientific question");
-  (Object.keys(LABELS) as ExperimentName[]).forEach((name) => {
+  const names = Object.keys(LABELS) as ExperimentName[];
+  names.forEach((name, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.role = "tab";
+    button.id = `experiment-${name}-tab`;
     button.textContent = LABELS[name];
     button.setAttribute("aria-selected", String(name === activeExperiment));
+    button.setAttribute("aria-controls", "explorer-state");
+    button.tabIndex = name === activeExperiment ? 0 : -1;
     button.addEventListener("click", () => onChange(name, { ...payload.experiments[name].initial_values }));
+    button.addEventListener("keydown", (event) => {
+      const destination = event.key === "Home" ? 0 : event.key === "End" ? names.length - 1
+        : event.key === "ArrowRight" ? (index + 1) % names.length
+          : event.key === "ArrowLeft" ? (index - 1 + names.length) % names.length : -1;
+      if (destination < 0) return;
+      event.preventDefault();
+      const next = names[destination]!;
+      onChange(next, { ...payload.experiments[next].initial_values });
+      queueMicrotask(() => document.querySelector<HTMLElement>(`#experiment-${next}-tab`)?.focus());
+    });
     tabs.append(button);
   });
   root.append(tabs);
