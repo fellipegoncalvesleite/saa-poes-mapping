@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 import tempfile
 import unittest
@@ -17,6 +18,7 @@ from saa.viewer_export import (  # noqa: E402
     EXPERIMENT_DIMENSIONS,
     build_viewer_payload,
     export_grid,
+    haversine_km,
     selected_cell_indices,
     stable_configuration_id,
     write_viewer_data,
@@ -40,16 +42,18 @@ class ViewerGridExportTests(unittest.TestCase):
 
         self.assertEqual(
             actual["columns"],
-            ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered"],
+            ["lat", "lon", "mean_flux", "median_flux", "sample_count", "covered", "north_south_km", "east_west_km", "cell_area_km2"],
         )
-        self.assertEqual(
-            actual["cells"],
-            [
-                [-67.5, -97.5, 1.0, 0.5, 12, True],
-                [-67.5, -92.5, None, None, 2, False],
-                [-62.5, -97.5, 10.0, 8.0, 31, True],
-            ],
-        )
+        self.assertEqual([cell[:6] for cell in actual["cells"]], [
+            [-67.5, -97.5, 1.0, 0.5, 12, True],
+            [-67.5, -92.5, None, None, 2, False],
+            [-62.5, -97.5, 10.0, 8.0, 31, True],
+        ])
+        north_south = 6371.0 * math.radians(5)
+        self.assertAlmostEqual(actual["cells"][0][6], north_south)
+        self.assertAlmostEqual(actual["cells"][0][7], north_south * math.cos(math.radians(-67.5)))
+        self.assertGreater(actual["cells"][2][7], actual["cells"][0][7])
+        self.assertGreater(actual["cells"][0][8], 0)
         self.assertEqual(actual["color_domains"]["mean_flux"], [1.0, 10.0])
         self.assertEqual(actual["color_domains"]["median_flux"], [0.5, 8.0])
 
@@ -215,6 +219,65 @@ class ViewerCanonicalIntegrationTests(unittest.TestCase):
         self.assertNotEqual(top10["grid_id"], channel_p2["grid_id"])
         self.assertLess(day["metrics"]["covered_cells"], month["metrics"]["covered_cells"])
         self.assertNotEqual(noaa15["metrics"]["centroid_lon"], noaa19["metrics"]["centroid_lon"])
+
+    def test_comparisons_change_only_each_experiments_focal_dimension(self) -> None:
+        focal = {
+            "threshold": "threshold_label",
+            "channel": "channel",
+            "time": "window_label",
+            "satellite": "satellite",
+        }
+        self.assertEqual(len(self.payload["comparisons"]), 860)
+        configs = {
+            row["id"]: row
+            for experiment in self.payload["experiments"].values()
+            for row in experiment["configurations"]
+        }
+        expected_counts = {"threshold": 40, "channel": 60, "time": 560, "satellite": 200}
+        actual_counts = {name: 0 for name in expected_counts}
+        for comparison in self.payload["comparisons"]:
+            actual_counts[comparison["experiment"]] += 1
+            a = configs[comparison["configuration_a"]]
+            b = configs[comparison["configuration_b"]]
+            changed = {key for key in a["values"] if a["values"][key] != b["values"][key]}
+            self.assertEqual(changed, {focal[comparison["experiment"]]})
+            self.assertEqual(comparison["focal_dimension"], focal[comparison["experiment"]])
+            self.assertGreaterEqual(comparison["centroid_distance_km"], 0)
+            self.assertGreaterEqual(comparison["selected_area_difference_km2"], 0)
+            self.assertGreaterEqual(comparison["selected_area_ratio"], 1)
+            self.assertGreaterEqual(comparison["intersection_area_km2"], 0)
+            self.assertGreater(comparison["union_area_km2"], 0)
+            self.assertGreaterEqual(comparison["jaccard_overlap"], 0)
+            self.assertLessEqual(comparison["jaccard_overlap"], 1)
+            self.assertNotIn("flux_difference", comparison)
+        self.assertEqual(actual_counts, expected_counts)
+
+    def test_threshold_comparison_metrics_match_canonical_geometry(self) -> None:
+        a_id = "threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top1"
+        b_id = "threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top20"
+        comparison = next(
+            row for row in self.payload["comparisons"]
+            if {row["configuration_a"], row["configuration_b"]} == {a_id, b_id}
+        )
+        configs = {
+            row["id"]: row
+            for row in self.payload["experiments"]["threshold"]["configurations"]
+        }
+        a, b = configs[a_id], configs[b_id]
+        expected_distance = haversine_km(
+            a["metrics"]["centroid_lat"], a["metrics"]["centroid_lon"],
+            b["metrics"]["centroid_lat"], b["metrics"]["centroid_lon"],
+        )
+        self.assertAlmostEqual(comparison["centroid_distance_km"], expected_distance)
+        self.assertAlmostEqual(
+            comparison["selected_area_difference_km2"],
+            abs(a["metrics"]["selected_area_km2"] - b["metrics"]["selected_area_km2"]),
+        )
+        self.assertAlmostEqual(
+            comparison["selected_area_ratio"],
+            max(a["metrics"]["selected_area_km2"], b["metrics"]["selected_area_km2"])
+            / min(a["metrics"]["selected_area_km2"], b["metrics"]["selected_area_km2"]),
+        )
 
 
 if __name__ == "__main__":
