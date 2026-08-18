@@ -4,7 +4,7 @@ Reproducible mapping and methodological sensitivity analysis of a candidate
 high-flux South Atlantic Anomaly footprint using public NOAA/NCEI POES/MetOp
 SEM-2 MEPED proton data.
 
-The study asks how estimated footprint center and area change with flux
+The study asks how reported footprint centroid and selected area change with flux
 threshold, proton channel, spatial grid, observation window, and satellite.
 It also describes the particle-defined footprint in NOAA-provided IGRF
 coordinates. The quantitative scope is January 2024.
@@ -16,11 +16,11 @@ compare uncalibrated absolute flux across satellites.
 ## Results
 
 - Tightening the footprint from the top 20% to top 1% shifts its
-  flux-weighted centroid by about 386 km and changes area by about 17.7×.
-- Proton-channel centroid differences are approximately 100–300 km.
-- One day to one month differs by about 288 km; four weekly windows agree
+  area-aware flux-weighted centroid by about 433 km and changes area by about 17.7×.
+- The principal three-channel comparison has a maximum pairwise centroid separation of about 210 km.
+- One day to one month differs by about 289 km; four weekly windows agree
   within about 118 km.
-- The five-satellite top-10%, 5° mean footprint spread is about 272 km;
+- The five-satellite top-10%, 5° mean footprint spread is about 284 km;
   NOAA-18 and NOAA-19 differ by about 13 km.
 - All five satellites satisfy the predeclared low-`Btot_sat` and
   `Btot_sat`-dominance criteria. This is descriptive co-location with low
@@ -67,7 +67,7 @@ Source data are NOAA/NCEI POES/MetOp SEM-2 MEPED Level 1b processed NetCDF
 (`v01r00`) files for NOAA-15, NOAA-18, NOAA-19, MetOp-01, and MetOp-03. The
 analysis uses coverage-aware 5° and 2° geographic grids, mean and median cell
 statistics, percentile-defined footprints, spherical cell areas, and
-flux-weighted centroids.
+area-aware flux-weighted centroids.
 
 - [Methodology](docs/methodology.md)
 - [Claims and interpretation boundaries](docs/claims.md)

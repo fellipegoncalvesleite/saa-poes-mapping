@@ -63,9 +63,11 @@ relative to the selected map; it is not a physical boundary.
 
 Cell area is computed on a sphere of radius 6,371 km from the cell's latitude
 and longitude bounds. Selected area is the sum of selected cell areas.
-Centroids are reported both unweighted and weighted by the selected cell flux.
-Straight longitude averaging is valid here because the study region does not
-cross the dateline. Distances between centroids use the haversine formula.
+Centroids are reported both unweighted and as coordinate-wise spatial moments of the selected flux field.
+For the latter, each selected cell center is weighted by `cell flux × spherical cell area`, so the discrete sum
+approximates the spatial integral on unequal-area latitude–longitude cells. Straight longitude averaging is valid
+here because the study region does not cross the dateline. This is a latitude/longitude moment definition, not a
+3-D spherical-vector barycenter. Distances between centroids use the haversine formula.
 
 ## Sensitivity families
 

@@ -17,7 +17,7 @@ from typing import Any
 
 import pandas as pd
 
-from .threshold_analysis import R_EARTH_KM, cell_area_km2, haversine_km
+from .threshold_analysis import R_EARTH_KM, cell_area_km2, flux_weighted_centroid, haversine_km
 
 REGION = {"lat_min": -70.0, "lat_max": 20.0, "lon_min": -100.0, "lon_max": 20.0}
 
@@ -139,8 +139,6 @@ METRIC_COLUMNS = {
     "selected_cells": "selected_cell_count",
     "selected_area_km2": "selected_area_km2",
     "selected_area_fraction": "selected_area_fraction_of_covered_region",
-    "centroid_lat": "centroid_lat_flux_weighted",
-    "centroid_lon": "centroid_lon_flux_weighted",
     "peak_flux": "peak_flux",
 }
 
@@ -356,6 +354,25 @@ def _configuration(
         )
         for output, source in METRIC_COLUMNS.items()
     }
+
+    # Recompute the display centroid from the exported grid and canonical selected-cell mask.
+    # This keeps the public payload on the current area-aware centroid definition even when
+    # the source sensitivity table was produced before that definition was frozen.
+    column_index = {name: index for index, name in enumerate(grid["columns"])}
+    statistic = str(row["statistic_used"])
+    selected_frame = pd.DataFrame(
+        {
+            "lat_bin_center": [grid["cells"][index][column_index["lat"]] for index in selected],
+            "lon_bin_center": [grid["cells"][index][column_index["lon"]] for index in selected],
+            statistic: [grid["cells"][index][column_index[statistic]] for index in selected],
+            "cell_area_km2": [
+                grid["cells"][index][column_index["cell_area_km2"]] for index in selected
+            ],
+        }
+    )
+    centroid_lat, centroid_lon = flux_weighted_centroid(selected_frame, statistic)
+    metrics["centroid_lat"] = centroid_lat
+    metrics["centroid_lon"] = centroid_lon
     metrics["percentile_cutoff"] = int(row["percentile_cutoff"])
     return {
         "id": stable_configuration_id(experiment, values),
