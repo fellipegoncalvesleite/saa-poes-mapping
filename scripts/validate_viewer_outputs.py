@@ -15,6 +15,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from saa.threshold_analysis import cell_area_km2, flux_weighted_centroid  # noqa: E402
 from saa.viewer_export import build_viewer_payload, write_viewer_json  # noqa: E402
 
 RTOL = 1e-9
@@ -38,8 +39,6 @@ METRICS = {
     "selected_cells": "selected_cell_count",
     "selected_area_km2": "selected_area_km2",
     "selected_area_fraction": "selected_area_fraction_of_covered_region",
-    "centroid_lat": "centroid_lat_flux_weighted",
-    "centroid_lon": "centroid_lon_flux_weighted",
     "peak_flux": "peak_flux",
 }
 
@@ -233,6 +232,19 @@ def independent_authority_matches(payload: dict[str, Any], table_dir: Path) -> t
                         return False, f"discrete metric differs: {config_id} {output}"
                 elif not _float_matches(metrics.get(output), row[column]):
                     return False, f"float metric differs: {config_id} {output}"
+
+            selected_frame = ordered.iloc[selected][
+                ["lat_bin_center", "lon_bin_center", statistic]
+            ].copy()
+            selected_frame["cell_area_km2"] = selected_frame["lat_bin_center"].map(
+                lambda latitude: cell_area_km2(float(latitude), int(row["grid_deg"]), int(row["grid_deg"]))
+            )
+            expected_lat, expected_lon = flux_weighted_centroid(selected_frame, statistic)
+            if not _float_matches(metrics.get("centroid_lat"), expected_lat):
+                return False, f"area-aware centroid latitude differs: {config_id}"
+            if not _float_matches(metrics.get("centroid_lon"), expected_lon):
+                return False, f"area-aware centroid longitude differs: {config_id}"
+
             if type(metrics.get("percentile_cutoff")) is not int or metrics["percentile_cutoff"] != int(row["percentile_cutoff"]):
                 return False, f"percentile cutoff differs: {config_id}"
             if len(selected) != int(row["selected_cell_count"]):

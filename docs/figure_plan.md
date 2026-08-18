@@ -12,7 +12,7 @@ Legend: **M** = main paper, **S** = supplement.
   (alt: `outputs/figures/cp4a_noaa19_2024-01_mean_flux_5deg.png`).
 - Why it matters: orients the reader — the candidate high-flux sector + top10/top5 selected cells.
 - Caption draft: "Exploratory monthly mean omnidirectional proton flux (NOAA-19, Jan 2024, ~25 MeV,
-  5° coverage-masked) with top-10%/top-5% threshold-defined footprints (× = flux-weighted centroid).
+  5° coverage-masked) with top-10%/top-5% threshold-defined footprints (× = flux×cell-area-weighted centroid).
   Not a final SAA boundary."
 - Supports: existence of a persistent candidate high-flux sector (claim 1 in `claims.md`).
 - Must NOT claim: a definitive boundary/center.
@@ -21,30 +21,30 @@ Legend: **M** = main paper, **S** = supplement.
 - Source: CP4B. Path: `outputs/figures/cp4b_threshold_overlay_5deg_mean.png`.
 - Why: shows nested footprints shrinking/moving as the threshold tightens.
 - Caption draft: "Threshold-defined footprints (top 20→1%) on the coverage-masked 5° mean grid;
-  centers and areas are method-dependent."
+  centroids and selected areas are method-dependent."
 - Supports: threshold method-dependence (claim 2 in `claims.md`).
 - Must NOT claim: that any one threshold is 'the' SAA.
 
 ## F3 — Centroid shift vs threshold (M)
 - Source: CP4B. Path: `outputs/figures/cp4b_centroid_shift_by_threshold.png`.
-- Why: quantifies the ~386 km centroid travel and area ~17.7× change.
-- Caption draft: "Flux-weighted centroid path as the flux threshold tightens (labels = top-X%);
-  ~386 km total shift (5° mean). Method-dependent, exploratory."
+- Why: quantifies the ~433 km centroid travel and area ~17.7× change.
+- Caption draft: "Flux×cell-area-weighted centroid path as the flux threshold tightens (labels = top-X%);
+  ~433 km total shift (5° mean). Method-dependent, exploratory."
 - Supports: claim 2. Must NOT claim: physical motion of the SAA.
 
 ## F4 — Time-window stabilization (M)
 - Source: CP4D. Path: `outputs/figures/cp4d_centroid_by_time_window_top10.png`
   (supplement: `cp4d_sample_count_5deg_time_windows.png`).
-- Why: shows the day→7-day jump then stabilization (~288 km day→month; ~118 km weekly).
-- Caption draft: "Flux-weighted centroid by aggregation window (top10, 5° mean); one-day maps are
+- Why: shows the day→7-day jump then stabilization (~289 km day→month; ~118 km weekly).
+- Caption draft: "Flux×cell-area-weighted centroid by aggregation window (top10, 5° mean); one-day maps are
   coverage-limited, stabilizing by ~7 days."
 - Supports: claim 4. Must NOT claim: a one-day footprint as final.
 
 ## F5 — Multi-satellite centroid comparison (M)
 - Source: CP4F. Path: `outputs/figures/cp4f_multisatellite_centroid_comparison_top10_top5.png`
   (supplement: `cp4f_pairwise_centroid_distance_top10_5deg_mean.png`).
-- Why: footprint location agrees across 5 satellites (~272 km), NOAA-15 outlier; < threshold effect.
-- Caption draft: "Flux-weighted footprint centroids across five POES/MetOp satellites (top10/top5,
+- Why: footprint location broadly agrees across 5 satellites (~284 km), NOAA-15 outlier; < threshold effect.
+- Caption draft: "Flux×cell-area-weighted footprint centroids across five POES/MetOp satellites (top10/top5,
   5° mean); broad location agreement (calibration-limited; absolute flux not compared)."
 - Supports: claims 5 and 6. Must NOT claim: absolute-intensity satellite comparison.
 

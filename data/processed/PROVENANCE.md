@@ -83,14 +83,28 @@ Produced by `notebooks/04a_monthly_aggregation.ipynb`; validated by `scripts/val
 
 ---
 
+## 2026-08-18 centroid-definition correction
+
+Following a methodological review, the reported flux-weighted geographic centroid was changed from
+weighting selected cell centers by cell flux alone to weighting by **cell flux × spherical cell area**.
+This is the discrete spatial-moment approximation appropriate to unequal-area latitude–longitude cells.
+The threshold masks, coverage masks, selected cells, selected areas, flux cutoffs, flux statistics, and
+magnetic analyses are unchanged. CP4B/C/D/E/F were re-executed from the same January-2024 inputs; the
+centroid columns, centroid-distance tables, figures, hashes, and downstream public viewer/CP6A summary
+were regenerated. The principal corrected centroid-derived results are ~433 km (threshold top20→top1),
+~210 km (p1/p2/p3 top10 5° mean maximum), ~289 km day→month, ~118 km weekly maximum, and ~284 km
+maximum across the five satellites for top10 5° mean.
+
+---
+
 ## Checkpoint 4B — Threshold sensitivity (derived from CP4A grid tables; no new raw/processed data)
 
 **Source grid tables used (CP4A, unchanged):** `outputs/tables/cp4a_noaa19_2024-01_grid_5deg.parquet`,
 `…_grid_2deg.parquet` (coverage-passed cells only: 432/432 and 2,685/2,700).
 
 **Threshold sensitivity table (new, `outputs/tables/`, git-ignored):**
-- `cp4b_threshold_sensitivity.csv` — 20 rows, 6,999 B, sha256 `c94b4537658c0efc…`
-- `cp4b_threshold_sensitivity.parquet` — 20 rows, 14,672 B, sha256 `fea789011010f893…`
+- `cp4b_threshold_sensitivity.csv` — 20 rows, 7,005 B, sha256 `c825cc40159b42ba…`
+- `cp4b_threshold_sensitivity.parquet` — 20 rows, 14,672 B, sha256 `5ae7d465a5eb0046…`
 - columns: grid_deg, statistic_used, threshold_label, percentile_cutoff, flux_cutoff_value,
   cells_available_after_coverage_mask, selected_cell_count, selected_area_km2,
   selected_area_fraction_of_covered_region, centroid_lat/lon_unweighted,
@@ -119,7 +133,7 @@ No raw or processed data files were created in CP4B (analysis of existing CP4A t
 (6; same columns as CP4A + coverage mask; masks identical across channels: 432/432 and 2,685/2,700).
 
 **Threshold sensitivity (new):** `cp4c_channel_threshold_sensitivity.csv` (60 rows, 20,414 B,
-sha256 `1347a47a790f23e7…`) + `.parquet` (19,107 B, sha256 `1deff1c4968010c5…`).
+sha256 `7c17e70726dd2067…`) + `.parquet` (19,107 B, sha256 `209ff98d35926f25…`).
 
 **Figures (new, `outputs/figures/`):** `cp4c_noaa19_2024-01_{p1,p2,p3}_mean_flux_5deg.png` (3),
 `cp4c_channel_comparison_top10_{5deg,2deg}_mean.png` (2), `cp4c_channel_centroid_comparison.png`,
@@ -149,8 +163,8 @@ columns as CP4A + per-window coverage mask `enough_samples_{5,2}deg`. Coverage t
 `max(3, round((30/31)*day_count))` → day 3, 7-day/weekly 7, 14-day 14, month 30 (month reproduces
 CP4A 432/2685).
 
-**Threshold sensitivity (new):** `cp4d_time_window_threshold_sensitivity.csv` (160 rows, 46,085 B,
-sha256 `9209a7a40302398d…`) + `.parquet` (29,052 B, sha256 `f07e65a4e58c9bcf…`). Columns add
+**Threshold sensitivity (new):** `cp4d_time_window_threshold_sensitivity.csv` (160 rows, 46,119 B,
+sha256 `ed68216a6257396c…`) + `.parquet` (29,052 B, sha256 `40c34f08adfdecb6…`). Columns add
 `window_label, start_date, end_date, day_count, files_expected, files_loaded, coverage_threshold_used,
 coverage_warning` to the CP4B set.
 
@@ -184,8 +198,8 @@ file per other candidate (`poes_{n15,m01,m03}_20240101_proc.nc`) for the audit.
 (78,771 B, sha256 `fcb3cf7bd41daf38…`, 2571/2699 pass ≥30). Same columns as CP4A + coverage mask.
 NOAA-19 grids reused unchanged from CP4A (no regeneration).
 
-**Threshold sensitivity (new):** `cp4e_satellite_pilot_threshold_sensitivity.csv` (40 rows, 16,949 B,
-sha256 `4cccd5061f17832e…`) + `.parquet` (18,010 B, sha256 `f2aad0ef46233e81…`). Columns add
+**Threshold sensitivity (new):** `cp4e_satellite_pilot_threshold_sensitivity.csv` (40 rows, 16,957 B,
+sha256 `07ca507a32741053…`) + `.parquet` (18,010 B, sha256 `c59c393c8380e03c…`). Columns add
 `satellite`, `coverage_threshold_used` (30), `satellite_compatibility_note`.
 
 **Figures (new, `outputs/figures/`, 8):** `cp4e_{noaa19,noaa18}_2024-01_mean_flux_5deg.png`,
@@ -217,12 +231,12 @@ Produced by `notebooks/04e_satellite_pilot_comparison.ipynb`; validated by `scri
 **Grid tables (new, `outputs/tables/`, 10):** `cp4f_{sat}_2024-01_grid_{5deg,2deg}.parquet` for all
 five satellites (CP4A columns + `enough_samples_{5,2}deg` coverage mask at ≥30).
 
-**Threshold sensitivity (new):** `cp4f_multisatellite_threshold_sensitivity.csv` (100 rows, 41,214 B,
-sha256 `4f164ef752d68d7a…`) + `.parquet` (24,330 B, sha256 `c2d56ae1fa126f61…`); every row has
+**Threshold sensitivity (new):** `cp4f_multisatellite_threshold_sensitivity.csv` (100 rows, 41,222 B,
+sha256 `d0a4768485820e96…`) + `.parquet` (24,330 B, sha256 `add180867156c570…`); every row has
 `absolute_flux_comparison_allowed=False`.
 
-**Pairwise centroid distances (new):** `cp4f_pairwise_centroid_distances.csv` (40 rows, 5,144 B,
-sha256 `0871435f5b772204…`) + `.parquet` (6,401 B, sha256 `4a9d90df07e00b5f…`).
+**Pairwise centroid distances (new):** `cp4f_pairwise_centroid_distances.csv` (40 rows, 5,163 B,
+sha256 `00c60b678a1ee7b8…`) + `.parquet` (6,401 B, sha256 `5d55b99209694d4f…`).
 
 **Figures (new, `outputs/figures/`, 16):** `cp4f_{sat}_mean_flux_5deg.png` (5),
 `cp4f_{sat}_sample_count_5deg.png` (5), `cp4f_multisatellite_{top10,top5}_{5deg,2deg}_mean_overlay.png`
@@ -250,7 +264,7 @@ sentinel, excluded in analysis.
 
 **Processed flux+magnetic regional file (new):**
 - `cp5a_noaa19_2024-01_region_flux_plus_magnetic.parquet` — 205,153 rows, 7,486,038 B,
-  sha256 `05729c85989960f2…` (matches CP4A region row count; **accepted CP4 files untouched**).
+  sha256 `05729c85989960f2…` (matches CP4A region row count; CP5A itself did not modify the CP4 products).
 
 **Footprint magnetic distribution table (new):** `cp5a_footprint_magnetic_distributions.csv`
 (20 rows, 3,929 B, sha256 `07fdf3cd54813b2c…`) + `.parquet` (10,513 B, sha256 `a39a9b70e3547575…`).

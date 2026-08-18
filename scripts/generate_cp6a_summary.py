@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from saa.threshold_analysis import haversine_km  # noqa: E402
+from saa.viewer_export import build_viewer_payload  # noqa: E402
 
 TABLES = ROOT / "outputs" / "tables"
 
@@ -26,65 +27,87 @@ def _case(table: pd.DataFrame, **filters: object) -> pd.Series:
     return rows.iloc[0]
 
 
-def _max_pairwise_km(rows: pd.DataFrame) -> float:
+def _viewer_case(payload: dict, experiment: str, **filters: object) -> dict:
+    rows = [
+        row
+        for row in payload["experiments"][experiment]["configurations"]
+        if all(row["values"].get(key) == value for key, value in filters.items())
+    ]
+    if len(rows) != 1:
+        raise ValueError(f"expected one viewer row for {experiment} {filters}, found {len(rows)}")
+    return rows[0]
+
+
+def _max_viewer_pairwise_km(rows: list[dict]) -> float:
     distances = [
         haversine_km(
-            left.centroid_lat_flux_weighted,
-            left.centroid_lon_flux_weighted,
-            right.centroid_lat_flux_weighted,
-            right.centroid_lon_flux_weighted,
+            left["metrics"]["centroid_lat"],
+            left["metrics"]["centroid_lon"],
+            right["metrics"]["centroid_lat"],
+            right["metrics"]["centroid_lon"],
         )
-        for (_, left), (_, right) in combinations(rows.iterrows(), 2)
+        for left, right in combinations(rows, 2)
     ]
     return max(distances)
 
-
 def build_summary(table_dir: Path = TABLES) -> pd.DataFrame:
     """Build the five-row CP6A synthesis from validated CP4B–CP5B artifacts."""
-    cp4b = pd.read_parquet(table_dir / "cp4b_threshold_sensitivity.parquet")
-    cp4c = pd.read_parquet(table_dir / "cp4c_channel_threshold_sensitivity.parquet")
-    cp4d = pd.read_parquet(table_dir / "cp4d_time_window_threshold_sensitivity.parquet")
-    cp4f_pairs = pd.read_parquet(table_dir / "cp4f_pairwise_centroid_distances.parquet")
+    viewer = build_viewer_payload(table_dir)
     cp5b_summary = pd.read_parquet(table_dir / "cp5b_footprint_magnetic_summary.parquet")
     cp5b_concentration = pd.read_csv(table_dir / "cp5b_magnetic_concentration_metrics.csv")
 
-    top20 = _case(cp4b, grid_deg=5, statistic_used="mean_flux", threshold_label="top20")
-    top1 = _case(cp4b, grid_deg=5, statistic_used="mean_flux", threshold_label="top1")
+    top20 = _viewer_case(
+        viewer, "threshold", grid_deg=5, statistic_used="mean_flux", threshold_label="top20"
+    )
+    top1 = _viewer_case(
+        viewer, "threshold", grid_deg=5, statistic_used="mean_flux", threshold_label="top1"
+    )
     threshold_shift = haversine_km(
-        top20.centroid_lat_flux_weighted,
-        top20.centroid_lon_flux_weighted,
-        top1.centroid_lat_flux_weighted,
-        top1.centroid_lon_flux_weighted,
+        top20["metrics"]["centroid_lat"],
+        top20["metrics"]["centroid_lon"],
+        top1["metrics"]["centroid_lat"],
+        top1["metrics"]["centroid_lon"],
     )
-    area_ratio = top20.selected_area_km2 / top1.selected_area_km2
+    area_ratio = top20["metrics"]["selected_area_km2"] / top1["metrics"]["selected_area_km2"]
 
-    channel_rows = cp4c.loc[
-        (cp4c["grid_deg"] == 5)
-        & (cp4c["statistic_used"] == "mean_flux")
-        & (cp4c["threshold_label"] == "top10")
+    channel_rows = [
+        _viewer_case(
+            viewer, "channel", channel=channel, grid_deg=5,
+            statistic_used="mean_flux", threshold_label="top10",
+        )
+        for channel in ("mep_omni_flux_p1", "mep_omni_flux_p2", "mep_omni_flux_p3")
     ]
-    channel_spread = _max_pairwise_km(channel_rows)
+    channel_spread = _max_viewer_pairwise_km(channel_rows)
 
-    time_rows = cp4d.loc[
-        (cp4d["grid_deg"] == 5)
-        & (cp4d["statistic_used"] == "mean_flux")
-        & (cp4d["threshold_label"] == "top10")
-    ]
-    day = _case(time_rows, window_label="day_2024-01-01")
-    month = _case(time_rows, window_label="month_2024-01")
+    day = _viewer_case(
+        viewer, "time", window_label="day_2024-01-01", grid_deg=5,
+        statistic_used="mean_flux", threshold_label="top10",
+    )
+    month = _viewer_case(
+        viewer, "time", window_label="month_2024-01", grid_deg=5,
+        statistic_used="mean_flux", threshold_label="top10",
+    )
     day_month = haversine_km(
-        day.centroid_lat_flux_weighted,
-        day.centroid_lon_flux_weighted,
-        month.centroid_lat_flux_weighted,
-        month.centroid_lon_flux_weighted,
+        day["metrics"]["centroid_lat"], day["metrics"]["centroid_lon"],
+        month["metrics"]["centroid_lat"], month["metrics"]["centroid_lon"],
     )
-    weekly_spread = _max_pairwise_km(
-        time_rows.loc[time_rows["window_label"].isin(["week1", "week2", "week3", "week4"])]
-    )
+    weekly_rows = [
+        _viewer_case(
+            viewer, "time", window_label=window, grid_deg=5,
+            statistic_used="mean_flux", threshold_label="top10",
+        )
+        for window in ("week1", "week2", "week3", "week4")
+    ]
+    weekly_spread = _max_viewer_pairwise_km(weekly_rows)
 
-    satellite_spread = cp4f_pairs.loc[
-        cp4f_pairs["comparison_case"] == "top10_5deg_mean", "distance_km"
-    ].max()
+    satellite_rows = [
+        _viewer_case(
+            viewer, "satellite", satellite=satellite, grid_deg=5,
+            statistic_used="mean_flux", threshold_label="top10",
+        )
+        for satellite in ("noaa15", "noaa18", "noaa19", "metop01", "metop03")
+    ]
+    satellite_spread = _max_viewer_pairwise_km(satellite_rows)
 
     def separation(variable: str) -> float:
         return float(
@@ -122,7 +145,7 @@ def build_summary(table_dir: Path = TABLES) -> pd.DataFrame:
             "NOAA-19 Jan-2024 p1",
             "top20-to-top1 centroid shift and area ratio (5deg mean)",
             f"{threshold_shift:.0f} km; {area_ratio:.1f}x",
-            "footprint center and area are threshold-dependent",
+            "footprint centroid and selected area are threshold-dependent",
             "a final SAA boundary or true center",
             "cp4b_threshold_sensitivity.parquet",
             "6.2",

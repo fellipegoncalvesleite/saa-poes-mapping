@@ -11,7 +11,7 @@ Key choices:
   ``area = R^2 * dlon_rad * (sin(lat_north) - sin(lat_south))`` with ``R = 6371 km`` — never raw
   cell count (lat/lon cells are not equal-area).
 * **Two centroids** are reported: unweighted (mean of selected cell centers) and flux-weighted
-  (weighted by the statistic being thresholded). Longitude is averaged directly; acceptable because
+  over physical area (weighted by the statistic being thresholded multiplied by spherical cell area). Longitude is averaged directly; acceptable because
   the region (lon -100..+20) is limited and far from the +/-180 wrap — documented as an assumption.
 
 Caveat preserved from CP4A: ``mep_IFC_on == -1`` rows were retained and remain **uninterpreted**;
@@ -93,7 +93,16 @@ def unweighted_centroid(cells: pd.DataFrame) -> tuple[float, float]:
 
 
 def flux_weighted_centroid(cells: pd.DataFrame, stat_col: str) -> tuple[float, float]:
-    w = cells[stat_col].to_numpy(dtype="float64")
+    """Centroid of the gridded flux field over physical cell area.
+
+    Regular latitude/longitude cells have unequal physical area, so the
+    discrete approximation to the spatial integral uses ``flux * cell_area``
+    as the weight rather than flux alone.
+    """
+    w = (
+        cells[stat_col].to_numpy(dtype="float64")
+        * cells["cell_area_km2"].to_numpy(dtype="float64")
+    )
     lat = cells["lat_bin_center"].to_numpy(dtype="float64")
     lon = cells["lon_bin_center"].to_numpy(dtype="float64")
     sw = w.sum()

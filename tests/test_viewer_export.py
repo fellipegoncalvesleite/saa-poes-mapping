@@ -145,8 +145,8 @@ class ViewerCanonicalIntegrationTests(unittest.TestCase):
         self.assertEqual(row["metrics"]["covered_cells"], 432)
         self.assertEqual(row["metrics"]["selected_cells"], 44)
         self.assertEqual(len(row["selected_cell_indices"]), 44)
-        self.assertAlmostEqual(row["metrics"]["centroid_lat"], -21.154234, places=6)
-        self.assertAlmostEqual(row["metrics"]["centroid_lon"], -55.635093, places=6)
+        self.assertAlmostEqual(row["metrics"]["centroid_lat"], -20.886397, places=6)
+        self.assertAlmostEqual(row["metrics"]["centroid_lon"], -55.479107, places=6)
 
     def test_cp5c_is_fixed_raw_evidence_not_a_map_experiment(self) -> None:
         self.assertNotIn("cp5c", self.payload["experiments"])

@@ -18,15 +18,15 @@ Alternates:
 
 ## 2. Abstract skeleton
 - Context: SAA well known; many mapping choices; public LEO particle data underused for *reproducibility*.
-- Gap: how sensitive is the estimated footprint (center/area/intensity) to method choices?
+- Gap: how sensitive is the estimated footprint (centroid/area/intensity) to method choices?
 - Data: NOAA/NCEI POES/MetOp SEM-2 MEPED L1b, January 2024, 5 satellites, omni proton p1 (~25 MeV).
-- Methods: coverage-aware lon/lat gridding; percentile threshold footprints; spherical-area & centroid
+- Methods: coverage-aware lon/lat gridding; percentile threshold footprints; spherical-area & area-aware flux-centroid
   metrics; sensitivity across threshold/channel/window/satellite; descriptive IGRF-coordinate framing;
   predeclared five-satellite magnetic-generality rubric with an independent NOAA-19 reproduction gate.
-- Key numbers: threshold centroid shift ~386 km / area ~17.7×; channel ~100–300 km; day→month ~288 km
-  (weekly ~118 km); 5-satellite top10 5° mean spread ~272 km; CP5C `CONSISTENT` (5/5 low-Btot and
+- Key numbers: threshold centroid shift ~433 km / area ~17.7×; principal channel spread ~210 km; day→month ~289 km
+  (weekly ~118 km); 5-satellite top10 5° mean spread ~284 km; CP5C `CONSISTENT` (5/5 low-Btot and
   5/5 Btot-dominance).
-- Statement: footprint *location* is robust across satellites/windows but center/area are
+- Statement: footprint *location* is robust across satellites/windows but centroid/area are
   method-dependent; everything exploratory, no boundary/dose/health claims.
 
 ## 3. Introduction
@@ -46,7 +46,7 @@ Alternates:
 ## 5. Methods
 - Loader / record-aligned extraction (no `to_dataframe`); reproducible env (uv, Python 3.12).
 - Monthly coverage-aware gridding (5°/2°, mean/median, sample-count masks ≥30); spherical cell area.
-- Threshold footprints (top 20/10/5/2/1%); unweighted & flux-weighted centroids; haversine distances.
+- Threshold footprints (top 20/10/5/2/1%); unweighted & flux×cell-area-weighted centroids; haversine distances.
 - Sensitivity protocol across threshold, channel, time window, satellite (fixed-everything-else design).
 - Descriptive magnetic-coordinate framing: validity rules, binned flux profiles, inside/outside
   footprint summaries, low-Btot/low-L concentration metrics.
@@ -57,15 +57,15 @@ Alternates:
 - Validation harness (per-checkpoint scripts; source and artifact consistency checks).
 
 ## 6. Results
-6.1 Footprint reference (monthly mean map). 6.2 Threshold sensitivity (~386 km / ~17.7×).
-6.3 Channel sensitivity (~100–300 km). 6.4 Temporal stability (day→month ~288 km; weekly ~118 km).
-6.5 Inter-satellite consistency (~272 km; < threshold effect; NOAA-15 outlier).
+6.1 Footprint reference (monthly mean map). 6.2 Threshold sensitivity (~433 km / ~17.7×).
+6.3 Channel sensitivity (principal spread ~210 km). 6.4 Temporal stability (day→month ~289 km; weekly ~118 km).
+6.5 Inter-satellite consistency (~284 km; < threshold effect; NOAA-15 outlier).
 6.6 Magnetic-coordinate framing and five-satellite generality: `CONSISTENT` by the predeclared rubric;
 all 5 satellites pass low-Btot and Btot-dominance. Report every satellite's raw metrics; note that MLT
 is near zero for four satellites but separates on NOAA-15, while remaining weaker than Btot.
 
 ## 7. Discussion
-- Footprint *location* is robust to satellite/window; *center/area* are method artifacts → reporting
+- Footprint *location* is robust to satellite/window; *centroid/area* are method-dependent → reporting
   must state the method.
 - Descriptive co-location with low IGRF field strength; explicitly not causal.
 - Implications for reproducible "where is the SAA" statements from public data.
@@ -89,6 +89,6 @@ is near zero for four satellites but separates on NOAA-15, while remaining weake
 
 ### Research question (verbatim)
 *When mapping the SAA from public low-Earth-orbit energetic-particle data, how much do the estimated
-center, area, and intensity of the candidate high-flux footprint change under different methodological
+centroid, area, and intensity of the candidate high-flux footprint change under different methodological
 choices — proton channel, flux threshold, spatial grid resolution, satellite, and time window — and
 how can the footprint be described (not defined) in geomagnetic-coordinate terms?*

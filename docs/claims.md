@@ -12,20 +12,20 @@ For the accepted, validated analysis:
 
 1. A persistent candidate high-flux sector appears over South America and the
    South Atlantic in January 2024 NOAA-19 `mep_omni_flux_p1` data.
-2. The estimated center and area depend strongly on the flux threshold. From
-   top 20% to top 1%, the flux-weighted centroid shifts about **386 km** and
+2. The reported footprint centroid and selected area depend strongly on the flux threshold. From
+   top 20% to top 1%, the area-aware flux-weighted centroid shifts about **433 km** and
    selected area changes by about **17.7×** on the 5° mean grid.
 3. Footprint locations are broadly consistent across the p1, p2, and p3
-   proton channels: maximum pairwise centroid differences are about
-   **100–300 km**. Absolute flux is not compared across channels.
+   fitted proton outputs: the principal top-10%, 5° mean comparison has a
+   maximum pairwise centroid separation of about **210 km**. Absolute flux is not compared across channels.
 4. One-day maps are coverage-limited. Day-to-month centroid drift is about
-   **288 km**, concentrated mainly between one and seven days; disjoint weekly
+   **289 km**, concentrated mainly between one and seven days; disjoint weekly
    windows agree within about **118 km**.
 5. Footprint locations are broadly consistent across NOAA-15, NOAA-18,
    NOAA-19, MetOp-01, and MetOp-03. The maximum top-10%, 5° mean pairwise
-   spread is about **272 km**; NOAA-18 and NOAA-19 differ by about **13 km**.
+   spread is about **284 km**; NOAA-18 and NOAA-19 differ by about **13 km**.
    This spread is smaller than the within-satellite threshold effect.
-6. NOAA-15 is a location outlier, about **217–272 km** from the other
+6. NOAA-15 is a location outlier, about **228–284 km** from the other
    platforms, and has anomalously high uncalibrated peak flux. This is a
    descriptive observation, not a cross-calibrated physical comparison.
 7. In the principal top-10%, 5° mean case, **100%** of footprint samples for
