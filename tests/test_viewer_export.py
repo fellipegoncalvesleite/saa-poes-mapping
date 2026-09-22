@@ -115,7 +115,7 @@ class ViewerCanonicalIntegrationTests(unittest.TestCase):
     def test_exact_supported_experiment_matrix_is_exported(self) -> None:
         self.assertEqual(
             EXPECTED_CONFIGURATION_COUNTS,
-            {"threshold": 20, "channel": 60, "time": 160, "satellite": 100},
+            {"threshold": 20, "channel": 60, "time": 180, "satellite": 100},
         )
         self.assertEqual(
             EXPERIMENT_DIMENSIONS,
@@ -207,13 +207,13 @@ class ViewerCanonicalIntegrationTests(unittest.TestCase):
             "time": "window_label",
             "satellite": "satellite",
         }
-        self.assertEqual(len(self.payload["comparisons"]), 860)
+        self.assertEqual(len(self.payload["comparisons"]), 1020)
         configs = {
             row["id"]: row
             for experiment in self.payload["experiments"].values()
             for row in experiment["configurations"]
         }
-        expected_counts = {"threshold": 40, "channel": 60, "time": 560, "satellite": 200}
+        expected_counts = {"threshold": 40, "channel": 60, "time": 720, "satellite": 200}
         actual_counts = {name: 0 for name in expected_counts}
         for comparison in self.payload["comparisons"]:
             actual_counts[comparison["experiment"]] += 1

@@ -51,8 +51,10 @@ Shorter windows use a duration-scaled minimum:
 max(3, round((30 / 31) * number_of_days))
 ```
 
-This yields minimums of 3, 7, 14, and 30 samples for one-day, seven-day,
-fourteen-day, and monthly windows. A cell failing coverage has no grid
+This yields minimums of 3, 3, 7, 14, and 30 samples for one-day, three-day,
+seven-day, fourteen-day, and monthly windows. The three-day minimum is floor-bound
+(`round((30 / 31) * 3) = 3`); the floor binds but changes nothing, and that status is
+reported rather than hidden. A cell failing coverage has no grid
 statistic and cannot enter a footprint.
 
 ## Candidate footprint and spatial metrics
@@ -68,14 +70,21 @@ For the latter, each selected cell center is weighted by `cell flux × spherical
 approximates the spatial integral on unequal-area latitude–longitude cells. Straight longitude averaging is valid
 here because the study region does not cross the dateline. This is a latitude/longitude moment definition, not a
 3-D spherical-vector barycenter. Distances between centroids use the haversine formula.
+The peak-flux cell is the coverage-passed cell with the maximum gridded statistic
+(southernmost, then westernmost, on exact ties, with the tie count recorded);
+coverage-rejected cells are never eligible. For time windows, each cumulative state is
+compared against the full-month reference on the same grid: area-aware centroid distance,
+signed selected-area difference and area ratio, and the footprint Jaccard index
+(intersection over union of the actual selected cell sets, never interpolated).
+The month compared with itself is exactly distance 0, ratio 1, and Jaccard 1.
 
 ## Sensitivity families
 
-The public map payload contains 340 supported configurations:
+The public map payload contains 360 supported configurations:
 
 - threshold: 20 states;
 - proton channel: 60 states;
-- time window: 160 states;
+- time window: 180 states;
 - satellite: 100 states.
 
 Each family changes its named factor while holding the comparison design

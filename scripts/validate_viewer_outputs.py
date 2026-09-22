@@ -20,7 +20,7 @@ from saa.viewer_export import build_viewer_payload, write_viewer_json  # noqa: E
 
 RTOL = 1e-9
 ATOL = 1e-12
-EXPECTED_COUNTS = {"threshold": 20, "channel": 60, "time": 160, "satellite": 100}
+EXPECTED_COUNTS = {"threshold": 20, "channel": 60, "time": 180, "satellite": 100}
 DIMENSIONS = {
     "threshold": ["grid_deg", "statistic_used", "threshold_label"],
     "channel": ["channel", "grid_deg", "statistic_used", "threshold_label"],
@@ -168,7 +168,7 @@ def _grid_matches(
 
 
 def independent_authority_matches(payload: dict[str, Any], table_dir: Path) -> tuple[bool, str]:
-    """Walk all 340 configurations directly against canonical rows and grid Parquets."""
+    """Walk all 360 configurations directly against canonical rows and grid Parquets."""
     experiments = payload.get("experiments", {})
     if set(experiments) != set(EXPECTED_COUNTS):
         return False, "experiment set differs"

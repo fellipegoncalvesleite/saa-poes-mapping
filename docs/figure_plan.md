@@ -33,12 +33,16 @@ Legend: **M** = main paper, **S** = supplement.
 - Supports: claim 2. Must NOT claim: physical motion of the SAA.
 
 ## F4 — Time-window stabilization (M)
-- Source: CP4D. Path: `outputs/figures/cp4d_centroid_by_time_window_top10.png`
-  (supplement: `cp4d_sample_count_5deg_time_windows.png`).
-- Why: shows the day→7-day jump then stabilization (~289 km day→month; ~118 km weekly).
-- Caption draft: "Flux×cell-area-weighted centroid by aggregation window (top10, 5° mean); one-day maps are
-  coverage-limited, stabilizing by ~7 days."
-- Supports: claim 4. Must NOT claim: a one-day footprint as final.
+- Source: CP4D. Path: `outputs/figures/cp4d_stabilization_vs_duration_top10.png`
+  (supplement: `cp4d_sample_count_5deg_time_windows.png`, `cp4d_centroid_by_time_window_top10.png`).
+- Why: shows coverage accumulation plus centroid-distance and Jaccard convergence versus window
+  duration — the 3-day state remains coverage-limited (~138 km, Jaccard 0.54), converging
+  substantially by ~7 days (~39 km, Jaccard 0.89; day→month ~289 km; weekly ~118 km).
+- Caption draft: "Sampling stabilization with cumulative window duration (top10, 5° mean):
+  coverage accumulation, area-aware centroid distance to the monthly reference, and footprint
+  overlap. One-day maps are coverage-limited; the footprint converges as sampling fills in
+  over several days (January 2024 NOAA-19 observation, not a universal timescale)."
+- Supports: claim 4. Must NOT claim: a one-day footprint as final, or a physical SAA timescale.
 
 ## F5 — Multi-satellite centroid comparison (M)
 - Source: CP4F. Path: `outputs/figures/cp4f_multisatellite_centroid_comparison_top10_top5.png`

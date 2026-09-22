@@ -28,7 +28,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from saa.aggregate import GRID_COLUMNS  # noqa: E402
-from saa.threshold_analysis import CHANNEL_SENSITIVITY_COLUMNS  # noqa: E402
+from saa.threshold_analysis import CHANNEL_SENSITIVITY_COLUMNS_PRE_CP4D1  # noqa: E402
 
 RAW = ROOT / "data" / "raw"
 PROC = ROOT / "data" / "processed"
@@ -90,7 +90,7 @@ def main() -> int:
         add("sensitivity Parquet exists", False, "MISSING"); return _report(checks)
     add("sensitivity Parquet exists", True, SENS_PARQ.name)
     sens = pd.read_parquet(SENS_PARQ)
-    miss = [c for c in CHANNEL_SENSITIVITY_COLUMNS if c not in sens.columns]
+    miss = [c for c in CHANNEL_SENSITIVITY_COLUMNS_PRE_CP4D1 if c not in sens.columns]
     add("sensitivity has required columns", not miss, "all present" if not miss else f"missing {miss}")
     add("sensitivity has 60 rows", len(sens) == 60, f"{len(sens)} rows")
     add("3 channels present in table", set(sens["channel"].unique()) == set(CHANNELS),

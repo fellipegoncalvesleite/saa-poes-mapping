@@ -30,14 +30,14 @@
         <div><dt>Observation period</dt><dd>January 2024</dd></div>
         <div><dt>Data product</dt><dd>POES/MetOp SEM-2 MEPED L1b</dd></div>
         <div><dt>Satellites</dt><dd>5 NOAA/MetOp spacecraft</dd></div>
-        <div><dt>Validated states</dt><dd>340 map configurations</dd></div>
-        <div><dt>Principal threshold comparison</dt><dd>~386 km centroid difference</dd></div>
+        <div><dt>Validated states</dt><dd>360 map configurations</dd></div>
+        <div><dt>Principal threshold comparison</dt><dd>~433 km centroid difference</dd></div>
       </dl>
     </section>
 
     <section id="explorer" class="explorer" aria-labelledby="explorer-title">
       <div class="section-header">
-        <p class="section-label">340 validated configurations</p>
+        <p class="section-label">360 validated configurations</p>
         <h2 id="explorer-title">Interactive map</h2>
         <p>Select an analysis question and configuration. The browser displays stored, validated results and does not recompute scientific metrics.</p>
       </div>
@@ -74,12 +74,12 @@
     <section id="findings" class="content-section" aria-labelledby="results-title">
       <div class="section-header"><p class="section-label">Validated January 2024 outputs</p><h2 id="results-title">Results</h2></div>
       <div class="result-block result-primary">
-        <div><h3>Threshold sensitivity</h3><p>Changing only the high-flux percentile moves and resizes the candidate footprint. The principal top-20% to top-1% comparison changes the stored flux-weighted centroid by about 386 km and selected area by about 17.7×.</p></div>
+        <div><h3>Threshold sensitivity</h3><p>Changing only the high-flux percentile moves and resizes the candidate footprint. The principal top-20% to top-1% comparison changes the stored flux-weighted centroid by about 433 km and selected area by about 17.7×.</p></div>
         <div class="finding-actions"><button type="button" data-show-config="threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top20">Map: top 20%</button><button type="button" data-show-config="threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top1">Map: top 1%</button></div>
       </div>
       <div class="result-grid">
-        <article><h3>Observation-window sensitivity</h3><p>One day to the full month differs by about 288 km. Four separate weekly windows remain within about 118 km. The one-day result is orbit-track sparse and does not establish physical SAA motion.</p></article>
-        <article><h3>Satellite sensitivity</h3><p>The five-satellite principal top-10% spread is about 272 km. NOAA-18 and NOAA-19 differ by about 13 km. This comparison is limited to location and shape; absolute proton flux is not cross-calibrated.</p></article>
+        <article><h3>Observation-window sensitivity</h3><p>One day to the full month differs by about 289 km. The 3-day state remains coverage-limited (about 138 km from the month) and converges substantially by 7 days. Four separate weekly windows remain within about 118 km. The one-day result is orbit-track sparse and does not establish physical SAA motion.</p></article>
+        <article><h3>Satellite sensitivity</h3><p>The five-satellite principal top-10% spread is about 284 km. NOAA-18 and NOAA-19 differ by about 13 km. This comparison is limited to location and shape; absolute proton flux is not cross-calibrated.</p></article>
         <article><h3>Proton-channel sensitivity</h3><p>Stored centroids for p1, p2, and p3 are separated by roughly 100–300 km. Absolute values at approximately 25, 50, and 100 MeV are different physical measurements.</p></article>
       </div>
     </section>

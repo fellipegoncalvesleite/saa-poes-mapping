@@ -36,7 +36,8 @@ from .load_poes import (
 )
 from .grid_flux import DEFAULT_LAT_RANGE, DEFAULT_LON_RANGE
 from .threshold_analysis import run_sensitivity, _pivot_to_2d, percentile_threshold, select_high_flux, \
-    flux_weighted_centroid, add_cell_area, coverage_passed, haversine_km, PERCENTILES, SENSITIVITY_COLUMNS
+    flux_weighted_centroid, add_cell_area, coverage_passed, haversine_km, PERCENTILES, SENSITIVITY_COLUMNS, \
+    SENSITIVITY_COLUMNS_PRE_CP4D1
 
 #: Candidate satellites confirmed to have a 2024 directory in the NCEI L1b archive (verified by
 #: directory listing on 2026-06-09); names are validated again at runtime, never assumed.
@@ -59,6 +60,20 @@ SATELLITE_SENSITIVITY_COLUMNS = (
 MULTISAT_SENSITIVITY_COLUMNS = (
     ["satellite", "satellite_family_or_platform"]
     + [c for c in SENSITIVITY_COLUMNS if c != "notes"]
+    + ["coverage_threshold_used", "satellite_compatibility_note", "absolute_flux_comparison_allowed"]
+)
+
+#: Frozen CP4E/CP4F-era subsets (before CP4D.1 added peak-flux location). Validators for those
+#: frozen checkpoint artifacts pin these so the CP4D.1 extension does not retroactively
+#: invalidate accepted tables.
+SATELLITE_SENSITIVITY_COLUMNS_PRE_CP4D1 = (
+    ["satellite"]
+    + [c for c in SENSITIVITY_COLUMNS_PRE_CP4D1 if c != "notes"]
+    + ["coverage_threshold_used", "satellite_compatibility_note"]
+)
+MULTISAT_SENSITIVITY_COLUMNS_PRE_CP4D1 = (
+    ["satellite", "satellite_family_or_platform"]
+    + [c for c in SENSITIVITY_COLUMNS_PRE_CP4D1 if c != "notes"]
     + ["coverage_threshold_used", "satellite_compatibility_note", "absolute_flux_comparison_allowed"]
 )
 

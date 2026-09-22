@@ -20,7 +20,12 @@ For the accepted, validated analysis:
    maximum pairwise centroid separation of about **210 km**. Absolute flux is not compared across channels.
 4. One-day maps are coverage-limited. Day-to-month centroid drift is about
    **289 km**, concentrated mainly between one and seven days; disjoint weekly
-   windows agree within about **118 km**.
+   windows agree within about **118 km**. The three-day cumulative state remains
+   coverage-limited for this single-satellite setup (about **138 km** from the
+   monthly centroid, footprint Jaccard **0.54**, 5° passing coverage **~75%**),
+   improving substantially by seven days (about **39 km**, Jaccard **0.89**).
+   The peak-flux grid cell is identical across all cumulative windows.
+   These are January 2024 NOAA-19 sampling observations, not a universal timescale.
 5. Footprint locations are broadly consistent across NOAA-15, NOAA-18,
    NOAA-19, MetOp-01, and MetOp-03. The maximum top-10%, 5° mean pairwise
    spread is about **284 km**; NOAA-18 and NOAA-19 differ by about **13 km**.

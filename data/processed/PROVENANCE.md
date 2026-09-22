@@ -177,6 +177,49 @@ Produced by `notebooks/04d_time_window_sensitivity.ipynb`; validated by `scripts
 
 ---
 
+## Checkpoint 4D.1 — Three-day sampling-stabilization diagnostic (NOAA-19, Jan 2024, mep_omni_flux_p1)
+
+**Source raw files:** the same 31 NOAA-19 Jan-2024 L1b files in `data/raw/` (re-download verified:
+`poes_n19_20240101_proc.nc` sha256 `45b84acd431025ef…` matches the CP2 record; fresh load reproduces
+the accepted full-month region frame exactly, 205,153 rows). The cumulative sequence is extended
+`1 → 3 → 7 → 14 → 31 days` with the canonical `days_2024-01-01_to_03` state (2024-01-01..03) integrated
+into the existing `TIME_WINDOWS` machinery. Coverage rule unchanged: `max(3, round((30/31)*day_count))`,
+so the 3-day threshold is floor-bound at 3. Previously accepted 1/7/14/31-day values are unchanged
+(regression-tested; day→month ~289 km and weekly ~118 km stand).
+
+**Processed regional subset (new):**
+- `cp4d_noaa19_2024-01-01_to_03_mep_omni_flux_p1_region.parquet` — 19,865 rows, 678,279 B,
+  sha256 `96dc69e54017…` (in-memory date slice of the same month load, identical pipeline).
+
+**Grid tables (new, `outputs/tables/`):** `cp4d_days_2024-01-01_to_03_grid_5deg.parquet`
+(16,785 B, sha256 `1ecd26c4c525…`) and `…_grid_2deg.parquet` (42,980 B, sha256 `f53dd85e61ba…`);
+same columns + per-window coverage mask as CP4D.
+
+**Threshold sensitivity (regenerated):** `cp4d_time_window_threshold_sensitivity.csv` (180 rows,
+75,260 B, sha256 `b90b591af4ea…`) + `.parquet` (45,468 B, sha256 `8d39622a68c5…`) — 9 windows x 2 grids
+x 2 stats x 5 thresholds, 39 columns. New canonical columns: nominal/observed/zero-observation
+coverage diagnostics (`passing <= observed <= nominal`), `peak_flux_lat/lon/tie_count` over the
+coverage-passed field (deterministic southernmost-then-westernmost tie-break), and window-to-month
+stability metrics (area-aware centroid distance, signed area difference, area ratio, footprint
+Jaccard on actual selected cell sets; month identity exactly 0/0/1/1).
+
+**Figures (new, `outputs/figures/`):** `cp4d_mean_flux_5deg_days_2024-01-01_to_03.png` and the compact
+`cp4d_stabilization_vs_duration_top10.png` (coverage accumulation + centroid distance + Jaccard vs
+duration); cumulative panels now span 1 → 3 → 7 → 14 → 31 days.
+
+**Principal result (NOAA-19 / p1 / 5° / mean / top-10%):** 3 days reaches ~75% passing coverage
+(24% of nominal cells unobserved), centroid ~138 km from month, area ~0.75×, Jaccard 0.54 —
+still coverage-limited (Case A); 7 days converges substantially (~39 km, Jaccard 0.89). Peak-flux
+cell (-22.5, -52.5) is identical across all cumulative windows.
+
+**Public site:** time family 160 → 180 states, total 340 → 360 states, 28 deduplicated grids,
+1,020 pairwise comparisons (all Python-computed; browser displays stored values only).
+
+Produced by `notebooks/04d_time_window_sensitivity.ipynb` (re-executed 10/10 cells);
+validated by `scripts/validate_cp4d_outputs.py` (CP4D.1 gate).
+
+---
+
 ## Checkpoint 4E — Satellite availability audit + NOAA-18 pilot comparison
 
 **Audit (real NCEI archive listing + sample-file open):** five satellites with complete 31/31 Jan-2024

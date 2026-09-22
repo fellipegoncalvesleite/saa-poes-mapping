@@ -31,7 +31,7 @@ EXPERIMENT_DIMENSIONS = {
 EXPECTED_CONFIGURATION_COUNTS = {
     "threshold": 20,
     "channel": 60,
-    "time": 160,
+    "time": 180,
     "satellite": 100,
 }
 
@@ -59,6 +59,7 @@ CONTROL_OPTIONS = {
     ],
     "window_label": [
         ("day_2024-01-01", "2024-01-01 (1 day)"),
+        ("days_2024-01-01_to_03", "2024-01-01..03"),
         ("days_2024-01-01_to_07", "2024-01-01..07"),
         ("days_2024-01-01_to_14", "2024-01-01..14"),
         ("month_2024-01", "2024-01 (month)"),
