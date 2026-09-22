@@ -34,8 +34,10 @@ from .threshold_analysis import (
     plot_centroid_shift,
     PERCENTILES,
     SENSITIVITY_COLUMNS,
+    SENSITIVITY_COLUMNS_PRE_CP4D1,
     run_channel_sensitivity,
     CHANNEL_SENSITIVITY_COLUMNS,
+    CHANNEL_SENSITIVITY_COLUMNS_PRE_CP4D1,
 )
 from .time_window_analysis import (
     TIME_WINDOWS,
@@ -64,6 +66,7 @@ from .satellite_analysis import (
     REFERENCE_SATELLITE,
     AUDIT_COLUMNS,
     SATELLITE_SENSITIVITY_COLUMNS,
+    SATELLITE_SENSITIVITY_COLUMNS_PRE_CP4D1,
     list_archive_month_days,
     audit_satellite,
     build_satellite_audit,
@@ -75,6 +78,7 @@ from .satellite_analysis import (
     plot_satellite_centroid_comparison,
     plot_satellite_area_by_threshold,
     MULTISAT_SENSITIVITY_COLUMNS,
+    MULTISAT_SENSITIVITY_COLUMNS_PRE_CP4D1,
     PAIRWISE_DISTANCE_COLUMNS,
     satellite_family,
     run_multisatellite_sensitivity,

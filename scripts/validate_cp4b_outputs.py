@@ -28,7 +28,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from saa.threshold_analysis import SENSITIVITY_COLUMNS, coverage_passed  # noqa: E402
+from saa.threshold_analysis import SENSITIVITY_COLUMNS_PRE_CP4D1, coverage_passed  # noqa: E402
 
 TBL = ROOT / "outputs" / "tables"
 FIG = ROOT / "outputs" / "figures"
@@ -63,7 +63,7 @@ def main() -> int:
     sens = pd.read_parquet(PARQ)
 
     # 3) required columns
-    miss = [c for c in SENSITIVITY_COLUMNS if c not in sens.columns]
+    miss = [c for c in SENSITIVITY_COLUMNS_PRE_CP4D1 if c not in sens.columns]
     add("sensitivity has required columns", not miss, "all present" if not miss else f"missing {miss}")
 
     # 4) 20 rows

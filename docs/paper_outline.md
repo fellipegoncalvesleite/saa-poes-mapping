@@ -24,7 +24,7 @@ Alternates:
   metrics; sensitivity across threshold/channel/window/satellite; descriptive IGRF-coordinate framing;
   predeclared five-satellite magnetic-generality rubric with an independent NOAA-19 reproduction gate.
 - Key numbers: threshold centroid shift ~433 km / area ~17.7×; principal channel spread ~210 km; day→month ~289 km
-  (weekly ~118 km); 5-satellite top10 5° mean spread ~284 km; CP5C `CONSISTENT` (5/5 low-Btot and
+  (3-day ~138 km and coverage-limited, 7-day ~39 km; weekly ~118 km); 5-satellite top10 5° mean spread ~284 km; CP5C `CONSISTENT` (5/5 low-Btot and
   5/5 Btot-dominance).
 - Statement: footprint *location* is robust across satellites/windows but centroid/area are
   method-dependent; everything exploratory, no boundary/dose/health claims.
@@ -58,7 +58,8 @@ Alternates:
 
 ## 6. Results
 6.1 Footprint reference (monthly mean map). 6.2 Threshold sensitivity (~433 km / ~17.7×).
-6.3 Channel sensitivity (principal spread ~210 km). 6.4 Temporal stability (day→month ~289 km; weekly ~118 km).
+6.3 Channel sensitivity (principal spread ~210 km). 6.4 Temporal stability (day→month ~289 km; 3-day
+coverage-limited at ~138 km / Jaccard 0.54; converging by ~7 days at ~39 km / Jaccard 0.89; weekly ~118 km).
 6.5 Inter-satellite consistency (~284 km; < threshold effect; NOAA-15 outlier).
 6.6 Magnetic-coordinate framing and five-satellite generality: `CONSISTENT` by the predeclared rubric;
 all 5 satellites pass low-Btot and Btot-dominance. Report every satellite's raw metrics; note that MLT

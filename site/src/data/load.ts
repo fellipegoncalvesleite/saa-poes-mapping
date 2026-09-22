@@ -3,7 +3,7 @@ import type { ConfigurationValues, ExperimentName, GeographyPayload, LoadedData,
 const EXPECTED: Record<ExperimentName, number> = {
   threshold: 20,
   channel: 60,
-  time: 160,
+  time: 180,
   satellite: 100,
 };
 const DIMENSIONS: Record<ExperimentName, string[]> = {
@@ -156,7 +156,7 @@ export function validateLoadedData(payloadInput: unknown, geographyInput: unknow
       configurationsById.set(id, { experiment: name, values });
     }
   }
-  if (!Array.isArray(payloadObject.comparisons) || payloadObject.comparisons.length !== 860) throw new Error("Scientific payload must contain 860 comparisons");
+  if (!Array.isArray(payloadObject.comparisons) || payloadObject.comparisons.length !== 1020) throw new Error("Scientific payload must contain 1020 comparisons");
   const comparisonKeys = ["id", "experiment", "focal_dimension", "configuration_a", "configuration_b", "centroid_distance_km", "selected_area_difference_km2", "selected_area_ratio", "intersection_area_km2", "union_area_km2", "jaccard_overlap"];
   const focal: Record<ExperimentName, string> = { threshold: "threshold_label", channel: "channel", time: "window_label", satellite: "satellite" };
   const comparisonIds = new Set<string>();

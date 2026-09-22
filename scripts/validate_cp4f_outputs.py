@@ -31,7 +31,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from saa.aggregate import GRID_COLUMNS  # noqa: E402
-from saa.satellite_analysis import MULTISAT_SENSITIVITY_COLUMNS, PAIRWISE_DISTANCE_COLUMNS  # noqa: E402
+from saa.satellite_analysis import MULTISAT_SENSITIVITY_COLUMNS_PRE_CP4D1, PAIRWISE_DISTANCE_COLUMNS  # noqa: E402
 
 PROC = ROOT / "data" / "processed"
 TBL = ROOT / "outputs" / "tables"
@@ -81,7 +81,7 @@ def main() -> int:
 
     # sensitivity table
     add("sensitivity CSV exists", SENS_CSV.exists(), SENS_CSV.name)
-    m = [c for c in MULTISAT_SENSITIVITY_COLUMNS if c not in sens.columns]
+    m = [c for c in MULTISAT_SENSITIVITY_COLUMNS_PRE_CP4D1 if c not in sens.columns]
     add("sensitivity has required columns", not m, "all present" if not m else f"missing {m}")
     expected = len(sat_in_table) * 2 * 2 * 5
     add(f"sensitivity row count == included x 20", len(sens) == expected, f"{len(sens)} (expected {expected})")

@@ -4,14 +4,14 @@ import geographyJson from "../../public/data/geography.json";
 import { validateLoadedData } from "./load";
 
 describe("scientific payload validation", () => {
-  it("accepts the tracked 340-state authority and matching geography", () => {
+  it("accepts the tracked 360-state authority and matching geography", () => {
     const loaded = validateLoadedData(payloadJson, geographyJson);
     const counts = Object.fromEntries(
       Object.entries(loaded.payload.experiments).map(([name, value]) => [name, value.configuration_count]),
     );
-    expect(counts).toEqual({ channel: 60, satellite: 100, threshold: 20, time: 160 });
-    expect(Object.keys(loaded.payload.grids)).toHaveLength(26);
-    expect(loaded.payload.comparisons).toHaveLength(860);
+    expect(counts).toEqual({ channel: 60, satellite: 100, threshold: 20, time: 180 });
+    expect(Object.keys(loaded.payload.grids)).toHaveLength(28);
+    expect(loaded.payload.comparisons).toHaveLength(1020);
     expect(loaded.payload.cp5c.classification).toBe("CONSISTENT");
   });
 

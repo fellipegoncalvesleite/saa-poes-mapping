@@ -18,7 +18,9 @@ compare uncalibrated absolute flux across satellites.
 - Tightening the footprint from the top 20% to top 1% shifts its
   area-aware flux-weighted centroid by about 433 km and changes area by about 17.7×.
 - The principal three-channel comparison has a maximum pairwise centroid separation of about 210 km.
-- One day to one month differs by about 289 km; four weekly windows agree
+- One day to one month differs by about 289 km; the 3-day state remains
+  coverage-limited (about 138 km from month, Jaccard 0.54) and converges
+  substantially by 7 days; four weekly windows agree
   within about 118 km.
 - The five-satellite top-10%, 5° mean footprint spread is about 284 km;
   NOAA-18 and NOAA-19 differ by about 13 km.
@@ -30,7 +32,7 @@ See [claims](docs/claims.md) for accepted wording and limitations.
 
 ## Public research site
 
-The TypeScript/SVG site in `site/` displays 340 validated configurations. Its
+The TypeScript/SVG site in `site/` displays 360 validated configurations. Its
 JSON is exported from canonical Python results; the browser does not calculate
 thresholds, coverage, area, centroids, or unsupported parameter combinations.
 

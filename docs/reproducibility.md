@@ -81,7 +81,7 @@ Run the test suite and checkpoint validators from the repository root:
 ```
 
 The final two commands regenerate and independently validate the public site's
-340-state scientific payload and fixed five-satellite magnetic evidence.
+360-state scientific payload and fixed five-satellite magnetic evidence.
 
 Validate the website with:
 

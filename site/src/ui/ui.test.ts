@@ -110,7 +110,7 @@ describe("public research copy", () => {
       "Method sensitivity of particle-defined South Atlantic Anomaly maps",
       "Candidate high-flux footprints; not a definitive SAA boundary.",
       "January 2024",
-      "340 validated configurations",
+      "360 validated configurations",
       "Interactive map",
       "Results",
       "How to read this map",
