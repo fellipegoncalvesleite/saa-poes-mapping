@@ -52,7 +52,7 @@ def _max_viewer_pairwise_km(rows: list[dict]) -> float:
 
 def build_summary(table_dir: Path = TABLES) -> pd.DataFrame:
     """Build the five-row CP6A synthesis from validated CP4B–CP5B artifacts."""
-    viewer = build_viewer_payload(table_dir)
+    viewer = build_viewer_payload(table_dir, include_cp5c=False)  # map experiments only; CP5C comes later
     cp5b_summary = pd.read_parquet(table_dir / "cp5b_footprint_magnetic_summary.parquet")
     cp5b_concentration = pd.read_csv(table_dir / "cp5b_magnetic_concentration_metrics.csv")
 
@@ -145,8 +145,8 @@ def build_summary(table_dir: Path = TABLES) -> pd.DataFrame:
             "NOAA-19 Jan-2024 p1",
             "top20-to-top1 centroid shift and area ratio (5deg mean)",
             f"{threshold_shift:.0f} km; {area_ratio:.1f}x",
-            "footprint centroid and selected area are threshold-dependent",
-            "a final SAA boundary or true center",
+            "footprint centroid is threshold-dependent; the area change is largely prescribed by the percentile rule",
+            "a final SAA boundary or true center; the area ratio as independent empirical evidence",
             "cp4b_threshold_sensitivity.parquet",
             "6.2",
         ],
@@ -167,8 +167,9 @@ def build_summary(table_dir: Path = TABLES) -> pd.DataFrame:
             "NOAA-19 Jan-2024 p1",
             "day-to-month drift and weekly maximum spread (top10 5deg mean)",
             f"{day_month:.0f} km; weekly {weekly_spread:.0f} km",
-            "coverage filling explains much of the early-window movement",
-            "seasonal or long-term stability",
+            "short windows have fewer eligible cells; at 3 days most of the end-to-end difference does not persist "
+            "on shared eligible support, at 1 day it does",
+            "seasonal or long-term stability; a causal attribution of window differences to coverage",
             "cp4d_time_window_threshold_sensitivity.parquet",
             "6.4",
         ],
@@ -176,7 +177,7 @@ def build_summary(table_dir: Path = TABLES) -> pd.DataFrame:
             "satellite consistency",
             "CP4F",
             "five satellites, Jan-2024 p1",
-            "maximum pairwise centroid distance (top10 5deg mean)",
+            "maximum pairwise centroid distance (top10 5deg mean; QC-1 applied, unfiltered sensitivity in outputs/qc_sensitivity)",
             f"{satellite_spread:.0f} km",
             "within-satellite percentile footprints broadly overlap",
             "cross-satellite absolute-flux comparison",
@@ -187,10 +188,10 @@ def build_summary(table_dir: Path = TABLES) -> pd.DataFrame:
             "magnetic-coordinate framing",
             "CP5B",
             "NOAA-19 Jan-2024 p1",
-            "Btot/L/MLT separation and Btot regional fraction capturing 90%",
+            "Btot/L descriptive separation and Btot regional fraction capturing 90%",
             (
                 f"Btot {separation('Btot_sat'):.2f}; L {separation('L_IGRF'):.2f}; "
-                f"MLT {separation('MLT'):.2f}; capture90 {capture90:.2f}"
+                f"capture90 {capture90:.2f}; MLT comparison retired"
             ),
             "descriptive co-location with low NOAA-provided IGRF field strength",
             "causality or a physical SAA threshold",

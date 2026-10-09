@@ -16,19 +16,40 @@ compare uncalibrated absolute flux across satellites.
 ## Results
 
 - Tightening the footprint from the top 20% to top 1% shifts its
-  area-aware flux-weighted centroid by about 433 km and changes area by about 17.7×.
+  area-aware flux-weighted centroid by about 433 km (351–433 km across grids and statistics).
+  Area changes by about 17.7×, but the percentile rule itself prescribes a nominal 20× change
+  in selected cells, so the contraction is not independent evidence.
 - The principal three-channel comparison has a maximum pairwise centroid separation of about 210 km.
-- One day to one month differs by about 289 km; the 3-day state remains
-  coverage-limited (about 138 km from month, Jaccard 0.54) and converges
-  substantially by 7 days; four weekly windows agree
-  within about 118 km.
-- The five-satellite top-10%, 5° mean footprint spread is about 284 km;
-  NOAA-18 and NOAA-19 differ by about 13 km.
-- All five satellites satisfy the predeclared low-`Btot_sat` and
-  `Btot_sat`-dominance criteria. This is descriptive co-location with low
-  modeled field strength, not causation.
+- One day to one month differs by about 289 km; the 3-day state is 138 km from the
+  month end to end (area-weighted Jaccard 0.540), but on the cells eligible in both maps the
+  recomputed footprints are 14 km apart (Jaccard 0.829); the 7-day state is 39 km end to end.
+  The month contains every window, so this is descriptive January 2024 NOAA-19 sampling,
+  not a universal timescale. Weekly centroids lie within 16–118 km of one another.
+- The five-satellite top-10%, 5° mean footprint spread is about 113 km (112.5 km with cell
+  medians); NOAA-18 and NOAA-19 differ by about 13 km. This applies quality rule QC-1, adopted
+  post hoc, which excludes one NOAA-15 record whose >35 MeV count rate is inconsistent with its own
+  >16 MeV rate ([decision record](docs/qc_decision.md)). Unfiltered, the spread is about 284 km;
+  that result is kept as a sensitivity.
+- All five satellites satisfy the descriptive low-`Btot_sat` criteria. The MLT-based
+  dominance interpretation and combined classification are retired because linear
+  clock-label separation depends on the arbitrary hour origin.
+
+Phase 3 ran 1,000 paired calendar-block replicates for each of 1, 3 and 7 days.
+The p1–p3 displacement persists conditionally; 5° mean continuous-field overlap is
+0.933. These are descriptive stability findings, not calibrated physical confidence.
+See [channel assurance](docs/channel_assurance.md), [integrity handoff](docs/integrity_handoff.md)
+and the [QC-1 decision record](docs/qc_decision.md).
 
 See [claims](docs/claims.md) for accepted wording and limitations.
+
+## Paper
+
+The manuscript and supplement are in [`paper/`](paper/) (Typst sources; PDFs in `paper/build/`).
+Every number in them is generated from `paper/generated/claims_register.json`. The
+single reproduction command is
+`python scripts/reproduce_paper.py --audit-baseline <baseline.tar.gz> --qc-evidence <poes_n15_20240119_raw.nc>`;
+see [`paper/REPRODUCE.md`](paper/REPRODUCE.md). This version is a local, uncommitted working
+tree pending author review; it is not on the remote main branch and has no DOI.
 
 ## Public research site
 

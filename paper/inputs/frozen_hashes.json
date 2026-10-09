@@ -1,0 +1,10 @@
+{
+ "note": "Frozen Phase 1-3 records used to verify replays; hashes only, never used as answers.",
+ "phase3_block_draws_sha256": "3e6f8536a3dacefabc1648e1cc2ac211a87aeaea1bf45181c06c7c28501786ca",
+ "phase3_protocol_sha256": "b538269a35acaaf4654b56887e0d98ad12c1bfbd963db4bb94332d98028934fd",
+ "phase1_baseline_archive_sha256": "a68fdf8b1a3d0559b6421b3c658d5b117b8f7aee72972f0ebe0a53ef6940489f",
+ "phase1_census_sha256": "b24f786c07e2cafdc0674bdbb4e680f30644d5d58d1846147413077e173111b9",
+ "phase1_candidates_sha256": "833c5d111dcaf048827050f8f7f8e6dbdefb556cf8a68e0acadf9df586259eac",
+ "phase2_omission_pairwise_sha256": "dc6eba89ec8f48d35275bf8acc6f331d97a05ce9de566e4c1566a6e92d4177d0",
+ "phase2_omission_sensitivity_sha256": "68ff7295d22fac33d59ffbe22bd390bcb9688f3ab35b112d43ec1358cdc3a465"
+}

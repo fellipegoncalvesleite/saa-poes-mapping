@@ -1,0 +1,201 @@
+scenario,satellite,grid,statistic,threshold,selected,area_Mkm2,lat,lon
+QC-1 primary,noaa15,5,mean,top20,87,24.857,-20.696,-54.589
+QC-1 primary,noaa15,5,mean,top10,44,12.541,-21.706,-54.914
+QC-1 primary,noaa15,5,mean,top5,22,6.252,-22.571,-55.735
+QC-1 primary,noaa15,5,mean,top2,9,2.554,-23.001,-54.757
+QC-1 primary,noaa15,5,mean,top1,5,1.405,-24.396,-55.422
+QC-1 primary,noaa15,5,median,top20,87,24.857,-20.697,-54.53
+QC-1 primary,noaa15,5,median,top10,44,12.541,-21.682,-54.895
+QC-1 primary,noaa15,5,median,top5,22,6.252,-22.549,-55.722
+QC-1 primary,noaa15,5,median,top2,9,2.554,-22.996,-54.736
+QC-1 primary,noaa15,5,median,top1,5,1.405,-24.386,-55.409
+QC-1 primary,noaa15,2,mean,top20,533,24.363,-20.726,-54.476
+QC-1 primary,noaa15,2,mean,top10,267,12.207,-21.456,-55.262
+QC-1 primary,noaa15,2,mean,top5,134,6.103,-22.381,-55.492
+QC-1 primary,noaa15,2,mean,top2,54,2.455,-22.954,-55.973
+QC-1 primary,noaa15,2,mean,top1,27,1.221,-23.698,-56.266
+QC-1 primary,noaa15,2,median,top20,533,24.371,-20.702,-54.431
+QC-1 primary,noaa15,2,median,top10,267,12.209,-21.437,-55.174
+QC-1 primary,noaa15,2,median,top5,134,6.106,-22.303,-55.403
+QC-1 primary,noaa15,2,median,top2,54,2.455,-22.916,-55.514
+QC-1 primary,noaa15,2,median,top1,27,1.223,-23.474,-56.071
+QC-1 primary,noaa18,5,mean,top20,87,24.95,-19.948,-54.995
+QC-1 primary,noaa18,5,mean,top10,44,12.614,-20.915,-55.605
+QC-1 primary,noaa18,5,mean,top5,22,6.309,-21.436,-55.842
+QC-1 primary,noaa18,5,mean,top2,9,2.574,-21.933,-55.261
+QC-1 primary,noaa18,5,mean,top1,5,1.416,-23.419,-56.437
+QC-1 primary,noaa18,5,median,top20,87,24.95,-19.934,-55.001
+QC-1 primary,noaa18,5,median,top10,44,12.614,-20.898,-55.582
+QC-1 primary,noaa18,5,median,top5,22,6.309,-21.428,-55.818
+QC-1 primary,noaa18,5,median,top2,10,2.848,-22.433,-56.345
+QC-1 primary,noaa18,5,median,top1,5,1.416,-23.424,-55.526
+QC-1 primary,noaa18,2,mean,top20,515,23.672,-19.873,-54.896
+QC-1 primary,noaa18,2,mean,top10,258,11.863,-20.7,-55.422
+QC-1 primary,noaa18,2,mean,top5,129,5.901,-21.767,-55.491
+QC-1 primary,noaa18,2,mean,top2,52,2.369,-22.645,-55.901
+QC-1 primary,noaa18,2,mean,top1,26,1.184,-22.748,-55.592
+QC-1 primary,noaa18,2,median,top20,515,23.675,-19.866,-54.895
+QC-1 primary,noaa18,2,median,top10,258,11.859,-20.749,-55.453
+QC-1 primary,noaa18,2,median,top5,131,6.006,-21.493,-55.496
+QC-1 primary,noaa18,2,median,top2,52,2.368,-22.722,-55.991
+QC-1 primary,noaa18,2,median,top1,29,1.321,-22.757,-56.036
+QC-1 primary,noaa19,5,mean,top20,87,24.998,-19.743,-55.075
+QC-1 primary,noaa19,5,mean,top10,44,12.614,-20.886,-55.479
+QC-1 primary,noaa19,5,mean,top5,22,6.309,-21.433,-55.642
+QC-1 primary,noaa19,5,mean,top2,9,2.574,-21.938,-55.25
+QC-1 primary,noaa19,5,mean,top1,5,1.416,-23.425,-56.425
+QC-1 primary,noaa19,5,median,top20,87,24.984,-19.737,-54.845
+QC-1 primary,noaa19,5,median,top10,44,12.614,-20.858,-55.459
+QC-1 primary,noaa19,5,median,top5,22,6.309,-21.4,-55.786
+QC-1 primary,noaa19,5,median,top2,9,2.574,-21.912,-55.243
+QC-1 primary,noaa19,5,median,top1,5,1.416,-23.427,-55.538
+QC-1 primary,noaa19,2,mean,top20,537,24.703,-19.746,-54.923
+QC-1 primary,noaa19,2,mean,top10,269,12.371,-20.635,-55.612
+QC-1 primary,noaa19,2,mean,top5,135,6.183,-21.617,-55.474
+QC-1 primary,noaa19,2,mean,top2,54,2.46,-22.659,-55.681
+QC-1 primary,noaa19,2,mean,top1,27,1.228,-22.961,-56.352
+QC-1 primary,noaa19,2,median,top20,537,24.697,-19.715,-54.979
+QC-1 primary,noaa19,2,median,top10,269,12.371,-20.604,-55.713
+QC-1 primary,noaa19,2,median,top5,135,6.174,-21.76,-56.317
+QC-1 primary,noaa19,2,median,top2,56,2.563,-22.062,-55.42
+QC-1 primary,noaa19,2,median,top1,32,1.457,-22.765,-55.843
+QC-1 primary,metop01,5,mean,top20,87,24.893,-20.52,-55.094
+QC-1 primary,metop01,5,mean,top10,44,12.541,-21.667,-54.951
+QC-1 primary,metop01,5,mean,top5,22,6.252,-22.566,-55.778
+QC-1 primary,metop01,5,mean,top2,9,2.554,-22.994,-54.749
+QC-1 primary,metop01,5,mean,top1,5,1.416,-23.431,-55.458
+QC-1 primary,metop01,5,median,top20,87,24.886,-20.549,-54.98
+QC-1 primary,metop01,5,median,top10,44,12.568,-21.468,-55.384
+QC-1 primary,metop01,5,median,top5,22,6.252,-22.557,-55.747
+QC-1 primary,metop01,5,median,top2,9,2.554,-22.993,-54.738
+QC-1 primary,metop01,5,median,top1,5,1.416,-23.439,-55.455
+QC-1 primary,metop01,2,mean,top20,540,24.702,-20.59,-54.938
+QC-1 primary,metop01,2,mean,top10,270,12.348,-21.38,-55.368
+QC-1 primary,metop01,2,mean,top5,135,6.15,-22.357,-55.676
+QC-1 primary,metop01,2,mean,top2,54,2.452,-23.078,-55.654
+QC-1 primary,metop01,2,mean,top1,27,1.223,-23.543,-56.182
+QC-1 primary,metop01,2,median,top20,540,24.725,-20.529,-54.888
+QC-1 primary,metop01,2,median,top10,270,12.334,-21.482,-55.418
+QC-1 primary,metop01,2,median,top5,135,6.156,-22.238,-55.486
+QC-1 primary,metop01,2,median,top2,54,2.45,-23.179,-55.709
+QC-1 primary,metop01,2,median,top1,27,1.226,-23.169,-55.377
+QC-1 primary,metop03,5,mean,top20,87,24.893,-20.356,-55.37
+QC-1 primary,metop03,5,mean,top10,44,12.568,-21.391,-55.59
+QC-1 primary,metop03,5,mean,top5,22,6.309,-21.524,-55.91
+QC-1 primary,metop03,5,mean,top2,9,2.554,-22.985,-56.272
+QC-1 primary,metop03,5,mean,top1,5,1.416,-23.422,-56.452
+QC-1 primary,metop03,5,median,top20,87,24.893,-20.348,-55.346
+QC-1 primary,metop03,5,median,top10,44,12.568,-21.381,-55.558
+QC-1 primary,metop03,5,median,top5,22,6.309,-21.527,-55.889
+QC-1 primary,metop03,5,median,top2,10,2.839,-22.941,-57.322
+QC-1 primary,metop03,5,median,top1,5,1.416,-23.417,-56.465
+QC-1 primary,metop03,2,mean,top20,540,24.75,-20.332,-55.338
+QC-1 primary,metop03,2,mean,top10,270,12.379,-21.087,-55.79
+QC-1 primary,metop03,2,mean,top5,135,6.159,-22.149,-56.073
+QC-1 primary,metop03,2,mean,top2,54,2.457,-22.844,-56.21
+QC-1 primary,metop03,2,mean,top1,27,1.227,-23.118,-56.068
+QC-1 primary,metop03,2,median,top20,540,24.738,-20.348,-55.331
+QC-1 primary,metop03,2,median,top10,270,12.38,-21.077,-55.77
+QC-1 primary,metop03,2,median,top5,135,6.158,-22.179,-56.206
+QC-1 primary,metop03,2,median,top2,54,2.455,-22.901,-56.571
+QC-1 primary,metop03,2,median,top1,27,1.225,-23.332,-56.748
+unfiltered,noaa15,5,mean,top20,87,24.857,-20.223,-53.026
+unfiltered,noaa15,5,mean,top10,44,12.548,-20.964,-52.888
+unfiltered,noaa15,5,mean,top5,22,6.293,-20.938,-51.752
+unfiltered,noaa15,5,mean,top2,9,2.581,-19.894,-47.808
+unfiltered,noaa15,5,mean,top1,5,1.432,-19.143,-43.122
+unfiltered,noaa15,5,median,top20,87,24.857,-20.697,-54.53
+unfiltered,noaa15,5,median,top10,44,12.541,-21.682,-54.895
+unfiltered,noaa15,5,median,top5,22,6.252,-22.549,-55.722
+unfiltered,noaa15,5,median,top2,9,2.554,-22.996,-54.736
+unfiltered,noaa15,5,median,top1,5,1.405,-24.386,-55.409
+unfiltered,noaa15,2,mean,top20,533,24.363,-20.303,-53.082
+unfiltered,noaa15,2,mean,top10,267,12.212,-20.812,-53.259
+unfiltered,noaa15,2,mean,top5,134,6.103,-21.343,-52.429
+unfiltered,noaa15,2,mean,top2,54,2.458,-20.73,-49.875
+unfiltered,noaa15,2,mean,top1,27,1.225,-19.831,-46.494
+unfiltered,noaa15,2,median,top20,533,24.371,-20.702,-54.431
+unfiltered,noaa15,2,median,top10,267,12.209,-21.437,-55.174
+unfiltered,noaa15,2,median,top5,134,6.106,-22.303,-55.403
+unfiltered,noaa15,2,median,top2,54,2.455,-22.916,-55.514
+unfiltered,noaa15,2,median,top1,27,1.223,-23.474,-56.071
+unfiltered,noaa18,5,mean,top20,87,24.95,-19.948,-54.995
+unfiltered,noaa18,5,mean,top10,44,12.614,-20.915,-55.605
+unfiltered,noaa18,5,mean,top5,22,6.309,-21.436,-55.842
+unfiltered,noaa18,5,mean,top2,9,2.574,-21.933,-55.261
+unfiltered,noaa18,5,mean,top1,5,1.416,-23.419,-56.437
+unfiltered,noaa18,5,median,top20,87,24.95,-19.934,-55.001
+unfiltered,noaa18,5,median,top10,44,12.614,-20.898,-55.582
+unfiltered,noaa18,5,median,top5,22,6.309,-21.428,-55.818
+unfiltered,noaa18,5,median,top2,10,2.848,-22.433,-56.345
+unfiltered,noaa18,5,median,top1,5,1.416,-23.424,-55.526
+unfiltered,noaa18,2,mean,top20,515,23.672,-19.873,-54.896
+unfiltered,noaa18,2,mean,top10,258,11.863,-20.7,-55.422
+unfiltered,noaa18,2,mean,top5,129,5.901,-21.767,-55.491
+unfiltered,noaa18,2,mean,top2,52,2.369,-22.645,-55.901
+unfiltered,noaa18,2,mean,top1,26,1.184,-22.748,-55.592
+unfiltered,noaa18,2,median,top20,515,23.675,-19.866,-54.895
+unfiltered,noaa18,2,median,top10,258,11.859,-20.749,-55.453
+unfiltered,noaa18,2,median,top5,131,6.006,-21.493,-55.496
+unfiltered,noaa18,2,median,top2,52,2.368,-22.722,-55.991
+unfiltered,noaa18,2,median,top1,29,1.321,-22.757,-56.036
+unfiltered,noaa19,5,mean,top20,87,24.998,-19.743,-55.075
+unfiltered,noaa19,5,mean,top10,44,12.614,-20.886,-55.479
+unfiltered,noaa19,5,mean,top5,22,6.309,-21.433,-55.642
+unfiltered,noaa19,5,mean,top2,9,2.574,-21.938,-55.25
+unfiltered,noaa19,5,mean,top1,5,1.416,-23.425,-56.425
+unfiltered,noaa19,5,median,top20,87,24.984,-19.737,-54.845
+unfiltered,noaa19,5,median,top10,44,12.614,-20.858,-55.459
+unfiltered,noaa19,5,median,top5,22,6.309,-21.4,-55.786
+unfiltered,noaa19,5,median,top2,9,2.574,-21.912,-55.243
+unfiltered,noaa19,5,median,top1,5,1.416,-23.427,-55.538
+unfiltered,noaa19,2,mean,top20,537,24.703,-19.746,-54.923
+unfiltered,noaa19,2,mean,top10,269,12.371,-20.635,-55.612
+unfiltered,noaa19,2,mean,top5,135,6.183,-21.617,-55.474
+unfiltered,noaa19,2,mean,top2,54,2.46,-22.659,-55.681
+unfiltered,noaa19,2,mean,top1,27,1.228,-22.961,-56.352
+unfiltered,noaa19,2,median,top20,537,24.697,-19.715,-54.979
+unfiltered,noaa19,2,median,top10,269,12.371,-20.604,-55.713
+unfiltered,noaa19,2,median,top5,135,6.174,-21.76,-56.317
+unfiltered,noaa19,2,median,top2,56,2.563,-22.062,-55.42
+unfiltered,noaa19,2,median,top1,32,1.457,-22.765,-55.843
+unfiltered,metop01,5,mean,top20,87,24.893,-20.52,-55.094
+unfiltered,metop01,5,mean,top10,44,12.541,-21.667,-54.951
+unfiltered,metop01,5,mean,top5,22,6.252,-22.566,-55.778
+unfiltered,metop01,5,mean,top2,9,2.554,-22.994,-54.749
+unfiltered,metop01,5,mean,top1,5,1.416,-23.431,-55.458
+unfiltered,metop01,5,median,top20,87,24.886,-20.549,-54.98
+unfiltered,metop01,5,median,top10,44,12.568,-21.468,-55.384
+unfiltered,metop01,5,median,top5,22,6.252,-22.557,-55.747
+unfiltered,metop01,5,median,top2,9,2.554,-22.993,-54.738
+unfiltered,metop01,5,median,top1,5,1.416,-23.439,-55.455
+unfiltered,metop01,2,mean,top20,540,24.702,-20.59,-54.938
+unfiltered,metop01,2,mean,top10,270,12.348,-21.38,-55.368
+unfiltered,metop01,2,mean,top5,135,6.15,-22.357,-55.676
+unfiltered,metop01,2,mean,top2,54,2.452,-23.078,-55.654
+unfiltered,metop01,2,mean,top1,27,1.223,-23.543,-56.182
+unfiltered,metop01,2,median,top20,540,24.725,-20.529,-54.888
+unfiltered,metop01,2,median,top10,270,12.334,-21.482,-55.418
+unfiltered,metop01,2,median,top5,135,6.156,-22.238,-55.486
+unfiltered,metop01,2,median,top2,54,2.45,-23.179,-55.709
+unfiltered,metop01,2,median,top1,27,1.226,-23.169,-55.377
+unfiltered,metop03,5,mean,top20,87,24.893,-20.356,-55.37
+unfiltered,metop03,5,mean,top10,44,12.568,-21.391,-55.59
+unfiltered,metop03,5,mean,top5,22,6.309,-21.524,-55.91
+unfiltered,metop03,5,mean,top2,9,2.554,-22.985,-56.272
+unfiltered,metop03,5,mean,top1,5,1.416,-23.422,-56.452
+unfiltered,metop03,5,median,top20,87,24.893,-20.348,-55.346
+unfiltered,metop03,5,median,top10,44,12.568,-21.381,-55.558
+unfiltered,metop03,5,median,top5,22,6.309,-21.527,-55.889
+unfiltered,metop03,5,median,top2,10,2.839,-22.941,-57.322
+unfiltered,metop03,5,median,top1,5,1.416,-23.417,-56.465
+unfiltered,metop03,2,mean,top20,540,24.75,-20.332,-55.338
+unfiltered,metop03,2,mean,top10,270,12.379,-21.087,-55.79
+unfiltered,metop03,2,mean,top5,135,6.159,-22.149,-56.073
+unfiltered,metop03,2,mean,top2,54,2.457,-22.844,-56.21
+unfiltered,metop03,2,mean,top1,27,1.227,-23.118,-56.068
+unfiltered,metop03,2,median,top20,540,24.738,-20.348,-55.331
+unfiltered,metop03,2,median,top10,270,12.38,-21.077,-55.77
+unfiltered,metop03,2,median,top5,135,6.158,-22.179,-56.206
+unfiltered,metop03,2,median,top2,54,2.455,-22.901,-56.571
+unfiltered,metop03,2,median,top1,27,1.225,-23.332,-56.748

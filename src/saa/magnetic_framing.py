@@ -178,7 +178,7 @@ def footprint_magnetic_summary(df: pd.DataFrame, variables=SUMMARY_VARIABLES) ->
             note = ("low-Btot concentration" if var == "Btot_sat" else
                     "low-L concentration" if var == "L_IGRF" else
                     "magnetic-latitude narrowing" if var == "mag_lat_sat" else
-                    "local-time diagnostic; weak separation expected")
+                    "LEGACY linear clock-label statistic; origin-dependent; excluded from dominance and active conclusions")
             rows.append({
                 "comparison_case": case, "grid_deg": gd, "threshold_label": lbl, "magnetic_variable": var,
                 "inside_count": int(vin.size), "outside_count": int(vout.size),

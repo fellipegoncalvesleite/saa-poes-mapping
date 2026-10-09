@@ -1,3 +1,27 @@
+# QC-1 notice — 2026-10-02
+
+Processed tables are regenerated with quality rule QC-1 applied in the loader
+(`src/saa/quality.py`; [decision record](../../docs/qc_decision.md)). It sets the OMNI values of
+exactly one record missing: NOAA-15 `poes_n15_20240119_proc.nc` native index 13867. Only the
+NOAA-15 regional tables changed (`cp4f_noaa15_…`, `cp5c_noaa15_…`); all others are byte-identical
+to the 2026-09-29 baseline. The raw file is unchanged. Evidence: `outputs/paper_qc/20261002_noaa15_qc/`.
+The integrity-v2 notice below describes the previous baseline, in which that record was retained.
+
+---
+
+# Integrity v2 current-baseline notice — 2026-09-29
+
+The historical checkpoint entries below describe their original runs. Current
+reconciled artifacts were regenerated in notebook dependency order under local
+uncommitted code at HEAD 67e31ac5228dc3102aa70e6899a2d4657dc3bc17.
+Full input hashes, starting snapshot, final content hashes/patch, exclusions,
+method decisions and commands: `outputs/paper_integrity/20260929_phases1_3/`.
+Negative OMNI/no-fit values are NaN, not zero (29 regional p1 values); NOAA-15
+event record 13867 remains. MLT dominance and combined classification are retired;
+legacy metric tables retain explicit status. See `docs/integrity_handoff.md`.
+
+---
+
 # Processed-data provenance (Checkpoint 2)
 
 Tidy one-day table produced by `notebooks/02_minimal_loader.ipynb` via `src/saa/load_poes.py` on

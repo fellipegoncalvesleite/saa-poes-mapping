@@ -1,0 +1,322 @@
+[
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top1",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top1",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=mean_flux|threshold_label=top1",
+   "threshold|grid_deg=2|statistic_used=mean_flux|threshold_label=top1",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top1|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top10",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top10",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=mean_flux|threshold_label=top10",
+   "threshold|grid_deg=2|statistic_used=mean_flux|threshold_label=top10",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top10|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top2",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top2",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=mean_flux|threshold_label=top2",
+   "threshold|grid_deg=2|statistic_used=mean_flux|threshold_label=top2",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top2|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top20",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top20",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=mean_flux|threshold_label=top20",
+   "threshold|grid_deg=2|statistic_used=mean_flux|threshold_label=top20",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top20|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top5",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=mean_flux|threshold_label=top5",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=mean_flux|threshold_label=top5",
+   "threshold|grid_deg=2|statistic_used=mean_flux|threshold_label=top5",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top5|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top1",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top1",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=median_flux|threshold_label=top1",
+   "threshold|grid_deg=2|statistic_used=median_flux|threshold_label=top1",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top1|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top10",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top10",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=median_flux|threshold_label=top10",
+   "threshold|grid_deg=2|statistic_used=median_flux|threshold_label=top10",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top10|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top2",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top2",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=median_flux|threshold_label=top2",
+   "threshold|grid_deg=2|statistic_used=median_flux|threshold_label=top2",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top2|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top20",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top20",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=median_flux|threshold_label=top20",
+   "threshold|grid_deg=2|statistic_used=median_flux|threshold_label=top20",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top20|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top5",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=2|statistic_used=median_flux|threshold_label=top5",
+   "satellite|grid_deg=2|satellite=noaa19|statistic_used=median_flux|threshold_label=top5",
+   "threshold|grid_deg=2|statistic_used=median_flux|threshold_label=top5",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top5|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top1",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top1",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=mean_flux|threshold_label=top1",
+   "threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top1",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top1|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top10",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top10",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=mean_flux|threshold_label=top10",
+   "threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top10",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top10|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top2",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top2",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=mean_flux|threshold_label=top2",
+   "threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top2",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top2|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top20",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top20",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=mean_flux|threshold_label=top20",
+   "threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top20",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top20|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top5",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=mean_flux|threshold_label=top5",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=mean_flux|threshold_label=top5",
+   "threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top5",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top5|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top1",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top1",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=median_flux|threshold_label=top1",
+   "threshold|grid_deg=5|statistic_used=median_flux|threshold_label=top1",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top1|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top10",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top10",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=median_flux|threshold_label=top10",
+   "threshold|grid_deg=5|statistic_used=median_flux|threshold_label=top10",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top10|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top2",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top2",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=median_flux|threshold_label=top2",
+   "threshold|grid_deg=5|statistic_used=median_flux|threshold_label=top2",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top2|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top20",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top20",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=median_flux|threshold_label=top20",
+   "threshold|grid_deg=5|statistic_used=median_flux|threshold_label=top20",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top20|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top5",
+  "members": [
+   "channel|channel=mep_omni_flux_p1|grid_deg=5|statistic_used=median_flux|threshold_label=top5",
+   "satellite|grid_deg=5|satellite=noaa19|statistic_used=median_flux|threshold_label=top5",
+   "threshold|grid_deg=5|statistic_used=median_flux|threshold_label=top5",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top5|window_label=month_2024-01"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top10|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top10|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top10|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top1|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top1|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top1|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top20|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top20|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top20|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top2|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top2|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top2|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top5|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top5|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=mean_flux|threshold_label=top5|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=median_flux|threshold_label=top10|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top10|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top10|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=median_flux|threshold_label=top1|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top1|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top1|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=median_flux|threshold_label=top20|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top20|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top20|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=median_flux|threshold_label=top2|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top2|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top2|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=2|statistic_used=median_flux|threshold_label=top5|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top5|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=2|statistic_used=median_flux|threshold_label=top5|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top10|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top10|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top10|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top1|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top1|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top1|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top20|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top20|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top20|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top2|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top2|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top2|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top5|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top5|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=mean_flux|threshold_label=top5|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=median_flux|threshold_label=top10|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top10|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top10|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=median_flux|threshold_label=top1|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top1|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top1|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=median_flux|threshold_label=top20|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top20|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top20|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=median_flux|threshold_label=top2|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top2|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top2|window_label=week1"
+  ]
+ },
+ {
+  "canonical": "time|grid_deg=5|statistic_used=median_flux|threshold_label=top5|window_label=days_2024-01-01_to_07",
+  "members": [
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top5|window_label=days_2024-01-01_to_07",
+   "time|grid_deg=5|statistic_used=median_flux|threshold_label=top5|window_label=week1"
+  ]
+ }
+]

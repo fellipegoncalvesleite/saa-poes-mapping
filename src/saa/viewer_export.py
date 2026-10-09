@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import numpy as np
 
 from .threshold_analysis import R_EARTH_KM, cell_area_km2, flux_weighted_centroid, haversine_km
 
@@ -135,6 +136,8 @@ EXPERIMENT_METADATA = {
 }
 
 METRIC_COLUMNS = {
+    "centroid_lat": "centroid_lat_flux_weighted",
+    "centroid_lon": "centroid_lon_flux_weighted",
     "flux_cutoff": "flux_cutoff_value",
     "covered_cells": "cells_available_after_coverage_mask",
     "selected_cells": "selected_cell_count",
@@ -356,9 +359,7 @@ def _configuration(
         for output, source in METRIC_COLUMNS.items()
     }
 
-    # Recompute the display centroid from the exported grid and canonical selected-cell mask.
-    # This keeps the public payload on the current area-aware centroid definition even when
-    # the source sensitivity table was produced before that definition was frozen.
+    # Verify canonical authority; never silently replace stored scientific metrics.
     column_index = {name: index for index, name in enumerate(grid["columns"])}
     statistic = str(row["statistic_used"])
     selected_frame = pd.DataFrame(
@@ -372,8 +373,19 @@ def _configuration(
         }
     )
     centroid_lat, centroid_lon = flux_weighted_centroid(selected_frame, statistic)
-    metrics["centroid_lat"] = centroid_lat
-    metrics["centroid_lon"] = centroid_lon
+    for name, recomputed in (("centroid_lat", centroid_lat), ("centroid_lon", centroid_lon),
+                             ("selected_area_km2", float(selected_frame.cell_area_km2.sum()))):
+        if not math.isclose(metrics[name], recomputed, rel_tol=1e-9, abs_tol=1e-12):
+            raise ValueError(f"canonical {name} inconsistent with grid/mask; regenerate tables first")
+    covered_values = [cell[column_index[statistic]] for cell in grid["cells"] if cell[column_index["covered"]]]
+    expected_cutoff = float(np.percentile(covered_values, int(row["percentile_cutoff"])))
+    if not math.isclose(cutoff, expected_cutoff, rel_tol=1e-9, abs_tol=1e-12):
+        raise ValueError("canonical percentile cutoff inconsistent with covered grid")
+    covered_area = sum(cell[column_index["cell_area_km2"]] for cell in grid["cells"] if cell[column_index["covered"]])
+    for name, expected in (("peak_flux", max(covered_values)),
+                           ("selected_area_fraction", float(selected_frame.cell_area_km2.sum()) / covered_area)):
+        if not math.isclose(metrics[name], expected, rel_tol=1e-9, abs_tol=1e-12):
+            raise ValueError(f"canonical {name} inconsistent with covered grid")
     metrics["percentile_cutoff"] = int(row["percentile_cutoff"])
     return {
         "id": stable_configuration_id(experiment, values),
@@ -412,7 +424,7 @@ def _cp5c_payload(summary: pd.DataFrame) -> dict[str, Any]:
                 "satellite": str(row.satellite),
                 "btot_separation": _finite_float(row.btot_separation_metric, "btot_separation"),
                 "l_igrf_separation": _finite_float(row.l_igrf_separation_metric, "l_igrf_separation"),
-                "mlt_separation": _finite_float(row.mlt_separation_metric, "mlt_separation"),
+                "mlt_separation": None,
                 "fraction_below_btot_q25": _finite_float(
                     row.btot_fraction_below_regional_q25, "fraction_below_btot_q25"
                 ),
@@ -423,23 +435,23 @@ def _cp5c_payload(summary: pd.DataFrame) -> dict[str, Any]:
                 "selected_cells": int(row.selected_cell_count),
                 "selected_samples": int(row.selected_sample_count),
                 "low_btot_support": bool(row.low_btot_support),
-                "btot_dominance_support": bool(row.btot_dominance_support),
+                "btot_dominance_support": None,
             }
         )
 
+    # Existing tables retain explicitly versioned legacy metrics for reproduction only.
+    actual_low = sum(r["low_btot_support"] for r in rows)
+    if common_counts["low_btot_support_count"] != actual_low:
+        raise ValueError("CP5C low-Btot count disagrees with satellite rows")
     return {
         "principal_case": "top10_5deg_mean",
-        "classification": next(iter(classifications)),
-        **common_counts,
-        "criteria_note": "predeclared operational criteria for CP5C; not physical thresholds defining the SAA",
-        "classification_rule": (
-            "CONSISTENT requires >=4/5 low-Btot supporters and >=4/5 Btot-dominance supporters; "
-            "INCONSISTENT applies at 0-1 low-Btot supporters or broadly reversed sign; otherwise MIXED."
-        ),
-        "interpretation": (
-            "Across all five satellites, the low-Btot framing generalizes. NOAA-15 has a substantially "
-            "larger MLT separation than the other spacecraft, so MLT is not described as universally irrelevant."
-        ),
+        "classification": "RETIRED_MLT_RUBRIC",
+        "low_btot_support_count": actual_low,
+        "btot_dominance_support_count": None,
+        "reversed_btot_sign_count": common_counts["reversed_btot_sign_count"],
+        "criteria_note": "descriptive low-Btot criteria; no physical SAA threshold",
+        "classification_rule": "Combined legacy classification retired: linear MLT separation is origin-dependent.",
+        "interpretation": f"{actual_low}/5 satellites meet the descriptive low-Btot criteria. MLT dominance and the combined classification are retired; no causal inference.",
         "satellites": rows,
     }
 
@@ -518,8 +530,12 @@ def _comparison_payload(
     return sorted(records, key=lambda item: item["id"])
 
 
-def build_viewer_payload(table_dir: Path) -> dict[str, Any]:
-    """Build the complete static-viewer payload from validated canonical Parquet outputs."""
+def build_viewer_payload(table_dir: Path, include_cp5c: bool = True) -> dict[str, Any]:
+    """Build the complete static-viewer payload from validated canonical Parquet outputs.
+
+    ``include_cp5c=False`` omits the magnetic section so map-only consumers (the CP6A synthesis,
+    which runs before notebook 05c in a clean rebuild) do not depend on a CP5C output.
+    """
     table_dir = Path(table_dir)
     sensitivity_paths = {
         "threshold": table_dir / "cp4b_threshold_sensitivity.parquet",
@@ -528,7 +544,7 @@ def build_viewer_payload(table_dir: Path) -> dict[str, Any]:
         "satellite": table_dir / "cp4f_multisatellite_threshold_sensitivity.parquet",
     }
     cp5c_path = table_dir / "cp5c_multisatellite_magnetic_generality_summary.parquet"
-    required = [*sensitivity_paths.values(), cp5c_path]
+    required = [*sensitivity_paths.values(), *([cp5c_path] if include_cp5c else [])]
     missing = [str(path) for path in required if not path.is_file()]
     if missing:
         raise FileNotFoundError(f"viewer authority inputs are missing: {missing}")
@@ -588,10 +604,11 @@ def build_viewer_payload(table_dir: Path) -> dict[str, Any]:
         {"path": path.name, "sha256": _sha256(path), "size_bytes": path.stat().st_size}
         for path in sorted(source_paths, key=lambda item: item.name)
     ]
-    cp5c = _cp5c_payload(pd.read_parquet(cp5c_path))
+    cp5c = _cp5c_payload(pd.read_parquet(cp5c_path)) if include_cp5c else None
     comparisons = _comparison_payload(experiments, grids)
     return {
         "schema_version": 1,
+        "analysis_method_version": "integrity-v2-area-aware-omni-quality-mlt-retired",
         "export_contract": "validated Python outputs -> deterministic static data; browser display only",
         "region": REGION,
         "flux_color_scale": "viridis/log10",
@@ -600,6 +617,7 @@ def build_viewer_payload(table_dir: Path) -> dict[str, Any]:
         "comparisons": comparisons,
         "cp5c": cp5c,
         "authority_sources": authority_sources,
+        "analysis_code_sha256": {p.name: _sha256(p) for p in sorted(Path(__file__).parent.glob("*.py"))},
         "global_caveats": [
             "candidate threshold-defined footprint; not a final SAA boundary",
             "not dose; not health risk; not a discovery claim",
