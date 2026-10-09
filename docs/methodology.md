@@ -92,6 +92,17 @@ fixed. This membership is canonical; unsupported parameter combinations are
 not synthesized. Satellite comparisons use location and shape, not absolute
 flux, because the instruments are not cross-calibrated here.
 
+## Temporal coverage versus conditional morphology
+
+`src/saa/temporal_support.py` (run by `scripts/run_temporal_support.py`) compares every CP4D
+window W with the January reference M at the same grid, statistic and threshold. It reports
+eligible-area fractions, end-to-end area-weighted Jaccard / centroid distance / area ratio of the
+original footprints, monthly-footprint observability `area(F_M ∩ C_W)/area(F_M)`, and a
+conditional comparison on `S = C_W ∩ C_M` with each map's percentile recomputed over S (per pair,
+never a global intersection). Undefined cases carry explicit reasons. Distinct valid UTC days per
+cell are descriptive, not a filter. `week1` duplicates the cumulative 1–7 January window and is
+flagged as an alias.
+
 ## Magnetic-coordinate description
 
 The footprint remains particle-defined. NOAA-provided IGRF fields are used
@@ -102,21 +113,44 @@ Validity rules are:
 - `L_IGRF`: finite, not the `-1` sentinel, and greater than zero;
 - magnetic latitude: `[-90°, 90°]`;
 - magnetic longitude: `[0°, 360°]`, analyzed with circular/wrap-aware methods;
-- magnetic local time: `[0, 24]`, analyzed as a circular local-time variable.
+- magnetic local time: `[0, 24]`; legacy linear summaries are origin-dependent
+  and are excluded from active dominance/classification. No substitute circular
+  magnitude is claimed comparable with Btot separation.
 
 The five-satellite generality test uses the principal top-10%, 5° mean
 particle footprint and within-satellite ranks. A satellite passes the
 low-`Btot_sat` criterion when its footprint-to-background `Btot_sat`
 separation is positive, more than half its footprint samples fall below its
 regional first quartile, and its 90% capture fraction is no more than one
-half. `Btot_sat` dominance requires its separation to exceed both `L_IGRF`
-separation and the absolute MLT separation.
+half. This is retained as descriptive within-satellite evidence.
 
-The fixed classification is `CONSISTENT` when at least four of five satellites
-pass both criteria. It is `INCONSISTENT` when at most one passes the
-low-`Btot_sat` test or at least four show reversed-sign separation. All other
-outcomes are `MIXED`. These cutoffs are operational reproducibility rules, not
-physical thresholds.
+The historical v1 implementation counted >=4 low-Btot supporters and >=4
+Btot-dominance supporters **separately**; they need not be the same four.
+Its old "pass both" wording was inaccurate. The legacy implementation remains
+for reproduction, explicitly retired from active scientific conclusions because
+its dominance comparison used origin-dependent linear MLT separation.
+
+Integrity v2 sets negative OMNI p1/p2/p3 values and fit=-1 (no fit performed)
+to NaN at extraction. The product-specific basis is NOAA's External Users Manual
+V1 Table A-1 (minimum zero) and OMNI ATBD Table 5 (fit semantics). Zeros and
+fits 1/2 remain valid; no upper cutoff is imposed. Geographic/IFC row accounting
+is separate from channel validity. Grids count finite channel values; magnetic
+framing excludes invalid p1 observations from both inside and outside groups.
+The January regional exclusions are 25 NOAA-15 and 4 NOAA-18; NOAA-19 has none.
+
+Quality rule QC-1 (adopted post hoc on 2026-10-02; [decision record](qc_decision.md),
+`src/saa/quality.py`) is applied per daily file in native order, before region selection and
+gridding. It sets a record's OMNI p1–p3 to NaN only when the record's fit is a fallback (1 or 2),
+its 10 preceding and 10 following records are contiguous (steps > 0 and ≤ 6 s) and all have the
+regular fit 0, and a channel value exceeds 100× the median of each side. In January 2024 it
+excludes exactly one record (NOAA-15, 2024-01-19T09:14:30.051Z, native index 13867); every other
+fit-1/2 value is retained. Exclusions are counted separately from validity v2 (`qc_excluded_dropped`)
+and listed with reasons in `outputs/tables/qc1_omni_exclusions.csv`. The unfiltered analysis
+(`qc=False`) is kept as a sensitivity in `outputs/qc_sensitivity/`. The earlier frozen 100×
+neighbour triage, which ignores fit flags, remains a historical review census only.
+
+See [channel assurance](channel_assurance.md) for the frozen paired-day protocol,
+common-support formulas, units and inferential limits.
 
 ## Interpretation
 

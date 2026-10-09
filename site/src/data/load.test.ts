@@ -12,7 +12,7 @@ describe("scientific payload validation", () => {
     expect(counts).toEqual({ channel: 60, satellite: 100, threshold: 20, time: 180 });
     expect(Object.keys(loaded.payload.grids)).toHaveLength(28);
     expect(loaded.payload.comparisons).toHaveLength(1020);
-    expect(loaded.payload.cp5c.classification).toBe("CONSISTENT");
+    expect(loaded.payload.cp5c.classification).toBe("RETIRED_MLT_RUBRIC");
   });
 
   it("rejects duplicate configuration ids", () => {

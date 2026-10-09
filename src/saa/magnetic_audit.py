@@ -24,7 +24,7 @@ from matplotlib.colors import LogNorm
 
 from .load_poes import (
     _as_date, download_poes_file, open_poes_netcdf, _col, satellite_from_filename,
-    DEFAULT_CHANNEL, _DIRECT_COLUMNS, _FLAG_COLUMNS,
+    DEFAULT_CHANNEL, _DIRECT_COLUMNS, _FLAG_COLUMNS, _flux_col, _flag_col, omni_qc_mask,
 )
 from .grid_flux import (
     DEFAULT_LAT_RANGE, DEFAULT_LON_RANGE, add_lon180, prepare_region,
@@ -165,6 +165,7 @@ def extract_flux_plus_magnetic(ds, source_file, satellite=None, channel=DEFAULT_
     """Tidy table: time/lat/lon/alt/satellite/source_file/<channel>/flags + selected magnetic vars.
 
     All variables are 1-D, positionally aligned (same record structure as the CP2 loader).
+    ``omni_qc_excluded`` marks records whose OMNI values QC-1 set missing (used for accounting only).
     """
     import os
     required = ["time", "lat", "lon", channel] + list(magnetic_vars)
@@ -179,10 +180,11 @@ def extract_flux_plus_magnetic(ds, source_file, satellite=None, channel=DEFAULT_
         data[col] = _col(ds, col).astype("float64") if col in ds.variables else np.full(n, np.nan)
     data["satellite"] = np.repeat(sat_label, n)
     data["source_file"] = np.repeat(os.path.basename(source_file), n)
-    data[channel] = _col(ds, channel).astype("float64")
+    data[channel] = _flux_col(ds, channel)
+    data["omni_qc_excluded"] = omni_qc_mask(ds)
     for flag in _FLAG_COLUMNS:
         if flag in ds.variables:
-            data[flag] = _col(ds, flag).astype("int16")
+            data[flag] = _flag_col(ds, flag)
     for mv in magnetic_vars:
         data[mv] = _col(ds, mv).astype("float64")
     if len({len(x) for x in data.values()}) != 1:
@@ -212,6 +214,12 @@ def load_region_with_magnetic(start, end, satellite="noaa19", raw_dir="data/raw"
         paths.append(p)
     df = pd.concat(frames, ignore_index=True)
     region, counts = prepare_region(df)
+    qc = region.pop("omni_qc_excluded").to_numpy(bool)
+    missing = ~np.isfinite(region[channel].to_numpy())
+    counts["n_qc_excluded"] = int(qc.sum())
+    counts["n_invalid_channel_dropped"] = int((missing & ~qc).sum())
+    region = region.loc[~missing].copy()
+    counts["n_after_flux_validity"] = len(region)
     return region, counts, paths
 
 

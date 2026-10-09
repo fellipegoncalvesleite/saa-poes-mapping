@@ -1,0 +1,41 @@
+scenario,grid_deg,statistic,threshold,satellite_a,satellite_b,distance_km
+QC-1 primary,2,mean,top1,noaa15,noaa18,126.11
+QC-1 primary,2,mean,top10,noaa15,noaa19,98.27
+QC-1 primary,2,mean,top2,metop01,metop03,62.59
+QC-1 primary,2,mean,top20,noaa15,noaa19,118.46
+QC-1 primary,2,mean,top5,noaa19,metop03,85.59
+QC-1 primary,2,median,top1,metop01,metop03,141.28
+QC-1 primary,2,median,top10,noaa15,noaa19,108.19
+QC-1 primary,2,median,top2,noaa19,metop03,150.63
+QC-1 primary,2,median,top20,noaa15,noaa19,123.74
+QC-1 primary,2,median,top5,noaa15,noaa19,111.95
+QC-1 primary,5,mean,top1,noaa15,metop03,150.61
+QC-1 primary,5,mean,top10,noaa15,noaa18,113.43
+QC-1 primary,5,mean,top2,noaa19,metop03,156.72
+QC-1 primary,5,mean,top20,noaa15,noaa19,117.45
+QC-1 primary,5,mean,top5,noaa15,noaa19,126.9
+QC-1 primary,5,median,top1,noaa15,metop03,152.1
+QC-1 primary,5,median,top10,noaa15,noaa18,112.53
+QC-1 primary,5,median,top2,noaa15,metop03,264.78
+QC-1 primary,5,median,top20,noaa15,noaa19,111.7
+QC-1 primary,5,median,top5,noaa19,metop01,128.69
+unfiltered,2,mean,top1,noaa15,metop01,1082.39
+unfiltered,2,mean,top10,noaa15,metop03,264.6
+unfiltered,2,mean,top2,noaa15,metop03,694.98
+unfiltered,2,mean,top20,noaa15,metop03,235.22
+unfiltered,2,mean,top5,noaa15,metop03,386.87
+unfiltered,2,median,top1,metop01,metop03,141.28
+unfiltered,2,median,top10,noaa15,noaa19,108.19
+unfiltered,2,median,top2,noaa19,metop03,150.63
+unfiltered,2,median,top20,noaa15,noaa19,123.74
+unfiltered,2,median,top5,noaa15,noaa19,111.95
+unfiltered,5,mean,top1,noaa15,metop03,1459.9
+unfiltered,5,mean,top10,noaa15,metop03,284.09
+unfiltered,5,mean,top2,noaa15,metop03,940.77
+unfiltered,5,mean,top20,noaa15,metop03,244.92
+unfiltered,5,mean,top5,noaa15,metop01,453.46
+unfiltered,5,median,top1,noaa15,metop03,152.1
+unfiltered,5,median,top10,noaa15,noaa18,112.53
+unfiltered,5,median,top2,noaa15,metop03,264.78
+unfiltered,5,median,top20,noaa15,noaa19,111.7
+unfiltered,5,median,top5,noaa19,metop01,128.69

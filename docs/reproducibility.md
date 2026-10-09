@@ -1,5 +1,9 @@
 # Reproducibility
 
+> For the paper, use the single entry point described in [`paper/REPRODUCE.md`](../paper/REPRODUCE.md)
+> (`scripts/reproduce_paper.py`). It was run end to end in a fresh workspace on 2026-09-29 and, after
+> the QC-1 revision ([decision record](qc_decision.md)), again on 2026-10-02.
+
 The analysis regenerates from public NOAA/NCEI data and repository code.
 Generated data, tables, and figures are git-ignored; tracked provenance files
 record the inputs and checksums.
@@ -52,7 +56,8 @@ Run in this order:
 9. `notebooks/04f_multisatellite_consistency.ipynb`
 10. `notebooks/05a_magnetic_coordinate_audit.ipynb`
 11. `notebooks/05b_magnetic_framing.ipynb`
-12. `scripts/generate_cp6a_summary.py`, then `scripts/validate_cp6a_outputs.py`
+12. `scripts/generate_cp6a_summary.py`, then `scripts/validate_cp6a_outputs.py` (map experiments only;
+    it no longer requires a CP5C table, so a clean rebuild can run it before 05c)
 13. `notebooks/05c_multisatellite_magnetic_generality.ipynb`
 
 Later notebooks depend on artifacts from earlier steps. Network retrieval can

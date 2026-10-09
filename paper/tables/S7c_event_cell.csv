@@ -1,0 +1,41 @@
+scenario,grid,stat,thr,lat,lon,n,cell mean,cell median,rank,selected,centroid weight
+unfiltered,5,mean,top20,-12.5,-27.5,526,77.7632,9.3378,1,True,0.0655
+unfiltered,5,mean,top10,-12.5,-27.5,526,77.7632,9.3378,1,True,0.0862
+unfiltered,5,mean,top5,-12.5,-27.5,526,77.7632,9.3378,1,True,0.1343
+unfiltered,5,mean,top2,-12.5,-27.5,526,77.7632,9.3378,1,True,0.2616
+unfiltered,5,mean,top1,-12.5,-27.5,526,77.7632,9.3378,1,True,0.4058
+unfiltered,5,median,top20,-12.5,-27.5,526,77.7632,9.3378,50,True,0.0084
+unfiltered,5,median,top10,-12.5,-27.5,526,77.7632,9.3378,50,False,0.0
+unfiltered,5,median,top5,-12.5,-27.5,526,77.7632,9.3378,50,False,0.0
+unfiltered,5,median,top2,-12.5,-27.5,526,77.7632,9.3378,50,False,0.0
+unfiltered,5,median,top1,-12.5,-27.5,526,77.7632,9.3378,50,False,0.0
+unfiltered,2,mean,top20,-13.0,-29.0,89,415.7915,11.2671,1,True,0.0563
+unfiltered,2,mean,top10,-13.0,-29.0,89,415.7915,11.2671,1,True,0.0745
+unfiltered,2,mean,top5,-13.0,-29.0,89,415.7915,11.2671,1,True,0.1149
+unfiltered,2,mean,top2,-13.0,-29.0,89,415.7915,11.2671,1,True,0.2207
+unfiltered,2,mean,top1,-13.0,-29.0,89,415.7915,11.2671,1,True,0.3545
+unfiltered,2,median,top20,-13.0,-29.0,89,415.7915,11.2671,279,True,0.0016
+unfiltered,2,median,top10,-13.0,-29.0,89,415.7915,11.2671,279,False,0.0
+unfiltered,2,median,top5,-13.0,-29.0,89,415.7915,11.2671,279,False,0.0
+unfiltered,2,median,top2,-13.0,-29.0,89,415.7915,11.2671,279,False,0.0
+unfiltered,2,median,top1,-13.0,-29.0,89,415.7915,11.2671,279,False,0.0
+QC-1 primary,5,mean,top20,-12.5,-27.5,525,9.3087,9.3378,51,True,0.0083
+QC-1 primary,5,mean,top10,-12.5,-27.5,525,9.3087,9.3378,51,False,0.0
+QC-1 primary,5,mean,top5,-12.5,-27.5,525,9.3087,9.3378,51,False,0.0
+QC-1 primary,5,mean,top2,-12.5,-27.5,525,9.3087,9.3378,51,False,0.0
+QC-1 primary,5,mean,top1,-12.5,-27.5,525,9.3087,9.3378,51,False,0.0
+QC-1 primary,5,median,top20,-12.5,-27.5,525,9.3087,9.3378,50,True,0.0084
+QC-1 primary,5,median,top10,-12.5,-27.5,525,9.3087,9.3378,50,False,0.0
+QC-1 primary,5,median,top5,-12.5,-27.5,525,9.3087,9.3378,50,False,0.0
+QC-1 primary,5,median,top2,-12.5,-27.5,525,9.3087,9.3378,50,False,0.0
+QC-1 primary,5,median,top1,-12.5,-27.5,525,9.3087,9.3378,50,False,0.0
+QC-1 primary,2,mean,top20,-13.0,-29.0,88,11.2395,11.2517,280,True,0.0016
+QC-1 primary,2,mean,top10,-13.0,-29.0,88,11.2395,11.2517,280,False,0.0
+QC-1 primary,2,mean,top5,-13.0,-29.0,88,11.2395,11.2517,280,False,0.0
+QC-1 primary,2,mean,top2,-13.0,-29.0,88,11.2395,11.2517,280,False,0.0
+QC-1 primary,2,mean,top1,-13.0,-29.0,88,11.2395,11.2517,280,False,0.0
+QC-1 primary,2,median,top20,-13.0,-29.0,88,11.2395,11.2517,281,True,0.0016
+QC-1 primary,2,median,top10,-13.0,-29.0,88,11.2395,11.2517,281,False,0.0
+QC-1 primary,2,median,top5,-13.0,-29.0,88,11.2395,11.2517,281,False,0.0
+QC-1 primary,2,median,top2,-13.0,-29.0,88,11.2395,11.2517,281,False,0.0
+QC-1 primary,2,median,top1,-13.0,-29.0,88,11.2395,11.2517,281,False,0.0

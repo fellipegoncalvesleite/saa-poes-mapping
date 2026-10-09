@@ -68,8 +68,8 @@ function validateGrid(id: string, input: unknown): number {
 
 function validateCp5c(input: unknown): void {
   const cp5c = object(input, "CP5C");
-  if (cp5c.classification !== "CONSISTENT" || cp5c.low_btot_support_count !== 5 || cp5c.btot_dominance_support_count !== 5) {
-    throw new Error("CP5C must contain the accepted CONSISTENT 5/5 evidence");
+  if (cp5c.classification !== "RETIRED_MLT_RUBRIC" || !Number.isInteger(cp5c.low_btot_support_count) || cp5c.btot_dominance_support_count !== null) {
+    throw new Error("CP5C must explicitly retire the MLT rubric");
   }
   if (!Array.isArray(cp5c.satellites) || cp5c.satellites.length !== 5) throw new Error("CP5C must contain five satellite rows");
   const names: string[] = [];
@@ -77,11 +77,12 @@ function validateCp5c(input: unknown): void {
     const row = object(inputRow, "CP5C satellite row");
     if (typeof row.satellite !== "string") throw new Error("CP5C satellite name is invalid");
     names.push(row.satellite);
-    for (const key of ["btot_separation", "l_igrf_separation", "mlt_separation", "fraction_below_btot_q25", "regional_fraction_to_capture_90pct", "selected_cells", "selected_samples"]) {
+    for (const key of ["btot_separation", "l_igrf_separation", "fraction_below_btot_q25", "regional_fraction_to_capture_90pct", "selected_cells", "selected_samples"]) {
       if (!finite(row[key])) throw new Error(`CP5C ${key} is invalid`);
     }
-    if (row.low_btot_support !== true || row.btot_dominance_support !== true) throw new Error("CP5C support flags must be true");
+    if (typeof row.low_btot_support !== "boolean" || row.btot_dominance_support !== null || row.mlt_separation !== null) throw new Error("Invalid active/retired CP5C fields");
   }
+  if (cp5c.satellites.filter((row) => object(row, "satellite").low_btot_support === true).length !== cp5c.low_btot_support_count) throw new Error("CP5C support count mismatch");
   if (names.sort().join("|") !== CP5C_SATELLITES.join("|")) throw new Error("CP5C satellite set is invalid");
 }
 

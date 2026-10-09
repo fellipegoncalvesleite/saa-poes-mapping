@@ -270,6 +270,8 @@ def main(root: Path = ROOT) -> int:
     )
     required_paths.extend(figure_dir / name for name in figure_names)
     required_paths.append(notebook_path)
+    qc_ledger_path = table_dir / "qc1_omni_exclusions.csv"
+    required_paths.append(qc_ledger_path)
     required_paths.extend(accepted_paths)
 
     missing = [str(path.relative_to(root)) for path in required_paths if not path.exists()]
@@ -294,6 +296,8 @@ def main(root: Path = ROOT) -> int:
     concentration = pd.read_parquet(table_dir / "cp5c_magnetic_concentration_by_satellite.parquet")
     generality = pd.read_parquet(table_dir / "cp5c_multisatellite_magnetic_generality_summary.parquet")
     fit_flags = pd.read_parquet(table_dir / "cp5c_omni_fit_flag_diagnostic.parquet")
+    qc_ledger = pd.read_csv(qc_ledger_path)
+    qc_region_counts = qc_ledger.loc[qc_ledger["in_region_after_ifc"].astype(bool)].groupby("satellite").size().to_dict()
 
     required_schemas = {
         "validity": (validity, ["satellite", "analysis_month"] + VALIDITY_COLUMNS),
@@ -316,6 +320,7 @@ def main(root: Path = ROOT) -> int:
                 "selected_sample_count",
                 "ifc_on_dropped",
                 "ifc_minus1_retained",
+                "qc_excluded_dropped",
                 "low_btot_support",
                 "btot_dominance_support",
                 "absolute_flux_comparison_allowed",
@@ -488,7 +493,8 @@ def main(root: Path = ROOT) -> int:
         principal = generality.loc[generality["satellite"] == satellite].iloc[0]
         add(f"{satellite} principal selected-cell count reproduces CP4F", int(principal["selected_cell_count"]) == len(cell_sets["top10_5deg_mean"]))
         add(f"{satellite} principal selected-sample count reproduces membership", int(principal["selected_sample_count"]) == int(flagged["in_top10_5deg"].sum()))
-        add(f"{satellite} IFC retained counts reconcile", int(principal["ifc_minus1_retained"]) == int((region["mep_IFC_on"] == -1).sum()) and int(principal["regional_rows_after_ifc"]) == len(region))
+        add(f"{satellite} IFC retained counts reconcile", int(principal["ifc_minus1_retained"]) == int((region["mep_IFC_on"] == -1).sum()) and int(principal["regional_rows_after_quality"]) == len(region) and int(principal["regional_rows_after_ifc"]) - int(principal["invalid_channel_dropped"]) - int(principal["qc_excluded_dropped"]) == len(region))
+        add(f"{satellite} QC-1 exclusions match the QC ledger", int(principal["qc_excluded_dropped"]) == qc_region_counts.get(satellite, 0), f"summary {int(principal['qc_excluded_dropped'])}, ledger {qc_region_counts.get(satellite, 0)}")
 
         mlt_valid = valid_mask(flagged, "MLT")
         circular_mlt_separation = standardized_median_separation(
@@ -499,12 +505,9 @@ def main(root: Path = ROOT) -> int:
         )
         circular_mlt_separations[satellite] = circular_mlt_separation
         add(
-            f"{satellite} Btot dominance survives wrap-aware MLT audit",
-            float(principal["btot_separation_metric"]) > abs(circular_mlt_separation),
-            (
-                f"Btot={float(principal['btot_separation_metric']):.6f}; "
-                f"circular MLT={circular_mlt_separation:.6f}"
-            ),
+            f"{satellite} combined MLT rubric is explicitly retired",
+            principal.get("rubric_status") == "legacy-v1-retired-mlt-origin-dependence",
+            "Legacy clock-label and wrap-aware diagnostics are not comparable validation of Btot dominance.",
         )
 
         satellite_flags = fit_flags.loc[fit_flags["satellite"] == satellite]
@@ -612,28 +615,10 @@ def main(root: Path = ROOT) -> int:
     expected_classification = independent_classification(recomputed_principal)
     add("saved classification matches independent rubric", set(generality["cp5c_classification"]) == {expected_classification}, expected_classification)
     add("saved support counts match independent counts", (generality["low_btot_support_count"] == int(recalculated_low.sum())).all() and (generality["btot_dominance_support_count"] == int(recalculated_dominance.sum())).all())
-    circular_dominance = recomputed_principal.apply(
-        lambda row: float(row["btot_separation_metric"])
-        > abs(circular_mlt_separations[str(row["satellite"])]),
-        axis=1,
-    )
-    circular_audit_summary = recomputed_principal.copy()
-    circular_audit_summary["btot_dominance_support"] = circular_dominance
-    circular_classification = independent_classification(circular_audit_summary)
-    add(
-        "wrap-aware MLT audit preserves CP5C classification",
-        circular_classification == expected_classification == "CONSISTENT",
-        circular_classification,
-    )
-    largest_circular_mlt = max(
-        circular_mlt_separations,
-        key=lambda satellite: abs(circular_mlt_separations[satellite]),
-    )
-    add(
-        "NOAA-15 remains the largest absolute MLT-separation case after circularization",
-        largest_circular_mlt == "noaa15",
-        f"largest={largest_circular_mlt}",
-    )
+    # Removed the former circularization-based dominance assertions: changing the
+    # clock origin cannot validate comparison of MLT and Btot separation magnitudes.
+    add("legacy rubric status recorded for every row",
+        (generality["rubric_status"] == "legacy-v1-retired-mlt-origin-dependence").all())
 
     cp4a_grid5 = pd.read_parquet(table_dir / "cp4a_noaa19_2024-01_grid_5deg.parquet")
     cp4a_grid2 = pd.read_parquet(table_dir / "cp4a_noaa19_2024-01_grid_2deg.parquet")

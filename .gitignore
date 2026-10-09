@@ -23,3 +23,10 @@ site/test-results/
 site/playwright-report/
 venv/
 env/
+
+# Local evidence bundles, run workspaces and personal files (regenerable; not published)
+outputs/
+work/
+paper/reader/build/
+paper/build/
+.DS_Store

@@ -166,12 +166,31 @@ class MagneticGeneralityCoreTests(unittest.TestCase):
             {
                 "regional_rows_before_ifc": 4,
                 "regional_rows_after_ifc": 3,
+                "invalid_channel_dropped": 0,
+                "qc_excluded_dropped": 0,
+                "regional_rows_after_quality": 3,
                 "ifc_on_dropped": 1,
                 "ifc_minus1_retained": 2,
                 "ifc_zero_retained": 1,
                 "ifc_other_retained": 0,
             },
         )
+
+    def test_ifc_counts_keep_validity_and_qc_exclusions_separate(self) -> None:
+        filtered = pd.DataFrame({"mep_IFC_on": [-1, 0]})
+        preparation = {"n_after_geo": 5, "n_ifc_on_dropped": 0, "n_ifc_minus1": 3, "n_after_ifc": 5,
+                       "n_invalid_channel_dropped": 2, "n_qc_excluded": 1}
+
+        actual = ifc_counts(filtered, preparation)
+
+        self.assertEqual((actual["invalid_channel_dropped"], actual["qc_excluded_dropped"],
+                          actual["regional_rows_after_quality"]), (2, 1, 2))
+        with self.assertRaisesRegex(ValueError, "accounting"):
+            ifc_counts(filtered, {**preparation, "n_qc_excluded": 0})
+        # a QC-only drop of an IFC = -1 record must not trip the retained -1 cross-check
+        only_qc = {"n_after_geo": 3, "n_ifc_on_dropped": 0, "n_ifc_minus1": 2, "n_after_ifc": 3,
+                   "n_invalid_channel_dropped": 0, "n_qc_excluded": 1}
+        self.assertEqual(ifc_counts(filtered, only_qc)["qc_excluded_dropped"], 1)
 
     def test_concentration_matches_cp5b_primitive(self) -> None:
         frame = pd.DataFrame(

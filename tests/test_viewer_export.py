@@ -150,10 +150,10 @@ class ViewerCanonicalIntegrationTests(unittest.TestCase):
 
     def test_cp5c_is_fixed_raw_evidence_not_a_map_experiment(self) -> None:
         self.assertNotIn("cp5c", self.payload["experiments"])
-        self.assertEqual(self.payload["cp5c"]["classification"], "CONSISTENT")
+        self.assertEqual(self.payload["cp5c"]["classification"], "RETIRED_MLT_RUBRIC")
         self.assertEqual(len(self.payload["cp5c"]["satellites"]), 5)
         self.assertEqual(self.payload["cp5c"]["low_btot_support_count"], 5)
-        self.assertEqual(self.payload["cp5c"]["btot_dominance_support_count"], 5)
+        self.assertIsNone(self.payload["cp5c"]["btot_dominance_support_count"])
 
     def test_supported_method_changes_have_distinct_canonical_display_states(self) -> None:
         def find(experiment: str, **values):

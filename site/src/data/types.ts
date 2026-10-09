@@ -65,18 +65,18 @@ export interface Cp5cSatellite {
   satellite: string;
   btot_separation: number;
   l_igrf_separation: number;
-  mlt_separation: number;
+  mlt_separation: null;
   fraction_below_btot_q25: number;
   regional_fraction_to_capture_90pct: number;
   selected_cells: number;
   selected_samples: number;
   low_btot_support: boolean;
-  btot_dominance_support: boolean;
+  btot_dominance_support: null;
 }
 export interface Cp5cPayload {
   classification: string;
   low_btot_support_count: number;
-  btot_dominance_support_count: number;
+  btot_dominance_support_count: null;
   reversed_btot_sign_count: number;
   principal_case: string;
   criteria_note: string;

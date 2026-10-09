@@ -1,0 +1,2 @@
+# Document build (Typst compiler via its Python package; free, local, no network at build time).
+typst==0.15.0

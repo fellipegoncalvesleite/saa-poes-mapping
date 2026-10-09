@@ -264,21 +264,21 @@ def independent_cp5c_matches(payload: dict[str, Any], table_dir: Path) -> tuple[
     by_satellite = {row.get("satellite"): row for row in rows}
     if len(canonical) != 5 or len(by_satellite) != 5:
         return False, "CP5C must contain five satellite rows"
-    expected_classifications = set(canonical["cp5c_classification"].astype(str))
+    expected_classifications = {"RETIRED_MLT_RUBRIC"}
     if expected_classifications != {cp5c.get("classification")}:
         return False, "CP5C classification differs"
     for field in (
         "low_btot_support_count",
-        "btot_dominance_support_count",
         "reversed_btot_sign_count",
     ):
         expected = set(canonical[field].astype(int))
         if len(expected) != 1 or type(cp5c.get(field)) is not int or cp5c[field] != next(iter(expected)):
             return False, f"CP5C global count differs: {field}"
+    if cp5c.get("btot_dominance_support_count") is not None:
+        return False, "retired dominance must be null"
     mappings = {
         "btot_separation": "btot_separation_metric",
         "l_igrf_separation": "l_igrf_separation_metric",
-        "mlt_separation": "mlt_separation_metric",
         "fraction_below_btot_q25": "btot_fraction_below_regional_q25",
         "regional_fraction_to_capture_90pct": "btot_regional_fraction_to_capture_90pct",
     }
@@ -293,7 +293,8 @@ def independent_cp5c_matches(payload: dict[str, Any], table_dir: Path) -> tuple[
             "selected_cells": int(row["selected_cell_count"]),
             "selected_samples": int(row["selected_sample_count"]),
             "low_btot_support": bool(row["low_btot_support"]),
-            "btot_dominance_support": bool(row["btot_dominance_support"]),
+            "btot_dominance_support": None,
+            "mlt_separation": None,
         }
         for field, expected in discrete.items():
             if type(actual.get(field)) is not type(expected) or actual[field] != expected:
