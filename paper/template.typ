@@ -4,13 +4,13 @@
 /// Manuscript value by claims-register key (fails loudly on a missing key).
 #let val(key) = {
   assert(key in V, message: "missing claims-register key: " + key)
-  V.at(key)
+  { let v = V.at(key); if type(v) == str { v.replace("\u{202F}", ",") } else { v } }
 }
 
 #let paper(title: "", subtitle: none, author: "", short-title: none, body) = {
   set document(title: title, author: author)
   set page(paper: "a4", margin: (x: 2.2cm, y: 2.3cm), numbering: "1",
-    header: context { if counter(page).get().first() > 1 [#set text(8pt, fill: luma(110)); #(if short-title != none { short-title } else { title }) #h(1fr) Working draft for author review] })
+    header: context { if counter(page).get().first() > 1 [#set text(8pt, fill: luma(110)); #(if short-title != none { short-title } else { title }) ] })
   set text(font: ("Libertinus Serif", "New Computer Modern"), size: 10.5pt, lang: "en")
   set par(justify: true, leading: 0.62em, first-line-indent: 0em, spacing: 0.95em)
   set heading(numbering: "1.1")

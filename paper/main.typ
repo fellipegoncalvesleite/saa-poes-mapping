@@ -53,7 +53,7 @@ Valid values are binned by sub-satellite latitude and longitude into 5#sq and 2#
 
 Let $E$ be the eligible cells of one map and $F_i$ the gridded statistic (mean or median) of cell $i$. For a percentile $q in {80, 90, 95, 98, 99}$ ("top 20%" … "top 1%"), the cutoff $c_q$ is the linear-interpolation $q$-th percentile of ${F_i : i in E}$, and the footprint is
 $ S_q = {i in E : F_i >= c_q}. $ <eq-select>
-The percentile is taken over eligible *cells*, not over equal areas or individual records. Cell $i$ spanning latitudes $phi_i^-$ to $phi_i^+$ and longitude width $Delta lambda$ has spherical area $A_i = R^2 Delta lambda (sin phi_i^+ - sin phi_i^-)$ with $R = 6371$ km. The selected area is $A(S_q) = sum_(i in S_q) A_i$. The centroid is the coordinate moment
+The percentile is taken over eligible *cells*, not over equal areas or individual records. Cell $i$ spanning latitudes $phi_i^-$ to $phi_i^+$ and longitude width $Delta lambda$ (in radians) has spherical area $A_i = R^2 Delta lambda (sin phi_i^+ - sin phi_i^-)$ with $R = 6371$ km. The selected area is $A(S_q) = sum_(i in S_q) A_i$. The centroid is the coordinate moment
 $ (overline(phi), overline(lambda)) = (sum_(i in S_q) w_i (phi_i, lambda_i)) / (sum_(i in S_q) w_i), quad w_i = F_i A_i, $ <eq-centroid>
 with cell-centre coordinates $(phi_i, lambda_i)$. It is a latitude–longitude moment, valid here because the region does not cross the antimeridian. It is not a three-dimensional barycentre, and its value depends on the chosen region. Distances between centroids are great-circle (haversine) distances. For two footprints $X$, $Y$ on the *same aligned grid*, the area-weighted Jaccard index is
 $ J(X, Y) = A(X inter Y) \/ A(X union Y), $ <eq-jaccard>
