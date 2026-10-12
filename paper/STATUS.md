@@ -1,4 +1,4 @@
-# Status of the paper package (2026-10-02, QC-1 revision)
+# Status of the paper package (2026-10-12, v1.0.0 release)
 
 ## Computational and document status
 
@@ -10,24 +10,28 @@
   QC-1 revision was reproduced again in a clean workspace on 2026-10-03
   (`outputs/paper_qc/20261002_noaa15_qc/final/VERIFICATION.md`, 39/39 steps, 300/300 files identical).
 
-## Pending author actions (not done, not implied)
+## Resolved
 
-- **Author review** of the manuscript, the supplement and the critical-code walkthrough
-  (`outputs/paper_finalization/20260929_phases4_6/CODE_WALKTHROUGH.md`). Nothing here states or
-  implies that this review has happened.
-- **Affiliation**: none is given in the manuscript. Add one only if the author has one to declare.
+- **Affiliation**: given in the manuscript and in `CITATION.cff`.
+- **Code/data availability**: the code is in the public repository; Section 6 of the main text
+  describes the package.
+- **Acknowledgements**: final. Both people named have agreed to be named.
+- **Review status**: the review-status notes have been removed from the manuscript and supplement.
+- **QC-1 decision**: the post-hoc exclusion of one NOAA-15 record is adopted for the primary
+  analysis (see `docs/qc_decision.md`); the paper reports the unfiltered result alongside.
+
+## Open
+
+- **Zenodo DOI**: once the v1.0.0 release is archived, replace the sentence in Section 6 that says
+  the version will be released with an archival DOI with a citation of the archived release
+  (version and DOI).
+
+## Notes
+
 - **Funding statement**: omitted. No funding is known to this package.
-- **Competing interests**: omitted. The author should state them (or "none") if a venue requires it.
-- **Acknowledgements — PENDING AUTHOR/PERMISSION.** The manuscript carries a clearly marked draft
-  sentence crediting François Ginisty for the flux × cell-area centroid weighting. Do not submit it until
-  he has agreed to be named; he is not a coauthor. Xiaoheng Xu, whose preliminary assessment prompted the
-  QC checks, is not named anywhere; ask him first if you want to thank him.
-- **QC-1 decision**: the post-hoc exclusion of one NOAA-15 record is the author's decision to confirm
-  (see `docs/qc_decision.md`). The paper reports the unfiltered result alongside.
+- **Competing interests**: omitted. State them (or "none") if a venue requires it.
 - **Reader version**: a personal Portuguese reader (`paper/reader/build/`) uses the same claims
   register; it is not for publication.
-- **Code/data availability**: the text says the final version is local and uncommitted, with no DOI.
-  If the code is later pushed or archived, update section 6 with the actual commit and identifier.
 
 ## Out of scope by instruction
 
