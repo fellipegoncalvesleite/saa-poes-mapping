@@ -89,13 +89,17 @@ static site. Build output is written to `site/dist/`.
 
 ## Analysis environment
 
-Python 3.12 and `uv` are recommended:
+**Reproducing the paper** uses Python 3.14.6 and the exact package set in `requirements-lock.txt`;
+see [`paper/REPRODUCE.md`](paper/REPRODUCE.md) for the setup steps.
+
+**Lighter setup for general exploration** (notebooks and unit tests; it does not build the paper
+and is not the locked reproduction environment):
 
 ```bash
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -r requirements.txt -r requirements-dev.txt
 .venv/bin/python -m ipykernel install --prefix .venv --name python3
-.venv/bin/python -m unittest discover -s tests -v
+PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -v
 ```
 
 The notebooks are the ordered scientific workflow. Generated data, tables,
