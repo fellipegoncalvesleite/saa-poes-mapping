@@ -1,8 +1,9 @@
 """Time-window sensitivity analysis (Checkpoint 4D).
 
 Methodological question: *how stable is the threshold-defined candidate high-flux footprint as the
-aggregation time window changes* (one day -> 7 days -> 14 days -> full month, plus four disjoint
-weekly windows), with **satellite, channel, region, grid logic and threshold machinery fixed**?
+aggregation time window changes* (one day -> 3 days -> 7 days -> 14 days -> full month, plus four
+disjoint weekly windows), with **satellite, channel, region, grid logic and threshold machinery
+fixed**?
 
 This reuses the accepted CP4A gridding (:mod:`saa.aggregate`) and CP4B threshold machinery
 (:mod:`saa.threshold_analysis`). The only genuinely new ingredient is a **per-window, per-grid
@@ -12,9 +13,27 @@ to CP4A (``>=30`` samples over 31 days ~ 1 sample/day/cell):
 
     ``min_samples = max(COVERAGE_FLOOR, round((30/31) * day_count))``
 
-so a full month reproduces CP4A's ``>=30`` while shorter windows relax proportionally. A
-``coverage_warning`` flags one-day sparsity, low regional coverage, and few-selected-cell footprints
-so coverage effects are never silently confused with physical/temporal variability.
+so a full month reproduces CP4A's ``>=30`` while shorter windows relax proportionally. The 3-day
+window (``round((30/31)*3) = 3``) remains bound by ``COVERAGE_FLOOR = 3``; that floor-bound status
+is reported, not hidden. A ``coverage_warning`` flags one-day sparsity, low regional coverage, and
+few-selected-cell footprints so coverage effects are never silently confused with
+physical/temporal variability.
+
+Coverage accounting distinguishes three nested cell sets per window/grid: nominal regional cells
+(the full lat/lon grid over the region), cells with at least one observation (populated grid
+cells), and cells passing the minimum-sample coverage criterion (the scientifically valid field).
+``cells_available_after_coverage_mask`` is preserved as the passing count for backward
+compatibility.
+
+Peak-flux location (:func:`saa.threshold_analysis.peak_flux_location`) is reported over the
+coverage-passed field with a deterministic southernmost-then-westernmost tie-break.
+
+Window-to-month stability metrics compare each cumulative window against the full-month reference
+for matching satellite/channel/grid/statistic/threshold: area-aware centroid distance
+(:func:`saa.threshold_analysis.haversine_km`), signed selected-area difference and ratio, and the
+footprint Jaccard index (intersection over union of the actual selected grid-cell sets on the same
+grid; no interpolation). The full-month reference compared with itself is exactly
+(distance 0, ratio 1, difference 0, Jaccard 1).
 
 Caveat preserved from CP4A/B/C: ``mep_IFC_on == -1`` rows are retained and remain **uninterpreted**.
 Outputs are *time-window-dependent, threshold-defined footprints* and *area proxies* — **not** a final
@@ -29,12 +48,16 @@ from matplotlib.colors import LogNorm
 
 from .grid_flux import DEFAULT_LAT_RANGE, DEFAULT_LON_RANGE, DEFAULT_CHANNEL, prepare_region
 from .aggregate import build_grid_table, add_coverage_mask, load_range
-from .threshold_analysis import run_sensitivity, _pivot_to_2d, PERCENTILES
+from .threshold_analysis import (
+    run_sensitivity, _pivot_to_2d, PERCENTILES, coverage_passed, add_cell_area,
+    select_high_flux, haversine_km,
+)
 
 # ------------------------------------------------------------------ window definitions
 #: Named aggregation windows.  ``day_count`` is filled by :func:`window_day_count`.
 TIME_WINDOWS: list[dict] = [
     {"window_label": "day_2024-01-01",        "start_date": "2024-01-01", "end_date": "2024-01-01"},
+    {"window_label": "days_2024-01-01_to_03", "start_date": "2024-01-01", "end_date": "2024-01-03"},
     {"window_label": "days_2024-01-01_to_07", "start_date": "2024-01-01", "end_date": "2024-01-07"},
     {"window_label": "days_2024-01-01_to_14", "start_date": "2024-01-01", "end_date": "2024-01-14"},
     {"window_label": "month_2024-01",         "start_date": "2024-01-01", "end_date": "2024-01-31"},
@@ -44,9 +67,13 @@ TIME_WINDOWS: list[dict] = [
     {"window_label": "week4",                 "start_date": "2024-01-22", "end_date": "2024-01-28"},
 ]
 
-#: The four cumulative windows that get saved regional Parquets + mean maps.
-CUMULATIVE_LABELS = ["day_2024-01-01", "days_2024-01-01_to_07", "days_2024-01-01_to_14", "month_2024-01"]
+#: The five cumulative windows that get saved regional Parquets + mean maps.
+CUMULATIVE_LABELS = ["day_2024-01-01", "days_2024-01-01_to_03", "days_2024-01-01_to_07",
+                     "days_2024-01-01_to_14", "month_2024-01"]
 WEEK_LABELS = ["week1", "week2", "week3", "week4"]
+
+#: Full-month reference window for the window-to-month stability metrics.
+MONTH_REFERENCE_LABEL = "month_2024-01"
 
 # coverage threshold anchored to CP4A (>=30 over 31 days ~ 1 sample/day/cell)
 COVERAGE_RATE = 30.0 / 31.0
@@ -55,10 +82,16 @@ COVERAGE_FLOOR = 3
 TIME_WINDOW_SENSITIVITY_COLUMNS = [
     "window_label", "start_date", "end_date", "day_count", "files_expected", "files_loaded",
     "grid_deg", "statistic_used", "threshold_label", "percentile_cutoff", "flux_cutoff_value",
-    "cells_available_after_coverage_mask", "selected_cell_count", "selected_area_km2",
+    "nominal_region_cells", "cells_with_observation", "zero_observation_cells",
+    "zero_observation_fraction", "cells_available_after_coverage_mask",
+    "cells_failing_coverage", "cells_observed_below_threshold", "coverage_pass_fraction",
+    "selected_cell_count", "selected_area_km2",
     "selected_area_fraction_of_covered_region", "centroid_lat_unweighted", "centroid_lon_unweighted",
     "centroid_lat_flux_weighted", "centroid_lon_flux_weighted", "peak_flux",
+    "peak_flux_lat", "peak_flux_lon", "peak_flux_tie_count",
     "mean_flux_within_selected", "median_flux_within_selected", "total_flux_area_proxy",
+    "centroid_distance_to_month_km", "selected_area_ratio_to_month",
+    "selected_area_difference_to_month_km2", "footprint_jaccard_vs_month",
     "coverage_threshold_used", "coverage_warning",
 ]
 
@@ -111,11 +144,56 @@ def load_month_region(start="2024-01-01", end="2024-01-31", satellite="noaa19",
 
 
 # ------------------------------------------------------------------ per-window grids
+def coverage_diagnostics(table: pd.DataFrame, mask_col: str, grid_deg: int,
+                         lat_range=DEFAULT_LAT_RANGE, lon_range=DEFAULT_LON_RANGE) -> dict:
+    """Distinguish unobserved cells from insufficiently sampled cells for one window/grid.
+
+    * ``nominal_region_cells``: every lat/lon cell of the regional grid (observed or not).
+    * ``cells_with_observation``: grid-table rows (``sample_count >= 1`` by construction).
+    * ``zero_observation_cells``: nominal cells that received no observation.
+    * ``cells_available_after_coverage_mask`` (legacy name, kept): cells passing the
+      minimum-sample coverage criterion — the scientifically valid field.
+    * ``cells_failing_coverage``: nominal cells not usable (unobserved or below threshold).
+    * ``cells_observed_below_threshold``: observed yet insufficiently sampled cells.
+    * ``coverage_pass_fraction``: passing cells as a fraction of nominal regional cells.
+
+    Invariant: ``passing <= observed <= nominal``.
+    """
+    nominal = region_cell_count(grid_deg, lat_range, lon_range)
+    observed = int(len(table))
+    passing = int(table[mask_col].astype(bool).sum()) if len(table) else 0
+    zero = nominal - observed
+    return {
+        "nominal_region_cells": nominal,
+        "cells_with_observation": observed,
+        "zero_observation_cells": zero,
+        "zero_observation_fraction": zero / nominal if nominal else float("nan"),
+        "cells_available_after_coverage_mask": passing,
+        "cells_failing_coverage": nominal - passing,
+        "cells_observed_below_threshold": observed - passing,
+        "coverage_pass_fraction": passing / nominal if nominal else float("nan"),
+    }
+
+
+def footprint_jaccard(cells_a: set, cells_b: set) -> float:
+    """Jaccard index (intersection / union) of two selected grid-cell sets on the same grid.
+
+    No interpolation: identity is on actual ``(lat_center, lon_center)`` cell tuples.
+    Two empty footprints give NaN (undefined overlap); this cannot occur in the accepted
+    CP4D outputs, where every selected set is non-empty.
+    """
+    union = cells_a | cells_b
+    if not union:
+        return float("nan")
+    return len(cells_a & cells_b) / len(union)
+
+
 def build_window_grids(region_df: pd.DataFrame, day_count: int, value_col: str = DEFAULT_CHANNEL):
     """Build 5 deg and 2 deg grid tables for a window's region frame, with the per-window mask.
 
     Returns ``(grids, threshold)`` where ``grids`` is a list of dicts with ``grid_deg, step, table,
-    mask_col, coverage_threshold`` ready for :func:`run_time_window_sensitivity`.
+    mask_col, coverage_threshold, coverage`` (the :func:`coverage_diagnostics` record) ready for
+    :func:`run_time_window_sensitivity`.
     """
     threshold = choose_coverage_threshold(day_count)
     grids = []
@@ -124,7 +202,8 @@ def build_window_grids(region_df: pd.DataFrame, day_count: int, value_col: str =
         table = build_grid_table(region_df, value_col=value_col, lat_step=grid_deg, lon_step=grid_deg)
         table = add_coverage_mask(table, threshold, mask_col)
         grids.append({"grid_deg": int(grid_deg), "step": grid_deg, "table": table,
-                      "mask_col": mask_col, "coverage_threshold": threshold})
+                      "mask_col": mask_col, "coverage_threshold": threshold,
+                      "coverage": coverage_diagnostics(table, mask_col, int(grid_deg))})
     return grids, threshold
 
 
@@ -157,14 +236,83 @@ def coverage_warning(grid_deg: int, cells_available: int, selected_cell_count: i
 
 
 # ------------------------------------------------------------------ sensitivity sweep
+def _selected_cell_keys(covered: pd.DataFrame, stat_col: str, cutoff: float) -> set:
+    """``(lat_center, lon_center)`` keys of the selected footprint for one row's cutoff."""
+    sel = select_high_flux(covered, stat_col, cutoff)
+    return set(zip(sel["lat_bin_center"].to_numpy(), sel["lon_bin_center"].to_numpy()))
+
+
+def add_month_stability_metrics(df: pd.DataFrame, covered_by_window_grid: dict) -> pd.DataFrame:
+    """Attach window-to-full-month stability metrics to a stacked sensitivity frame.
+
+    ``covered_by_window_grid`` maps ``(window_label, grid_deg)`` to the coverage-passed,
+    cell-area-annotated grid table. For matching ``(grid_deg, statistic_used,
+    threshold_label)``, each row is compared with the ``month_2024-01`` reference row:
+
+    * ``centroid_distance_to_month_km``: haversine distance between the area-aware
+      flux-weighted centroids;
+    * ``selected_area_ratio_to_month`` / ``selected_area_difference_to_month_km2``:
+      window area / month area and window area − month area;
+    * ``footprint_jaccard_vs_month``: Jaccard index of the selected cell sets.
+
+    Month-reference rows receive exact identity values (0, 1, 0, 1). The Jaccard index
+    is Python-authoritative science, computed on actual selected cell sets — never
+    interpolated, never computed in browser JavaScript.
+    """
+    out = df.copy()
+    out["centroid_distance_to_month_km"] = float("nan")
+    out["selected_area_ratio_to_month"] = float("nan")
+    out["selected_area_difference_to_month_km2"] = float("nan")
+    out["footprint_jaccard_vs_month"] = float("nan")
+
+    month = out[out["window_label"] == MONTH_REFERENCE_LABEL]
+    month_lookup = {(int(r.grid_deg), str(r.statistic_used), str(r.threshold_label)): r
+                    for r in month.itertuples()}
+
+    selected: dict[tuple, set] = {}
+    for r in out.itertuples():
+        key = (str(r.window_label), int(r.grid_deg))
+        covered = covered_by_window_grid.get(key)
+        if covered is None:
+            continue
+        selected[(key[0], key[1], str(r.statistic_used), str(r.threshold_label))] = \
+            _selected_cell_keys(covered, str(r.statistic_used), float(r.flux_cutoff_value))
+
+    for idx, r in out.iterrows():
+        ref = month_lookup.get((int(r["grid_deg"]), str(r["statistic_used"]), str(r["threshold_label"])))
+        if ref is None:
+            continue
+        if str(r["window_label"]) == MONTH_REFERENCE_LABEL:
+            out.at[idx, "centroid_distance_to_month_km"] = 0.0
+            out.at[idx, "selected_area_ratio_to_month"] = 1.0
+            out.at[idx, "selected_area_difference_to_month_km2"] = 0.0
+            out.at[idx, "footprint_jaccard_vs_month"] = 1.0
+            continue
+        out.at[idx, "centroid_distance_to_month_km"] = haversine_km(
+            float(r["centroid_lat_flux_weighted"]), float(r["centroid_lon_flux_weighted"]),
+            float(ref.centroid_lat_flux_weighted), float(ref.centroid_lon_flux_weighted))
+        month_area = float(ref.selected_area_km2)
+        out.at[idx, "selected_area_ratio_to_month"] = (
+            float(r["selected_area_km2"]) / month_area if month_area > 0 else float("nan"))
+        out.at[idx, "selected_area_difference_to_month_km2"] = float(r["selected_area_km2"]) - month_area
+        mine = selected.get((str(r["window_label"]), int(r["grid_deg"]),
+                             str(r["statistic_used"]), str(r["threshold_label"])), set())
+        theirs = selected.get((MONTH_REFERENCE_LABEL, int(r["grid_deg"]),
+                               str(r["statistic_used"]), str(r["threshold_label"])), set())
+        out.at[idx, "footprint_jaccard_vs_month"] = footprint_jaccard(mine, theirs)
+    return out
+
+
 def run_time_window_sensitivity(window_specs: list[dict]) -> pd.DataFrame:
-    """Run the CP4B sweep per window and stack with window/coverage columns.
+    """Run the CP4B sweep per window and stack with window/coverage/stability columns.
 
     Each spec: ``{window_label, start_date, end_date, day_count, files_expected, files_loaded,
-    grids:[{grid_deg, step, table, mask_col, coverage_threshold}, ...]}``.  Returns a tidy frame with
-    :data:`TIME_WINDOW_SENSITIVITY_COLUMNS` (8 windows x 2 grids x 2 stats x 5 thresholds = 160 rows).
+    grids:[{grid_deg, step, table, mask_col, coverage_threshold, coverage}, ...]}``.  Returns a
+    tidy frame with :data:`TIME_WINDOW_SENSITIVITY_COLUMNS` (9 windows x 2 grids x 2 stats x
+    5 thresholds = 180 rows).
     """
     frames = []
+    covered_by_window_grid: dict[tuple, pd.DataFrame] = {}
     for spec in window_specs:
         grids = [(g["grid_deg"], g["step"], g["table"], g["mask_col"]) for g in spec["grids"]]
         df = run_sensitivity(grids).drop(columns=["notes"])
@@ -176,13 +324,23 @@ def run_time_window_sensitivity(window_specs: list[dict]) -> pd.DataFrame:
         df.insert(0, "window_label", spec["window_label"])
         thr = {g["grid_deg"]: g["coverage_threshold"] for g in spec["grids"]}
         df["coverage_threshold_used"] = df["grid_deg"].map(thr).astype(int)
+        cov = {g["grid_deg"]: g["coverage"] for g in spec["grids"]}
+        for col in ("nominal_region_cells", "cells_with_observation", "zero_observation_cells",
+                    "zero_observation_fraction", "cells_available_after_coverage_mask",
+                    "cells_failing_coverage", "cells_observed_below_threshold",
+                    "coverage_pass_fraction"):
+            df[col] = df["grid_deg"].map({k: v[col] for k, v in cov.items()})
         df["coverage_warning"] = [
             coverage_warning(int(r.grid_deg), int(r.cells_available_after_coverage_mask),
                              int(r.selected_cell_count), int(spec["day_count"]))
             for r in df.itertuples()
         ]
+        for g in spec["grids"]:
+            covered_by_window_grid[(spec["window_label"], g["grid_deg"])] = coverage_passed(
+                add_cell_area(g["table"], g["step"], g["step"]), g["mask_col"])
         frames.append(df)
     out = pd.concat(frames, ignore_index=True)
+    out = add_month_stability_metrics(out, covered_by_window_grid)
     return out[TIME_WINDOW_SENSITIVITY_COLUMNS]
 
 
@@ -297,6 +455,52 @@ def plot_area_by_window(sens_df, save_path, grid_deg=5, statistic="mean_flux", l
     ax.set_title(f"selected-area stability across time windows ({grid_deg}deg {statistic})\n"
                  "area proxy; exploratory; not a physical boundary", fontsize=9)
     ax.legend(fontsize=7, title="threshold"); ax.grid(alpha=0.3)
+    fig.savefig(save_path, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_stabilization_vs_duration(sens_df, save_path, grid_deg=5, statistic="mean_flux",
+                                   threshold_label="top10", labels=None):
+    """One compact stabilization figure for the principal configuration across cumulative windows.
+
+    Three panels sharing window duration (days) on x: (A) coverage accumulation — nominal cells,
+    cells with observations, and cells passing coverage; (B) spatial stabilization — area-aware
+    centroid distance to the full-month reference; (C) footprint Jaccard overlap vs the month.
+    """
+    if labels is None:
+        labels = CUMULATIVE_LABELS
+    sub = sens_df[(sens_df.grid_deg == grid_deg) & (sens_df.statistic_used == statistic)
+                  & (sens_df.threshold_label == threshold_label)]
+    sub = sub.set_index("window_label").loc[[l for l in labels if l in set(sub.window_label)]]
+    x = sub["day_count"].to_numpy(dtype="float64")
+    fig, axes = plt.subplots(1, 3, figsize=(12.0, 4.2), squeeze=False)
+    ax = axes[0][0]
+    ax.plot(x, sub["nominal_region_cells"], "k--", lw=1, label="nominal region cells")
+    ax.plot(x, sub["cells_with_observation"], "-o", ms=5, label="cells with >=1 observation")
+    ax.plot(x, sub["cells_available_after_coverage_mask"], "-s", ms=5,
+            label="cells passing coverage")
+    ax.set_xlabel("cumulative window duration [days]")
+    ax.set_ylabel("grid cells")
+    ax.set_title("(A) coverage accumulation", fontsize=9)
+    ax.legend(fontsize=7, loc="lower right")
+    ax.grid(alpha=0.3)
+    ax = axes[0][1]
+    ax.plot(x, sub["centroid_distance_to_month_km"], "-o", ms=5, color="#333333")
+    ax.set_xlabel("cumulative window duration [days]")
+    ax.set_ylabel("centroid distance to month [km]")
+    ax.set_title("(B) spatial stabilization vs month", fontsize=9)
+    ax.grid(alpha=0.3)
+    ax = axes[0][2]
+    ax.plot(x, sub["footprint_jaccard_vs_month"], "-o", ms=5, color="#2ca02c")
+    ax.set_xlabel("cumulative window duration [days]")
+    ax.set_ylabel("footprint Jaccard vs month")
+    ax.set_ylim(-0.05, 1.05)
+    ax.set_title("(C) footprint overlap vs month", fontsize=9)
+    ax.grid(alpha=0.3)
+    fig.suptitle(f"sampling stabilization ({threshold_label}, {grid_deg}deg {statistic})\n"
+                 "NOAA-19 Jan 2024 p1; threshold-defined footprints; not a true SAA boundary",
+                 fontsize=9, y=1.02)
+    fig.tight_layout()
     fig.savefig(save_path, dpi=120, bbox_inches="tight")
     plt.close(fig)
 

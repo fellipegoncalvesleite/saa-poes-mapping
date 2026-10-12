@@ -115,7 +115,7 @@ class ViewerCanonicalIntegrationTests(unittest.TestCase):
     def test_exact_supported_experiment_matrix_is_exported(self) -> None:
         self.assertEqual(
             EXPECTED_CONFIGURATION_COUNTS,
-            {"threshold": 20, "channel": 60, "time": 160, "satellite": 100},
+            {"threshold": 20, "channel": 60, "time": 180, "satellite": 100},
         )
         self.assertEqual(
             EXPERIMENT_DIMENSIONS,
@@ -145,15 +145,15 @@ class ViewerCanonicalIntegrationTests(unittest.TestCase):
         self.assertEqual(row["metrics"]["covered_cells"], 432)
         self.assertEqual(row["metrics"]["selected_cells"], 44)
         self.assertEqual(len(row["selected_cell_indices"]), 44)
-        self.assertAlmostEqual(row["metrics"]["centroid_lat"], -21.154234, places=6)
-        self.assertAlmostEqual(row["metrics"]["centroid_lon"], -55.635093, places=6)
+        self.assertAlmostEqual(row["metrics"]["centroid_lat"], -20.886397, places=6)
+        self.assertAlmostEqual(row["metrics"]["centroid_lon"], -55.479107, places=6)
 
     def test_cp5c_is_fixed_raw_evidence_not_a_map_experiment(self) -> None:
         self.assertNotIn("cp5c", self.payload["experiments"])
-        self.assertEqual(self.payload["cp5c"]["classification"], "CONSISTENT")
+        self.assertEqual(self.payload["cp5c"]["classification"], "RETIRED_MLT_RUBRIC")
         self.assertEqual(len(self.payload["cp5c"]["satellites"]), 5)
         self.assertEqual(self.payload["cp5c"]["low_btot_support_count"], 5)
-        self.assertEqual(self.payload["cp5c"]["btot_dominance_support_count"], 5)
+        self.assertIsNone(self.payload["cp5c"]["btot_dominance_support_count"])
 
     def test_supported_method_changes_have_distinct_canonical_display_states(self) -> None:
         def find(experiment: str, **values):
@@ -207,13 +207,13 @@ class ViewerCanonicalIntegrationTests(unittest.TestCase):
             "time": "window_label",
             "satellite": "satellite",
         }
-        self.assertEqual(len(self.payload["comparisons"]), 860)
+        self.assertEqual(len(self.payload["comparisons"]), 1020)
         configs = {
             row["id"]: row
             for experiment in self.payload["experiments"].values()
             for row in experiment["configurations"]
         }
-        expected_counts = {"threshold": 40, "channel": 60, "time": 560, "satellite": 200}
+        expected_counts = {"threshold": 40, "channel": 60, "time": 720, "satellite": 200}
         actual_counts = {name: 0 for name in expected_counts}
         for comparison in self.payload["comparisons"]:
             actual_counts[comparison["experiment"]] += 1

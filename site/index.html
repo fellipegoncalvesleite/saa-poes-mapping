@@ -30,14 +30,14 @@
         <div><dt>Observation period</dt><dd>January 2024</dd></div>
         <div><dt>Data product</dt><dd>POES/MetOp SEM-2 MEPED L1b</dd></div>
         <div><dt>Satellites</dt><dd>5 NOAA/MetOp spacecraft</dd></div>
-        <div><dt>Validated states</dt><dd>340 map configurations</dd></div>
-        <div><dt>Principal threshold comparison</dt><dd>~386 km centroid difference</dd></div>
+        <div><dt>Validated states</dt><dd>360 map configurations</dd></div>
+        <div><dt>Principal threshold comparison</dt><dd>~433 km centroid difference</dd></div>
       </dl>
     </section>
 
     <section id="explorer" class="explorer" aria-labelledby="explorer-title">
       <div class="section-header">
-        <p class="section-label">340 validated configurations</p>
+        <p class="section-label">360 validated configurations</p>
         <h2 id="explorer-title">Interactive map</h2>
         <p>Select an analysis question and configuration. The browser displays stored, validated results and does not recompute scientific metrics.</p>
       </div>
@@ -47,7 +47,7 @@
       <div id="explorer-state" class="explorer-layout" data-config-id="" role="tabpanel">
         <figure class="map-panel">
           <div id="map-root" class="map-root"></div>
-          <figcaption><strong>Blank cells</strong> are missing, insufficiently sampled, or non-positive for the logarithmic display. They are not zero and are not interpolated.</figcaption>
+          <figcaption><strong>Blank cells</strong> are missing, insufficiently sampled, or non-positive for the logarithmic display. Blank does not imply zero. Valid zero flux is retained in statistics; no cells are interpolated.</figcaption>
         </figure>
         <aside id="readout-root" class="readout" aria-label="Canonical configuration readout"></aside>
       </div>
@@ -74,20 +74,20 @@
     <section id="findings" class="content-section" aria-labelledby="results-title">
       <div class="section-header"><p class="section-label">Validated January 2024 outputs</p><h2 id="results-title">Results</h2></div>
       <div class="result-block result-primary">
-        <div><h3>Threshold sensitivity</h3><p>Changing only the high-flux percentile moves and resizes the candidate footprint. The principal top-20% to top-1% comparison changes the stored flux-weighted centroid by about 386 km and selected area by about 17.7×.</p></div>
+        <div><h3>Threshold sensitivity</h3><p>Changing only the high-flux percentile moves and resizes the candidate footprint. The principal top-20% to top-1% comparison changes the stored flux-weighted centroid by about 433 km. Selected area changes by about 17.7×, but most of that contraction is prescribed by the percentile rule itself (20% versus 1% of eligible cells), so it is not independent evidence.</p></div>
         <div class="finding-actions"><button type="button" data-show-config="threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top20">Map: top 20%</button><button type="button" data-show-config="threshold|grid_deg=5|statistic_used=mean_flux|threshold_label=top1">Map: top 1%</button></div>
       </div>
       <div class="result-grid">
-        <article><h3>Observation-window sensitivity</h3><p>One day to the full month differs by about 288 km. Four separate weekly windows remain within about 118 km. The one-day result is orbit-track sparse and does not establish physical SAA motion.</p></article>
-        <article><h3>Satellite sensitivity</h3><p>The five-satellite principal top-10% spread is about 272 km. NOAA-18 and NOAA-19 differ by about 13 km. This comparison is limited to location and shape; absolute proton flux is not cross-calibrated.</p></article>
-        <article><h3>Proton-channel sensitivity</h3><p>Stored centroids for p1, p2, and p3 are separated by roughly 100–300 km. Absolute values at approximately 25, 50, and 100 MeV are different physical measurements.</p></article>
+        <article><h3>Observation-window sensitivity</h3><p>One day to the full month differs by about 289 km. The 3-day state remains coverage-limited (about 138 km from the month); restricted to the cells eligible in both the window and the month, that distance is about 14 km. The 7-day state is about 39 km from the month. The month contains every window, so these are descriptive January 2024 NOAA-19 comparisons, not a universal timescale. Four separate weekly windows remain within about 118 km. The one-day result is orbit-track sparse and does not establish physical SAA motion.</p></article>
+        <article><h3>Satellite sensitivity</h3><p>The five-satellite principal top-10% spread is about 113 km (about 113 km with cell medians as well). NOAA-18 and NOAA-19 differ by about 13 km. A quality rule adopted after inspecting the data (QC-1) excludes one NOAA-15 record, a fallback-fit value more than 100 times both neighbouring stretches of regular fits, whose &gt;35 MeV count rate was inconsistent with its own &gt;16 MeV rate. Without the rule the spread is about 284 km; that unfiltered result is kept as a sensitivity. Absolute proton flux is not cross-calibrated.</p></article>
+        <article><h3>Proton-channel sensitivity</h3><p>The principal top-10%, 5° mean p1/p2/p3 centroids have a maximum separation of 210 km. Absolute values at approximately 25, 50, and 100 MeV are different physical measurements.</p></article>
       </div>
     </section>
 
     <section id="method" class="content-section muted" aria-labelledby="method-title">
       <div class="section-header"><p class="section-label">Analysis pipeline</p><h2 id="method-title">Method</h2><p>Each experiment changes one declared method choice while holding the other supported choices fixed.</p></div>
       <ol class="pipeline"><li>NOAA satellite observations</li><li>Assign observations to geographic cells</li><li>Calculate statistic and sample count</li><li>Apply coverage requirement</li><li>Rank cells by flux</li><li>Select the requested percentile</li><li>Calculate area and flux-weighted centroid</li></ol>
-      <details class="technical-details"><summary>Technical parameters</summary><p>Region: latitude −70° to +20°, longitude −100° to +20°. Grids: 5° and 2°. January monthly coverage requires approximately 30 samples per cell; shorter windows scale that threshold with exposure. Tested statistics are mean and median; footprints use top 20/10/5/2/1 percentiles. Physical cell area uses spherical geometry. Rows with <code>mep_IFC_on == 1</code> are removed; <code>== -1</code> is retained and uninterpreted.</p></details>
+      <details class="technical-details"><summary>Technical parameters</summary><p>Region: latitude −70° to +20°, longitude −100° to +20°. Grids: 5° and 2°. January monthly coverage requires approximately 30 samples per cell; shorter windows scale that threshold with exposure. Tested statistics are mean and median; footprints use top 20/10/5/2/1 percentiles. Physical cell area uses spherical geometry. Rows with <code>mep_IFC_on == 1</code> are removed; <code>== -1</code> is retained and uninterpreted. Negative or no-fit OMNI values are missing. Post-hoc rule QC-1 sets an OMNI value missing only when a fallback fit (flag 1 or 2), surrounded by 10 + 10 contiguous regular fits, exceeds 100 times the median of both sides; it excludes one record in the 155 files.</p></details>
     </section>
 
     <section id="magnetic" class="content-section dark" aria-labelledby="magnetic-title">
@@ -97,7 +97,7 @@
 
     <section id="reproducibility" class="content-section" aria-labelledby="repro-title">
       <div class="section-header"><p class="section-label">Data and code</p><h2 id="repro-title">Reproducibility</h2></div>
-      <p class="measure">The project uses NOAA/NCEI processed L1b POES/MetOp SEM-2 MEPED data from five spacecraft, a Python 3.12 pipeline, checkpoint validators, provenance records, checksums, and a deterministic frontend export.</p>
+      <p class="measure">The project uses NOAA/NCEI processed L1b POES/MetOp SEM-2 MEPED data from five spacecraft, a version-recorded Python pipeline, checkpoint validators, provenance records, checksums, and a deterministic frontend export.</p>
       <div class="link-row"><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping">Source repository</a><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping/blob/main/docs/claims.md">Claims</a><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping/blob/main/docs/methodology.md">Methodology</a><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping/blob/main/docs/reproducibility.md">Reproducibility</a><a href="https://github.com/fellipegoncalvesleite/saa-poes-mapping/blob/main/docs/paper_outline.md">Paper outline</a></div>
     </section>
 

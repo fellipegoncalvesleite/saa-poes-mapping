@@ -13,10 +13,10 @@ import {
 const { payload } = validateLoadedData(payloadJson, geographyJson);
 
 describe("canonical configuration state", () => {
-  it("resolves all 340 canonical ids exactly once", () => {
+  it("resolves all 360 canonical ids exactly once", () => {
     const index = buildConfigurationIndex(payload);
     const configurations = Object.values(payload.experiments).flatMap((item) => item.configurations);
-    expect(configurations).toHaveLength(340);
+    expect(configurations).toHaveLength(360);
     for (const configuration of configurations) {
       expect(resolveConfiguration(index, configuration.id)).toBe(configuration);
       expect(stableConfigurationId(configuration.id.split("|")[0]!, configuration.values)).toBe(configuration.id);

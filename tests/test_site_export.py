@@ -33,7 +33,7 @@ class SiteJsonSerializationTests(unittest.TestCase):
         self.assertTrue(deep_payload_matches(actual, expected))
         self.assertEqual(
             sum(item["configuration_count"] for item in actual["experiments"].values()),
-            340,
+            360,
         )
 
 

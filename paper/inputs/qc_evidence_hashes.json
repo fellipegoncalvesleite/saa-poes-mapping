@@ -1,0 +1,5 @@
+{
+ "note": "QC evidence inputs (not analysis inputs); retrieved 2026-10-02 from NCEI l1a/v01r00 with the author's approval",
+ "poes_n15_20240119_raw.nc": "59cd88dd551ac2a18036137124000e1e91c74dd26e29233a57821a062a95626f",
+ "source_url": "https://www.ncei.noaa.gov/data/poes-metop-space-environment-monitor/access/l1a/v01r00/2024/noaa15/poes_n15_20240119_raw.nc"
+}

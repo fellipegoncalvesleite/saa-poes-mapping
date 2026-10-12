@@ -1,0 +1,6 @@
+satellite,regional_rows_before_ifc,ifc_on_dropped,ifc_minus1_retained,invalid_channel_dropped,qc_excluded_dropped,regional_rows_after_quality,selected_sample_count,btot_fraction_below_regional_q25,btot_regional_fraction_to_capture_90pct,btot_separation_metric,l_igrf_rows_invalid
+noaa15,207233,1,194253,25,1,207206,21405,1.0,0.1186,1.596,5786
+noaa18,208722,0,195676,4,0,208718,21647,1.0,0.1209,1.5728,3974
+noaa19,205153,0,192334,0,0,205153,20829,1.0,0.1204,1.5843,3914
+metop01,227572,0,213350,0,0,227572,23004,1.0,0.1177,1.5726,5523
+metop03,226645,0,212478,0,0,226645,22815,1.0,0.1166,1.5834,5542

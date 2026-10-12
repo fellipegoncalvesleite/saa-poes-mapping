@@ -8,12 +8,12 @@ import { renderReadout } from "./readout";
 const loaded = validateLoadedData(payloadJson, geographyJson);
 
 describe("full exported-state runtime smoke test", () => {
-  it("renders the map and canonical readout for all 340 configurations", () => {
+  it("renders the map and canonical readout for all 360 configurations", () => {
     const mapHost = document.createElement("div");
     const readoutHost = document.createElement("aside");
     const configurations = Object.values(loaded.payload.experiments).flatMap((experiment) => experiment.configurations);
 
-    expect(configurations).toHaveLength(340);
+    expect(configurations).toHaveLength(360);
     for (const configuration of configurations) {
       renderMap(mapHost, loaded, configuration, () => undefined);
       renderReadout(readoutHost, configuration, null);
