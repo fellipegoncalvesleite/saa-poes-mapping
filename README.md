@@ -1,17 +1,18 @@
 # SAA POES Mapping
 
-Reproducible mapping and methodological sensitivity analysis of a candidate
-high-flux South Atlantic Anomaly footprint using public NOAA/NCEI POES/MetOp
-SEM-2 MEPED proton data.
-
-The study asks how reported footprint centroid and selected area change with flux
-threshold, proton channel, spatial grid, observation window, and satellite.
-It also describes the particle-defined footprint in NOAA-provided IGRF
-coordinates. The quantitative scope is January 2024.
-
-This is a methods study. It does not define a true SAA boundary or center,
-estimate dose or health risk, claim discovery, infer magnetic causality, or
-compare uncalibrated absolute flux across satellites.
+This repository holds the analysis, data provenance and manuscript for *Analysis choices and
+orbital sampling shape a particle-defined South Atlantic Anomaly footprint*, a single-month
+methodological case study of January 2024 NOAA/NCEI POES/MetOp SEM-2 MEPED omnidirectional
+proton fluxes from NOAA-15, NOAA-18, NOAA-19, MetOp-01 and MetOp-03. A candidate high-flux SAA
+footprint is defined as the cells above a percentile of a coverage-gated latitude–longitude grid
+and summarized by spherical area and a flux-and-area-weighted centroid. The paper measures how
+that location and extent change with threshold, cell statistic and grid, proton channel,
+accumulation window and spacecraft; separates end-to-end differences from differences on shared
+eligible support; and traces a large inter-satellite difference to a single artefactual NOAA-15
+record, excluded by a stated post-hoc quality rule (QC-1) with the unfiltered result reported
+alongside. Every number in the paper comes from a claims register tied to hashed outputs. It is a
+methods study: it does not define a true SAA boundary or centre, estimate dose or risk, infer
+magnetic causality, or compare uncalibrated absolute flux across satellites.
 
 ## Results
 
@@ -44,12 +45,30 @@ See [claims](docs/claims.md) for accepted wording and limitations.
 
 ## Paper
 
-The manuscript and supplement are in [`paper/`](paper/) (Typst sources; PDFs in `paper/build/`).
-Every number in them is generated from `paper/generated/claims_register.json`. The
-single reproduction command is
-`python scripts/reproduce_paper.py --audit-baseline <baseline.tar.gz> --qc-evidence <poes_n15_20240119_raw.nc>`;
-see [`paper/REPRODUCE.md`](paper/REPRODUCE.md). This version is a local, uncommitted working
-tree pending author review; it is not on the remote main branch and has no DOI.
+The Typst sources are in [`paper/`](paper/): `main.typ` (manuscript), `supplement.typ`,
+`template.typ` and `refs.bib`. Every number in them is read from
+`paper/generated/claims_register.json` via `paper/generated/values.typ`.
+
+The PDFs are built to `paper/build/main.pdf` and `paper/build/supplement.pdf` (git-ignored):
+
+```bash
+.venv/bin/python paper/build.py
+```
+
+## Reproducing the paper
+
+One command regenerates every derived table, the resampling, the diagnostics, the figures, the
+claims register and both PDFs from the hash-verified raw files:
+
+```bash
+python scripts/reproduce_paper.py --audit-baseline /path/to/baseline.tar.gz \
+    --qc-evidence /path/to/poes_n15_20240119_raw.nc
+```
+
+The two arguments are required: the preserved audit baseline (used only to replay the historical
+triage census) and the NCEI level-1a file read as evidence for the QC-1 record. Add `--skip-site`
+without Node. Inputs, environment (`requirements-lock.txt`), step order and what counts as
+"reproduced" are documented in [`paper/REPRODUCE.md`](paper/REPRODUCE.md).
 
 ## Public research site
 
@@ -109,13 +128,19 @@ scripts/        artifact generation and independent validators
 tests/          scientific, export, and website contract tests
 site/           public research website
 docs/           method, claims, reproduction, and manuscript planning
+paper/          manuscript, supplement, claims register and paper build
 data/           ignored data products with tracked provenance records
 outputs/        ignored scientific tables and figures
 ```
 
-## Citation and license
+## Citation
 
-When citing the analysis, reference this repository and the exact Git commit
-used, and cite the NOAA/NCEI POES Space Environment Monitor data product.
-Software is released under the [MIT License](LICENSE). NOAA data retain their
-source terms and attribution.
+If you use this work, cite the paper and this repository; citation metadata are in
+[`CITATION.cff`](CITATION.cff) (GitHub's "Cite this repository" button reads it). Until an
+archival DOI is issued, reference the repository and the exact Git commit or release tag used.
+Please also cite the NOAA/NCEI POES Space Environment Monitor (SEM-2) data product.
+
+## License
+
+Software is released under the [MIT License](LICENSE). NOAA data retain their source terms and
+attribution.
