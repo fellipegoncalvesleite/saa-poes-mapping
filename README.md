@@ -140,8 +140,8 @@ outputs/        ignored scientific tables and figures
 ## Citation
 
 If you use this work, cite the paper and this repository; citation metadata are in
-[`CITATION.cff`](CITATION.cff) (GitHub's "Cite this repository" button reads it). Until an
-archival DOI is issued, reference the repository and the exact Git commit or release tag used.
+[`CITATION.cff`](CITATION.cff) (GitHub's "Cite this repository" button reads it). Release v1.0.0
+is archived on Zenodo: [doi:10.5281/zenodo.23324359](https://doi.org/10.5281/zenodo.23324359).
 Please also cite the NOAA/NCEI POES Space Environment Monitor (SEM-2) data product.
 
 ## License
