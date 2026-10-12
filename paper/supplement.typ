@@ -4,6 +4,7 @@
   title: "Supplement to: Analysis choices and orbital sampling shape a particle-defined South Atlantic Anomaly footprint",
   subtitle: "Extended methods, full configuration results, data accounting, quality-rule evidence and descriptive magnetic material",
   author: "Fellipe Gonçalves Leite",
+  affiliation: "Independent researcher, Divinópolis, MG, Brazil",
   short-title: "Supplement",
 )
 #set heading(numbering: (..n) => "S" + n.pos().map(str).join("."))
@@ -145,6 +146,6 @@ This is co-location with low modelled field strength, consistent with these part
 
 = Reproduction and verification summary
 
-The package's `REPRODUCE.md` gives the single entry command (`python scripts/reproduce_paper.py`), the environment files and the order of steps: input hash verification; regeneration of processed tables, grids and all sensitivity families from raw files (QC-1 applied); the QC-1 ledger, population envelopes, perturbation study and unfiltered sensitivity; the level-1a count-rate evidence (hash-checked); the exact-record omission replayed on unfiltered data as provenance; the Phase 3 protocol replay; the Phase 4 temporal diagnostics; the audit census replay; the claims register; figures; the viewer payload (exported twice and compared byte for byte); tests and validators; and these documents. The final verification report lists exact commands and pass/fail counts. Author review of the critical code and of this text is pending.
+The package's `REPRODUCE.md` gives the single entry command (`python scripts/reproduce_paper.py`), the environment files and the order of steps: input hash verification; regeneration of processed tables, grids and all sensitivity families from raw files (QC-1 applied); the QC-1 ledger, population envelopes, perturbation study and unfiltered sensitivity; the level-1a count-rate evidence (hash-checked); the exact-record omission replayed on unfiltered data as provenance; the Phase 3 protocol replay; the Phase 4 temporal diagnostics; the audit census replay; the claims register; figures; the viewer payload (exported twice and compared byte for byte); tests and validators; and these documents. The final verification report lists exact commands and pass/fail counts.
 
 #bibliography("refs.bib", title: "References", style: "american-geophysical-union")

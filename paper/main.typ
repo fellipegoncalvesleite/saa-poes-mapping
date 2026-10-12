@@ -4,6 +4,7 @@
   title: "Analysis choices and orbital sampling shape a particle-defined South Atlantic Anomaly footprint",
   subtitle: "A January 2024 NOAA POES / EUMETSAT MetOp sensitivity case study",
   author: "Fellipe Gonçalves Leite",
+  affiliation: "Independent researcher, Divinópolis, MG, Brazil",
   short-title: "Mapping-choice and sampling sensitivity of a particle-defined SAA footprint",
 )
 
@@ -202,14 +203,10 @@ For January 2024 NOAA/NCEI SEM-2 omnidirectional proton fluxes, a percentile-def
 
 = Data and code availability
 
-Input data are the public NOAA/NCEI processed SEM-2 daily files @ncei_sem2 for 1–31 January 2024 (five spacecraft); file names and SHA-256 hashes are listed in the supplement's input manifest. One level-1a companion file from the same archive (`poes_n15_20240119_raw.nc`) was read only as evidence for the excluded record; its hash is listed there too. Analysis code, the frozen resampling protocol, derived tables, the claims register, figure-generation code and these document sources are in the project repository `fellipegoncalvesleite/saa-poes-mapping`. At the time of writing, this final version exists as a local, uncommitted working tree with a content-hashed source snapshot; it has not been published to the repository's main branch, and no archival DOI has been assigned. A single reproduction command (`python scripts/reproduce_paper.py`) regenerates all reported values from the raw files.
+Input data are the public NOAA/NCEI processed SEM-2 daily files @ncei_sem2 for 1–31 January 2024 (five spacecraft); file names and SHA-256 hashes are listed in the supplement's input manifest. One level-1a companion file from the same archive (`poes_n15_20240119_raw.nc`) was read only as evidence for the excluded record; its hash is listed there too. Analysis code, the frozen resampling protocol, derived tables, the claims register, figure-generation code and these document sources are in the project repository `fellipegoncalvesleite/saa-poes-mapping`. This version will be released in the public repository, with an archival DOI, before journal submission. A single reproduction command (`python scripts/reproduce_paper.py`) regenerates all reported values from the raw files.
 
 = Acknowledgements
 
 The author thanks François Ginisty (Augura Space) for pointing out the need to account for unequal physical cell areas in the footprint centroid calculation, which led to the adoption of flux × cell-area weighting, and Xiaoheng Xu (National Space Science Center, Chinese Academy of Sciences) for methodological guidance on accumulation windows for POES/MetOp maps and for suggesting the checks that led to the investigation of the NOAA-15 record.
-
-= Use of AI tools
-
-The analysis code, audits, figure code and manuscript drafts were prepared with the assistance of AI software agents (OpenAI ChatGPT and Anthropic Claude) working under the author's direction. Their review of the code is software review, not external scientific peer review. The author is responsible for the content; author review of this draft is pending.
 
 #bibliography("refs.bib", title: "References", style: "american-geophysical-union")
