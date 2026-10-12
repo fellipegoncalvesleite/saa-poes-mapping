@@ -18,8 +18,12 @@ is regenerated from the 155 raw January 2024 NOAA/NCEI SEM-2 daily files by one 
 
 ## 2. Environment
 
+The analysis environment was CPython 3.14.7 (Homebrew), as recorded in `requirements-lock.txt`.
+uv cannot install 3.14.7, so the steps below use 3.14.6, the nearest version uv provides; the locked
+package set installs on it and the unit tests pass.
+
 ```bash
-uv venv --python 3.14.7 .venv
+uv venv --python 3.14.6 .venv
 uv pip install --python .venv/bin/python -r requirements-lock.txt
 cd site && npm ci && cd ..       # Node 24 / npm 11 were used; only needed for the site checks
 ```
