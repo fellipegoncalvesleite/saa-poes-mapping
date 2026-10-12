@@ -36,7 +36,7 @@ magnetic causality, or compare uncalibrated absolute flux across satellites.
   clock-label separation depends on the arbitrary hour origin.
 
 Phase 3 ran 1,000 paired calendar-block replicates for each of 1, 3 and 7 days.
-The p1–p3 displacement persists conditionally; 5° mean continuous-field overlap is
+The p1–p3 displacement persists conditionally; the p1/p3 continuous-field overlap is
 0.933. These are descriptive stability findings, not calibrated physical confidence.
 See [channel assurance](docs/channel_assurance.md), [integrity handoff](docs/integrity_handoff.md)
 and the [QC-1 decision record](docs/qc_decision.md).
