@@ -2,7 +2,7 @@
 
 Decision date 2026-10-02. Status: **adopted for the primary analysis, post hoc**. Evidence bundle:
 `outputs/paper_qc/20261002_noaa15_qc/`; reproducible outputs: `outputs/qc_sensitivity/`,
-`outputs/tables/qc1_omni_exclusions.csv`. Author review pending.
+`outputs/tables/qc1_omni_exclusions.csv`.
 
 ## Question
 
