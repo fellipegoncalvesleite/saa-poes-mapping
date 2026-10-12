@@ -14,7 +14,7 @@
 
 - **Affiliation**: given in the manuscript and in `CITATION.cff`.
 - **Code/data availability**: the code is in the public repository; Section 6 of the main text
-  describes the package.
+  describes the package and cites the archived release v1.0.0 (doi:10.5281/zenodo.23324359).
 - **Acknowledgements**: final. Both people named have agreed to be named.
 - **Review status**: the review-status notes have been removed from the manuscript and supplement.
 - **QC-1 decision**: the post-hoc exclusion of one NOAA-15 record is adopted for the primary
@@ -22,9 +22,7 @@
 
 ## Open
 
-- **Zenodo DOI**: once the v1.0.0 release is archived, replace the sentence in Section 6 that says
-  the version will be released with an archival DOI with a citation of the archived release
-  (version and DOI).
+None.
 
 ## Notes
 
