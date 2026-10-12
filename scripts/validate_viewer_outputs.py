@@ -15,11 +15,12 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from saa.threshold_analysis import cell_area_km2, flux_weighted_centroid  # noqa: E402
 from saa.viewer_export import build_viewer_payload, write_viewer_json  # noqa: E402
 
 RTOL = 1e-9
 ATOL = 1e-12
-EXPECTED_COUNTS = {"threshold": 20, "channel": 60, "time": 160, "satellite": 100}
+EXPECTED_COUNTS = {"threshold": 20, "channel": 60, "time": 180, "satellite": 100}
 DIMENSIONS = {
     "threshold": ["grid_deg", "statistic_used", "threshold_label"],
     "channel": ["channel", "grid_deg", "statistic_used", "threshold_label"],
@@ -38,8 +39,6 @@ METRICS = {
     "selected_cells": "selected_cell_count",
     "selected_area_km2": "selected_area_km2",
     "selected_area_fraction": "selected_area_fraction_of_covered_region",
-    "centroid_lat": "centroid_lat_flux_weighted",
-    "centroid_lon": "centroid_lon_flux_weighted",
     "peak_flux": "peak_flux",
 }
 
@@ -169,7 +168,7 @@ def _grid_matches(
 
 
 def independent_authority_matches(payload: dict[str, Any], table_dir: Path) -> tuple[bool, str]:
-    """Walk all 340 configurations directly against canonical rows and grid Parquets."""
+    """Walk all 360 configurations directly against canonical rows and grid Parquets."""
     experiments = payload.get("experiments", {})
     if set(experiments) != set(EXPECTED_COUNTS):
         return False, "experiment set differs"
@@ -233,6 +232,19 @@ def independent_authority_matches(payload: dict[str, Any], table_dir: Path) -> t
                         return False, f"discrete metric differs: {config_id} {output}"
                 elif not _float_matches(metrics.get(output), row[column]):
                     return False, f"float metric differs: {config_id} {output}"
+
+            selected_frame = ordered.iloc[selected][
+                ["lat_bin_center", "lon_bin_center", statistic]
+            ].copy()
+            selected_frame["cell_area_km2"] = selected_frame["lat_bin_center"].map(
+                lambda latitude: cell_area_km2(float(latitude), int(row["grid_deg"]), int(row["grid_deg"]))
+            )
+            expected_lat, expected_lon = flux_weighted_centroid(selected_frame, statistic)
+            if not _float_matches(metrics.get("centroid_lat"), expected_lat):
+                return False, f"area-aware centroid latitude differs: {config_id}"
+            if not _float_matches(metrics.get("centroid_lon"), expected_lon):
+                return False, f"area-aware centroid longitude differs: {config_id}"
+
             if type(metrics.get("percentile_cutoff")) is not int or metrics["percentile_cutoff"] != int(row["percentile_cutoff"]):
                 return False, f"percentile cutoff differs: {config_id}"
             if len(selected) != int(row["selected_cell_count"]):
@@ -252,21 +264,21 @@ def independent_cp5c_matches(payload: dict[str, Any], table_dir: Path) -> tuple[
     by_satellite = {row.get("satellite"): row for row in rows}
     if len(canonical) != 5 or len(by_satellite) != 5:
         return False, "CP5C must contain five satellite rows"
-    expected_classifications = set(canonical["cp5c_classification"].astype(str))
+    expected_classifications = {"RETIRED_MLT_RUBRIC"}
     if expected_classifications != {cp5c.get("classification")}:
         return False, "CP5C classification differs"
     for field in (
         "low_btot_support_count",
-        "btot_dominance_support_count",
         "reversed_btot_sign_count",
     ):
         expected = set(canonical[field].astype(int))
         if len(expected) != 1 or type(cp5c.get(field)) is not int or cp5c[field] != next(iter(expected)):
             return False, f"CP5C global count differs: {field}"
+    if cp5c.get("btot_dominance_support_count") is not None:
+        return False, "retired dominance must be null"
     mappings = {
         "btot_separation": "btot_separation_metric",
         "l_igrf_separation": "l_igrf_separation_metric",
-        "mlt_separation": "mlt_separation_metric",
         "fraction_below_btot_q25": "btot_fraction_below_regional_q25",
         "regional_fraction_to_capture_90pct": "btot_regional_fraction_to_capture_90pct",
     }
@@ -281,7 +293,8 @@ def independent_cp5c_matches(payload: dict[str, Any], table_dir: Path) -> tuple[
             "selected_cells": int(row["selected_cell_count"]),
             "selected_samples": int(row["selected_sample_count"]),
             "low_btot_support": bool(row["low_btot_support"]),
-            "btot_dominance_support": bool(row["btot_dominance_support"]),
+            "btot_dominance_support": None,
+            "mlt_separation": None,
         }
         for field, expected in discrete.items():
             if type(actual.get(field)) is not type(expected) or actual[field] != expected:

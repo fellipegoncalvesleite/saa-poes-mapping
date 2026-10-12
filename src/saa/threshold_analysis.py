@@ -11,7 +11,7 @@ Key choices:
   ``area = R^2 * dlon_rad * (sin(lat_north) - sin(lat_south))`` with ``R = 6371 km`` — never raw
   cell count (lat/lon cells are not equal-area).
 * **Two centroids** are reported: unweighted (mean of selected cell centers) and flux-weighted
-  (weighted by the statistic being thresholded). Longitude is averaged directly; acceptable because
+  over physical area (weighted by the statistic being thresholded multiplied by spherical cell area). Longitude is averaged directly; acceptable because
   the region (lon -100..+20) is limited and far from the +/-180 wrap — documented as an assumption.
 
 Caveat preserved from CP4A: ``mep_IFC_on == -1`` rows were retained and remain **uninterpreted**;
@@ -37,7 +37,16 @@ SENSITIVITY_COLUMNS = [
     "cells_available_after_coverage_mask", "selected_cell_count", "selected_area_km2",
     "selected_area_fraction_of_covered_region", "centroid_lat_unweighted", "centroid_lon_unweighted",
     "centroid_lat_flux_weighted", "centroid_lon_flux_weighted", "peak_flux",
+    "peak_flux_lat", "peak_flux_lon", "peak_flux_tie_count",
     "mean_flux_within_selected", "median_flux_within_selected", "total_flux_area_proxy", "notes",
+]
+
+#: Column set frozen at the CP4B/CP4C acceptance point, before CP4D.1 added peak-flux
+#: location. Validators for those frozen checkpoint artifacts pin this subset so the
+#: CP4D.1 extension does not retroactively invalidate accepted tables.
+SENSITIVITY_COLUMNS_PRE_CP4D1 = [
+    c for c in SENSITIVITY_COLUMNS
+    if c not in ("peak_flux_lat", "peak_flux_lon", "peak_flux_tie_count")
 ]
 
 
@@ -92,8 +101,40 @@ def unweighted_centroid(cells: pd.DataFrame) -> tuple[float, float]:
     return float(cells["lat_bin_center"].mean()), float(cells["lon_bin_center"].mean())
 
 
+def peak_flux_location(covered: pd.DataFrame, stat_col: str) -> dict:
+    """Location of the maximum valid gridded flux over coverage-passed cells.
+
+    Eligible cells are exactly the coverage-passed cells (the scientifically
+    valid gridded field); cells rejected by the coverage mask are never
+    eligible. Ties (exact float64 equality on ``stat_col``) are broken
+    deterministically: the southernmost, then westernmost, cell center is
+    reported and the total number of tied cells is returned as
+    ``peak_flux_tie_count``. An empty input yields NaNs with a tie count of 0.
+    """
+    if len(covered) == 0:
+        return {"peak_flux": float("nan"), "peak_flux_lat": float("nan"),
+                "peak_flux_lon": float("nan"), "peak_flux_tie_count": 0}
+    values = covered[stat_col].to_numpy(dtype="float64")
+    peak = float(np.max(values))
+    tied = covered[values == peak].sort_values(
+        ["lat_bin_center", "lon_bin_center"], ascending=[True, True])
+    first = tied.iloc[0]
+    return {"peak_flux": peak, "peak_flux_lat": float(first["lat_bin_center"]),
+            "peak_flux_lon": float(first["lon_bin_center"]),
+            "peak_flux_tie_count": int(len(tied))}
+
+
 def flux_weighted_centroid(cells: pd.DataFrame, stat_col: str) -> tuple[float, float]:
-    w = cells[stat_col].to_numpy(dtype="float64")
+    """Centroid of the gridded flux field over physical cell area.
+
+    Regular latitude/longitude cells have unequal physical area, so the
+    discrete approximation to the spatial integral uses ``flux * cell_area``
+    as the weight rather than flux alone.
+    """
+    w = (
+        cells[stat_col].to_numpy(dtype="float64")
+        * cells["cell_area_km2"].to_numpy(dtype="float64")
+    )
     lat = cells["lat_bin_center"].to_numpy(dtype="float64")
     lon = cells["lon_bin_center"].to_numpy(dtype="float64")
     sw = w.sum()
@@ -111,6 +152,7 @@ def analyze_threshold(covered: pd.DataFrame, stat_col: str, percentile: int, lab
     ulat, ulon = unweighted_centroid(sel)
     wlat, wlon = flux_weighted_centroid(sel, stat_col)
     proxy = float((sel[stat_col].to_numpy("float64") * sel["cell_area_km2"].to_numpy("float64")).sum())
+    peak = peak_flux_location(covered, stat_col)
     return {
         "grid_deg": grid_deg, "statistic_used": stat_col, "threshold_label": label,
         "percentile_cutoff": percentile, "flux_cutoff_value": cutoff,
@@ -120,7 +162,10 @@ def analyze_threshold(covered: pd.DataFrame, stat_col: str, percentile: int, lab
         "selected_area_fraction_of_covered_region": area / total_covered_area if total_covered_area > 0 else float("nan"),
         "centroid_lat_unweighted": ulat, "centroid_lon_unweighted": ulon,
         "centroid_lat_flux_weighted": wlat, "centroid_lon_flux_weighted": wlon,
-        "peak_flux": float(sel[stat_col].max()),
+        "peak_flux": peak["peak_flux"],
+        "peak_flux_lat": peak["peak_flux_lat"],
+        "peak_flux_lon": peak["peak_flux_lon"],
+        "peak_flux_tie_count": peak["peak_flux_tie_count"],
         "mean_flux_within_selected": float(sel[stat_col].mean()),
         "median_flux_within_selected": float(sel[stat_col].median()),
         "total_flux_area_proxy": proxy,
@@ -228,6 +273,13 @@ def plot_centroid_shift(sens_df, save_path):
 # ---------------------------------------------------------------- channel sensitivity (CP4C)
 CHANNEL_SENSITIVITY_COLUMNS = (
     ["channel"] + [c for c in SENSITIVITY_COLUMNS if c != "notes"]
+    + ["channel_units", "channel_metadata_note"]
+)
+
+#: Frozen CP4C-era subset of :data:`CHANNEL_SENSITIVITY_COLUMNS` (see
+#: :data:`SENSITIVITY_COLUMNS_PRE_CP4D1`).
+CHANNEL_SENSITIVITY_COLUMNS_PRE_CP4D1 = (
+    ["channel"] + [c for c in SENSITIVITY_COLUMNS_PRE_CP4D1 if c != "notes"]
     + ["channel_units", "channel_metadata_note"]
 )
 

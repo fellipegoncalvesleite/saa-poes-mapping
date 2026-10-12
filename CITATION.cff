@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software or its results, please cite it using the metadata below."
+type: software
+title: "SAA POES Mapping: analysis choices and orbital sampling of a particle-defined South Atlantic Anomaly footprint"
+abstract: >-
+  Analysis code, data provenance and manuscript for a single-month (January 2024)
+  methodological case study of how a percentile-defined South Atlantic Anomaly footprint,
+  mapped from NOAA/NCEI POES/MetOp SEM-2 MEPED omnidirectional proton fluxes, depends on
+  threshold, cell statistic and grid, proton channel, accumulation window and spacecraft.
+authors:
+  - given-names: Fellipe
+    family-names: Gonçalves Leite
+    affiliation: "Independent researcher, Divinópolis, MG, Brazil"
+repository-code: "https://github.com/fellipegoncalvesleite/saa-poes-mapping"
+license: MIT
+version: 1.0.0
+keywords:
+  - South Atlantic Anomaly
+  - POES
+  - MetOp
+  - SEM-2
+  - MEPED
+  - energetic protons
+  - reproducibility

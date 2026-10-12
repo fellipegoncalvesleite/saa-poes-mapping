@@ -95,7 +95,7 @@ describe("public explorer UI", () => {
   it("renders the fixed five-satellite CP5C evidence", () => {
     const root = document.createElement("div");
     renderCp5cEvidence(root, payload.cp5c);
-    expect(root.textContent).toContain("CONSISTENT");
+    expect(root.textContent).toContain("Combined classification retired");
     expect(root.textContent).toContain("5/5 low-Btot");
     expect(root.querySelectorAll("tbody tr")).toHaveLength(5);
     expect(root.textContent).toContain("NOAA-15");
@@ -110,7 +110,7 @@ describe("public research copy", () => {
       "Method sensitivity of particle-defined South Atlantic Anomaly maps",
       "Candidate high-flux footprints; not a definitive SAA boundary.",
       "January 2024",
-      "340 validated configurations",
+      "360 validated configurations",
       "Interactive map",
       "Results",
       "How to read this map",

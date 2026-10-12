@@ -98,14 +98,19 @@ def ifc_counts(
     result = {
         "regional_rows_before_ifc": int(preparation_counts["n_after_geo"]),
         "regional_rows_after_ifc": int(preparation_counts["n_after_ifc"]),
+        "invalid_channel_dropped": int(preparation_counts.get("n_invalid_channel_dropped", 0)),
+        "qc_excluded_dropped": int(preparation_counts.get("n_qc_excluded", 0)),
+        "regional_rows_after_quality": len(filtered_region),
         "ifc_on_dropped": int(preparation_counts["n_ifc_on_dropped"]),
         "ifc_minus1_retained": minus1,
         "ifc_zero_retained": zero,
         "ifc_other_retained": other,
     }
-    if result["regional_rows_after_ifc"] != len(filtered_region):
-        raise ValueError("IFC row accounting does not match the filtered regional frame")
-    if minus1 != int(preparation_counts["n_ifc_minus1"]):
+    if (result["regional_rows_after_ifc"] - result["invalid_channel_dropped"] - result["qc_excluded_dropped"]
+            != len(filtered_region)):
+        raise ValueError("IFC/validity/QC row accounting does not match the filtered regional frame")
+    if (result["invalid_channel_dropped"] + result["qc_excluded_dropped"] == 0
+            and minus1 != int(preparation_counts["n_ifc_minus1"])):
         raise ValueError("retained mep_IFC_on == -1 count does not match preparation accounting")
     if minus1 + zero + other != len(filtered_region):
         raise ValueError("retained IFC value counts do not reconcile with the filtered frame")
@@ -161,7 +166,7 @@ def omni_fit_flag_diagnostic(
 
 
 def evaluate_satellite_support(row: Mapping[str, object]) -> tuple[bool, bool]:
-    """Apply the predeclared CP5C per-satellite criteria to one principal-case row."""
+    """LEGACY v1 only: reproduce retired CP5C criteria; not active validation."""
     numeric_fields = (
         "btot_separation_metric",
         "l_igrf_separation_metric",
@@ -186,7 +191,7 @@ def evaluate_satellite_support(row: Mapping[str, object]) -> tuple[bool, bool]:
 
 
 def classify_generality(summary: pd.DataFrame) -> str:
-    """Classify the five-satellite principal case with the frozen CP5C rubric."""
+    """LEGACY v1 separate-count rubric: >=4 low and >=4 dominance, not necessarily the same four. Retired from active conclusions."""
     if len(summary) != len(SATELLITES):
         raise ValueError(f"CP5C classification requires exactly {len(SATELLITES)} satellite rows")
     for column in ("low_btot_support", "btot_dominance_support"):
@@ -386,7 +391,7 @@ def principal_summary_row(
         "mlt_rows_valid": validity_count("MLT", "rows_valid"),
         "mlt_rows_invalid": validity_count("MLT", "rows_invalid"),
         "absolute_flux_comparison_allowed": False,
-        "rubric_note": "predeclared operational CP5C criteria; not physical SAA thresholds",
+        "rubric_note": "retired legacy v1 separate-count CP5C criteria; MLT origin-dependent",
     }
     for key in (
         "regional_rows_before_ifc",
@@ -397,6 +402,9 @@ def principal_summary_row(
         "ifc_other_retained",
     ):
         row[key] = int(processing_counts[key])
+    for key in ("invalid_channel_dropped", "qc_excluded_dropped", "regional_rows_after_quality"):
+        row[key] = int(processing_counts.get(key, processing_counts["regional_rows_after_ifc"]
+                                             if key == "regional_rows_after_quality" else 0))
     low_btot, dominance = evaluate_satellite_support(row)
     row["low_btot_support"] = low_btot
     row["btot_dominance_support"] = dominance
@@ -418,18 +426,19 @@ def finalize_generality_summary(rows: Iterable[Mapping[str, object]]) -> pd.Data
     summary["btot_dominance_support_count"] = dominance_count
     summary["reversed_btot_sign_count"] = reversed_count
     summary["cp5c_classification"] = classify_generality(summary)
+    summary["rubric_status"] = "legacy-v1-retired-mlt-origin-dependence"
     return summary
 
 
 def plot_separation_comparison(summary: pd.DataFrame, save_path: Path) -> None:
-    """Plot principal-case Btot/L/MLT separation without flux or causal comparisons."""
+    """Plot descriptive Btot/L separation; omit retired MLT comparisons."""
     x = np.arange(len(summary))
     width = 0.24
     fig, ax = plt.subplots(figsize=(8.2, 5.2))
     for offset, column, label, color in (
         (-width, "btot_separation_metric", "Btot_sat", "#1f77b4"),
         (0.0, "l_igrf_separation_metric", "L_IGRF", "#ff7f0e"),
-        (width, "mlt_separation_metric", "MLT", "#7f7f7f"),
+
     ):
         ax.bar(x + offset, summary[column], width=width, label=label, color=color)
     ax.axhline(0.0, color="black", linewidth=0.8)

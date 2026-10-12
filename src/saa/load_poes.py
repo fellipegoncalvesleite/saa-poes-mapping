@@ -25,7 +25,7 @@ the design choices below:
   units ``#/cm2-s-str-MeV`` -- i.e. a *flux*, not counts and not an integral channel. p2/p3 are
   the ~50/100 MeV channels.
 * **mep_IFC_on** (in-flight-calibration flag) holds values ``{-1, 0}`` in this file; ``long_name``
-  says ``0=off / 1=on``, so ``-1`` is a fill/no-data marker. We carry the raw flag through
+  says ``0=off / 1=on``, the meaning of ``-1`` is not established by that metadata. We carry the raw flag through
   unchanged; downstream analysis should drop records where it equals ``1``.
 
 Extracted values come directly from the official file.
@@ -41,6 +41,8 @@ from datetime import date as _date, datetime
 import numpy as np
 import pandas as pd
 import xarray as xr
+
+from .quality import QC1, isolated_fallback_discontinuity
 
 NCEI_L1B_BASE = (
     "https://www.ncei.noaa.gov/data/poes-metop-space-environment-monitor/access/l1b/v01r00"
@@ -162,11 +164,99 @@ def _col(ds: xr.Dataset, name: str) -> np.ndarray:
     return np.asarray(ds[name].values).ravel()
 
 
+def _valid_flux(ds: xr.Dataset, channel: str) -> np.ndarray:
+    """SEM-2 OMNI validity v2: nonnegative flux and fit != -1 (no fit).
+
+    NOAA OMNI ATBD Table 5 defines -1 as no fit. The user manual Table A-1
+    defines a zero minimum for p1/p2/p3. Missing stays NaN, zero is valid,
+    and fit 1/2 are retained. No upper cutoff.
+    """
+    values = _col(ds, channel).astype("float64")
+    if channel in CHANNEL_INFO:
+        invalid = values < 0
+        if "mep_omni_flux_flag_fit" in ds:
+            invalid |= _col(ds, "mep_omni_flux_flag_fit") == -1
+        values[invalid] = np.nan
+    return values
+
+
+def _omni_qc(ds: xr.Dataset):
+    """QC-1 result for one native-ordered daily file, or ``None`` if the file lacks the inputs."""
+    chans = [c for c in CHANNEL_INFO if c in ds.variables]
+    if not chans or "time" not in ds.variables or "mep_omni_flux_flag_fit" not in ds.variables:
+        return None
+    return isolated_fallback_discontinuity(
+        _col(ds, "time").astype("int64"), _col(ds, "mep_omni_flux_flag_fit"),
+        {c: _valid_flux(ds, c) for c in chans})
+
+
+def omni_qc_mask(ds: xr.Dataset) -> np.ndarray:
+    """Records whose OMNI values QC-1 excludes (see :mod:`saa.quality`)."""
+    result = _omni_qc(ds)
+    n = len(_col(ds, "time")) if "time" in ds.variables else 0
+    return np.zeros(n, bool) if result is None else result.excluded
+
+
+def _flux_col(ds: xr.Dataset, channel: str, qc: bool = True) -> np.ndarray:
+    """Validity v2, then (``qc=True``) QC-1 sets the OMNI values of flagged records missing.
+
+    ``qc=False`` gives the unfiltered values, kept for the provenance/sensitivity case.
+    """
+    values = _valid_flux(ds, channel)
+    if qc and channel in CHANNEL_INFO:
+        values[omni_qc_mask(ds)] = np.nan
+    return values
+
+
+def omni_qc_ledger(ds: xr.Dataset, source_file: str, source_sha256: str | None = None) -> pd.DataFrame:
+    """One row per record QC-1 excludes in this file, with values, neighbour medians and the reason."""
+    result = _omni_qc(ds)
+    cols = ["source_file", "source_sha256", "native_index", "utc", "lat", "lon180", "fit", "mep_IFC_on",
+            "rule", "reason"]
+    if result is None or not result.excluded.any():
+        return pd.DataFrame(columns=cols)
+    k = QC1["neighbours_per_side"]
+    fit = _col(ds, "mep_omni_flux_flag_fit")
+    time = _col(ds, "time").astype("int64")
+    rows = []
+    for i in np.flatnonzero(result.excluded):
+        row = {"source_file": os.path.basename(source_file), "source_sha256": source_sha256, "native_index": int(i),
+               "utc": pd.to_datetime(time[i], unit="ms", utc=True).isoformat(timespec="milliseconds"),
+               "lat": float(_col(ds, "lat")[i]), "lon180": float((_col(ds, "lon")[i] + 180) % 360 - 180),
+               "fit": int(fit[i]),
+               "mep_IFC_on": int(_col(ds, "mep_IFC_on")[i]) if "mep_IFC_on" in ds.variables else None,
+               "rule": f"{QC1['id']} v{QC1['version']}"}
+        parts = []
+        for c in result.ratio_left:
+            short = c.rsplit("_", 1)[-1]
+            raw = float(_col(ds, c)[i])
+            left = raw / result.ratio_left[c][i] if np.isfinite(result.ratio_left[c][i]) else np.nan
+            right = raw / result.ratio_right[c][i] if np.isfinite(result.ratio_right[c][i]) else np.nan
+            row.update({short: raw, f"{short}_left_median": left, f"{short}_right_median": right,
+                        f"{short}_ratio_left": result.ratio_left[c][i], f"{short}_ratio_right": result.ratio_right[c][i],
+                        f"{short}_ratio_min": np.fmin(result.ratio_left[c][i], result.ratio_right[c][i]),
+                        f"{short}_triggered": bool(result.triggered[c][i])})
+            if result.triggered[c][i]:
+                parts.append(f"{short} {result.ratio_left[c][i]:.1f}x/{result.ratio_right[c][i]:.1f}x")
+        row["channels_triggered"] = sum(bool(result.triggered[c][i]) for c in result.triggered)
+        row["reason"] = (f"fallback fit {int(fit[i])} among {2 * k} contiguous regular-fit (0) neighbours; "
+                         f"value above {QC1['ratio']:g}x the median of both sides: " + ", ".join(parts))
+        rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def _flag_col(ds: xr.Dataset, name: str) -> np.ndarray:
+    """Carry real flag values through; never cast NaN into an integer category."""
+    values = _col(ds, name)
+    return values.astype("int16") if np.isfinite(values).all() else values.astype("float64")
+
+
 def extract_minimal_dataframe(
     dataset: xr.Dataset,
     source_file: str,
     satellite: str | None = None,
     channel: str = DEFAULT_CHANNEL,
+    qc: bool = True,
 ) -> pd.DataFrame:
     """Extract the tidy minimal table for SAA mapping from an open POES dataset.
 
@@ -181,6 +271,7 @@ def extract_minimal_dataframe(
     satellite : optional override for the ``satellite`` label; if ``None`` it is parsed from
         ``source_file`` (falling back to ``"unknown"``).
     channel : proton channel variable name to extract (default ``mep_omni_flux_p1``).
+    qc : apply OMNI quality rule QC-1 (default); ``False`` keeps the unfiltered values.
     """
     ds = dataset
     required = ["time", "lat", "lon", channel]
@@ -199,10 +290,10 @@ def extract_minimal_dataframe(
         data[col] = _col(ds, col).astype("float64") if col in ds.variables else np.full(n, np.nan)
     data["satellite"] = np.repeat(sat_label, n)
     data["source_file"] = np.repeat(os.path.basename(source_file), n)
-    data[channel] = _col(ds, channel).astype("float64")
+    data[channel] = _flux_col(ds, channel, qc=qc)
     for flag in _FLAG_COLUMNS:
         if flag in ds.variables:
-            data[flag] = _col(ds, flag).astype("int16")
+            data[flag] = _flag_col(ds, flag)
 
     lengths = {k: len(v) for k, v in data.items()}
     if len(set(lengths.values())) != 1:
@@ -263,11 +354,13 @@ def extract_channels_dataframe(
     source_file: str,
     satellite: str | None = None,
     channels=(DEFAULT_CHANNEL,),
+    qc: bool = True,
 ) -> pd.DataFrame:
     """Like :func:`extract_minimal_dataframe` but extracts several channel columns at once.
 
     Columns: ``time, lat, lon, alt, satellite, source_file, <each channel>`` + the quality flags
     (`mep_IFC_on`, `mep_omni_flux_flag_fit`) when present. All channels are positionally aligned.
+    ``qc`` as in :func:`extract_minimal_dataframe`.
     """
     ds = dataset
     chans = list(channels)
@@ -285,10 +378,10 @@ def extract_channels_dataframe(
     data["satellite"] = np.repeat(sat_label, n)
     data["source_file"] = np.repeat(os.path.basename(source_file), n)
     for c in chans:
-        data[c] = _col(ds, c).astype("float64")
+        data[c] = _flux_col(ds, c, qc=qc)
     for flag in _FLAG_COLUMNS:
         if flag in ds.variables:
-            data[flag] = _col(ds, flag).astype("int16")
+            data[flag] = _flag_col(ds, flag)
 
     if len({len(v) for v in data.values()}) != 1:
         raise ValueError("variable length mismatch (file not record-aligned)")

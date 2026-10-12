@@ -1,0 +1,36 @@
+variant,excluded (all),excluded (region),same set
+adopted rule,1,1,True
+ratio 5x,453,450,False
+ratio 10x,30,29,False
+ratio 15x,4,4,False
+ratio 20x,1,1,True
+ratio 30x,1,1,True
+ratio 50x,1,1,True
+ratio 200x,1,1,True
+ratio 500x,1,1,True
+ratio 1000x,1,1,True
+ratio 2000x,1,1,True
+ratio 3000x,0,0,False
+3 neighbours per side,1,1,True
+5 neighbours per side,1,1,True
+7 neighbours per side,1,1,True
+15 neighbours per side,1,1,True
+20 neighbours per side,1,1,True
+30 neighbours per side,1,1,True
+max step 3 s,1,1,True
+max step 10 s,1,1,True
+max step 20 s,1,1,True
+regular-fit neighbours >= 90%,1,1,True
+regular-fit neighbours >= 75%,1,1,True
+regular-fit neighbours >= 50%,1,1,True
+no regular-fit neighbour requirement,32,8,False
+fallback fit not required,1,1,True
+trigger on p1 only,1,1,True
+trigger on all channels,1,1,True
+no fit conditions (pure two-sided ratio),32,8,False
+"ratio 10x, 5 neighbours",126,126,False
+"ratio 10x, 20 neighbours",3,3,False
+"ratio 20x, 5 neighbours",6,6,False
+"ratio 20x, 20 neighbours",1,1,True
+"ratio 30x, 5 neighbours",1,1,True
+"ratio 30x, 20 neighbours",1,1,True
