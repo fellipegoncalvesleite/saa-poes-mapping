@@ -7,7 +7,7 @@
   { let v = V.at(key); if type(v) == str { v.replace("\u{202F}", ",") } else { v } }
 }
 
-#let paper(title: "", subtitle: none, author: "", short-title: none, body) = {
+#let paper(title: "", subtitle: none, author: "", affiliation: none, short-title: none, body) = {
   set document(title: title, author: author)
   set page(paper: "a4", margin: (x: 2.2cm, y: 2.3cm), numbering: "1",
     header: context { if counter(page).get().first() > 1 [#set text(8pt, fill: luma(110)); #(if short-title != none { short-title } else { title }) ] })
@@ -28,6 +28,7 @@
     #if subtitle != none { v(0.2em); text(11pt)[#subtitle] }
     #v(0.5em)
     #text(11pt)[#author]
+    #if affiliation != none { linebreak(); text(9.5pt, style: "italic")[#affiliation] }
     #v(0.8em)
   ]
   body
