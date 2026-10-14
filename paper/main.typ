@@ -205,4 +205,8 @@ Input data are the public NOAA/NCEI processed SEM-2 daily files @ncei_sem2 for 1
 
 The author thanks François Ginisty (Augura Space) for pointing out the need to account for unequal physical cell areas in the footprint centroid calculation, which led to the adoption of flux × cell-area weighting, and Xiaoheng Xu (National Space Science Center, Chinese Academy of Sciences) for methodological guidance on accumulation windows for POES/MetOp maps and for suggesting the checks that led to the investigation of the NOAA-15 record.
 
+= Conflict of Interest Disclosure
+
+The author declares there are no conflicts of interest for this manuscript. This research received no specific funding.
+
 #bibliography("refs.bib", title: "References", style: "american-geophysical-union")
