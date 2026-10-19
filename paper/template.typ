@@ -13,6 +13,8 @@
     header: context { if counter(page).get().first() > 1 [#set text(8pt, fill: luma(110)); #(if short-title != none { short-title } else { title }) ] })
   set text(font: ("Libertinus Serif", "New Computer Modern"), size: 10.5pt, lang: "en")
   set par(justify: true, leading: 0.62em, first-line-indent: 0em, spacing: 0.95em)
+  // Continuous line numbers in the margin (required by AGU for review).
+  set par.line(numbering: n => text(7pt, fill: luma(120))[#n], numbering-scope: "document")
   set heading(numbering: "1.1")
   show heading.where(level: 1): it => { v(0.6em); set text(12.5pt, weight: "bold"); it; v(0.2em) }
   show heading.where(level: 2): it => { v(0.3em); set text(10.8pt, weight: "bold"); it }
