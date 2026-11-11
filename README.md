@@ -2,6 +2,8 @@
 
 **Fellipe Gonçalves Leite** · Python · public NOAA/NCEI satellite data · [doi:10.5281/zenodo.23324359](https://doi.org/10.5281/zenodo.23324359)
 
+**Read the paper:** [manuscript (PDF)](paper/Leite_SAA_footprint_manuscript.pdf) · [supplement (PDF)](paper/Leite_SAA_footprint_supplement.pdf)
+
 Maps of the South Atlantic Anomaly made from satellite particle data look objective, but the
 analyst decides a lot along the way: which flux threshold counts as "inside", which proton
 channel, how big the grid cells are, how many days of data, which satellite. This study takes
